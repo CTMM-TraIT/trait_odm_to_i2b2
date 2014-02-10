@@ -237,7 +237,7 @@ public class FileExporter {
     /**
      * Write the columns file: first the clinical data file name, then the path as specified in the second column of the
      * user's input concept map without the last node, then the column number and then the last node of the path.
-     * todo: update comment above (user's input concept map: in manual mode; empty columns at the end).
+     * todo: update comment above (user's input concept map: in manual mode; empty columns at the end)
      *
      * @param studyInfo the metadata study information
      */
