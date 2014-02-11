@@ -12,38 +12,16 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.text.ParseException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.bind.JAXBException;
 
 import com.recomdata.i2b2.dao.*;
+import com.recomdata.odm.MetaDataWithIncludes;
 import nl.vumc.odmtoi2b2.export.FileExporter;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.cdisk.odm.jaxb.ODM;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionClinicalData;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeList;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeListItem;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionDescription;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionFormData;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionFormDef;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionFormRef;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemData;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemDef;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemGroupData;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemGroupDef;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemGroupRef;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemRef;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionMetaDataVersion;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudy;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventData;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventDef;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventRef;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionSubjectData;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionTranslatedText;
+import org.cdisk.odm.jaxb.*;
 
 import com.recomdata.i2b2.entity.I2B2ClinicalDataInfo;
 import com.recomdata.i2b2.entity.I2B2StudyInfo;
@@ -124,6 +102,8 @@ public class I2B2ODMStudyHandler implements IConstants {
         // Need to traverse through the study definition to:
         // 1) Lookup all definition values in tree nodes.
         // 2) Set node values into i2b2 bean info and ready for populating into i2b2 database.
+
+        Map<String, ODMcomplexTypeDefinitionMetaDataVersion> metaDataMap = new HashMap<>();
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
             String studyName = study.getGlobalVariables().getStudyName().getValue();
             log.info("Processing study metadata for study " + studyName + "(OID " + study.getOID() + ")");
@@ -139,7 +119,7 @@ public class I2B2ODMStudyHandler implements IConstants {
             FileExporter fileExporter = new FileExporter(exportFilePath + "\\", studyName);  // todo: add new file exporter to map
             fileExporters.put(studyName, fileExporter);
 
-            saveStudy(study);
+            saveStudy(study, metaDataMap);
 
             long endTime = System.currentTimeMillis();
             log.info("Completed loading study metadata into i2b2 in " + (endTime - startTime) + " ms");
@@ -258,7 +238,8 @@ public class I2B2ODMStudyHandler implements IConstants {
      *
      * @throws JAXBException
      */
-    private void saveStudy(ODMcomplexTypeDefinitionStudy study)
+    private void saveStudy(ODMcomplexTypeDefinitionStudy study,
+                           Map<String, ODMcomplexTypeDefinitionMetaDataVersion> metaDataMap)
             throws SQLException, JAXBException {
         // Need to include source system in path to avoid conflicts between servers
         String studyKey = odm.getSourceSystem() + ":" + study.getOID();
@@ -295,17 +276,28 @@ public class I2B2ODMStudyHandler implements IConstants {
 
         // save child events
         ODMcomplexTypeDefinitionMetaDataVersion version = study.getMetaDataVersion().get(0);
+        ODMcomplexTypeDefinitionInclude include = version.getInclude();
+        List<MetaDataWithIncludes> metaDataIncludes = new ArrayList<>();
+        if (include != null) {
+            if (metaDataMap.containsKey(include.getMetaDataVersionOID())) {
+                // todo: recursive includes.
+                List<MetaDataWithIncludes> tbd = null;
+                metaDataIncludes.add(new MetaDataWithIncludes(metaDataMap.get(include.getMetaDataVersionOID()), tbd));
+            }
+        }
+        metaDataMap.put(version.getOID(), version);
+        MetaDataWithIncludes metaDataWithIncludes = new MetaDataWithIncludes(version, metaDataIncludes);
 
         if (version.getProtocol().getStudyEventRef() != null) {
             for (ODMcomplexTypeDefinitionStudyEventRef studyEventRef : version.getProtocol().getStudyEventRef()) {
                 ODMcomplexTypeDefinitionStudyEventDef studyEventDef =
-                        ODMUtil.getStudyEvent(study, studyEventRef.getStudyEventOID());
-                if (studyEventDef != null) {
-                    saveEvent(study, studyEventDef, studyPath, studyName, studyToolTip);
-                } else {
-                    log.warn("Study event definition is null. Study event reference identifier: "
-                            + studyEventRef.getStudyEventOID());
-                }
+                        metaDataWithIncludes.getStudyEventDef(studyEventRef.getStudyEventOID());
+                //if (studyEventDef != null) {
+                    saveEvent(study, metaDataWithIncludes, studyEventDef, studyPath, studyName, studyToolTip);
+                //} else {
+                //    log.warn("Study event definition is null. Study event reference identifier: "
+                //            + studyEventRef.getStudyEventOID());
+                //}
             }
         }
     }
@@ -315,9 +307,9 @@ public class I2B2ODMStudyHandler implements IConstants {
      *
      * @throws JAXBException
      */
-    private void saveEvent(ODMcomplexTypeDefinitionStudy study,
-                           ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
-                           String studyPath, String studyNamePath, String studyToolTip) throws SQLException,
+    private void saveEvent(ODMcomplexTypeDefinitionStudy study, MetaDataWithIncludes metaDataWithIncludes,
+                           ODMcomplexTypeDefinitionStudyEventDef studyEventDef, String studyPath, String studyNamePath,
+                           String studyToolTip) throws SQLException,
             JAXBException {
         String eventPath = studyPath + studyEventDef.getOID() + "\\";   //(studyEventDef != null ? studyEventDef.getOID() : "")
         String eventName = studyEventDef.getName();
@@ -347,9 +339,10 @@ public class I2B2ODMStudyHandler implements IConstants {
 
         if (studyEventDef.getFormRef() != null) {
             for (ODMcomplexTypeDefinitionFormRef formRef : studyEventDef.getFormRef()) {
-                ODMcomplexTypeDefinitionFormDef formDef = ODMUtil.getForm(study, formRef.getFormOID());
+//                ODMcomplexTypeDefinitionFormDef formDef = ODMUtil.getFormDef(study, formRef.getFormOID());
+                ODMcomplexTypeDefinitionFormDef formDef = metaDataWithIncludes.getFormDef(formRef.getFormOID());
 
-                saveForm(study, studyEventDef, formDef, eventPath, eventName, eventToolTip);
+                saveForm(study, metaDataWithIncludes, studyEventDef, formDef, eventPath, eventName, eventToolTip);
             }
         }
     }
@@ -360,7 +353,7 @@ public class I2B2ODMStudyHandler implements IConstants {
      * @throws JAXBException
      */
     private void saveForm(ODMcomplexTypeDefinitionStudy study,
-                          ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                          MetaDataWithIncludes metaDataWithIncludes, ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
                           ODMcomplexTypeDefinitionFormDef formDef, String eventPath, String eventNamePath,
                           String eventToolTip) throws SQLException, JAXBException {
         String formPath = eventPath + formDef.getOID() + "\\";
@@ -393,11 +386,11 @@ public class I2B2ODMStudyHandler implements IConstants {
         if (formDef.getItemGroupRef() != null) {
             for (ODMcomplexTypeDefinitionItemGroupRef itemGroupRef : formDef.getItemGroupRef()) {
                 ODMcomplexTypeDefinitionItemGroupDef itemGroupDef =
-                        ODMUtil.getItemGroup(study, itemGroupRef.getItemGroupOID());
+                        metaDataWithIncludes.getItemGroupDef(itemGroupRef.getItemGroupOID());
 
                 if (itemGroupDef.getItemRef() != null) {
                     for (ODMcomplexTypeDefinitionItemRef itemRef : itemGroupDef.getItemRef()) {
-                        ODMcomplexTypeDefinitionItemDef itemDef = ODMUtil.getItem(study, itemRef.getItemOID());
+                        ODMcomplexTypeDefinitionItemDef itemDef = metaDataWithIncludes.getItemDef(itemRef.getItemOID());
 
                         saveItem(study, studyEventDef, formDef, itemDef, formPath, formNamePath, formToolTip);
                     }

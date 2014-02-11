@@ -68,6 +68,18 @@
 			<Presentation OID = "PRS.EN" xml:lang = "en">English</Presentation>
 		</MetaDataVersion>
 	</Study>
+    <Study OID="test2oid">
+        <GlobalVariables>
+            <StudyName>Test Study 2</StudyName>
+            <ProtocolName>protocol2</ProtocolName>
+        </GlobalVariables>
+        <MetaDataVersion OID="Metadat2oid" Name="MetaDataVersion2">
+            <Include StudyOID="123-456-789" MetaDataVersionOID="v1.1.0"/>
+            <Protocol>
+                <StudyEventRef StudyEventOID="SE.VISIT0"/>
+            </Protocol>
+        </MetaDataVersion>
+    </Study>
 	<AdminData StudyOID = "123-456-789">
 		<User OID = "USR.cdisc001" UserType = "Other">
 			<FullName>Shirley Williams</FullName>
@@ -109,6 +121,17 @@
 							<SourceID>46902604</SourceID>
 						</AuditRecord>
 						<ItemData ItemOID = "IT.R_DRUG" Value = "75"/>
+					</ItemGroupData>
+				</FormData>
+			</StudyEventData>
+		</SubjectData>
+	</ClinicalData>
+	<ClinicalData StudyOID = "test2oid" MetaDataVersionOID = "Metadat2oid">
+		<SubjectData SubjectKey = "001">
+			<StudyEventData StudyEventOID = "SE.VISIT0">
+				<FormData FormOID = "FORM.DEMOG">
+					<ItemGroupData ItemGroupOID = "IG.DEMOG" ItemGroupRepeatKey = "1" TransactionType = "Update">
+						<ItemData ItemOID = "IT.R_DRUG" Value = "77"/>
 					</ItemGroupData>
 				</FormData>
 			</StudyEventData>
