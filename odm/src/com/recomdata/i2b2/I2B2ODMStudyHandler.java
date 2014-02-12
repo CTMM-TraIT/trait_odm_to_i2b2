@@ -44,7 +44,8 @@ public class I2B2ODMStudyHandler implements IConstants {
     private String exportFilePath = null;
     private boolean exportToDatabase;
     private Map<String, FileExporter> fileExporters;
-    private Map<String, ODMcomplexTypeDefinitionMetaDataVersion> metaDataMap;
+    private Map<String, MetaDataWithIncludes> metaDataMap;
+    private MetaDataWithIncludes currentMetaData;
     private IStudyDao studyDao = null;
     private IClinicalDataDao clinicalDataDao = null;
 
@@ -280,12 +281,13 @@ public class I2B2ODMStudyHandler implements IConstants {
             String includedVersionId = includedVersion.getStudyOID() + "/" + includedVersion.getMetaDataVersionOID();
             if (metaDataMap.containsKey(includedVersionId)) {
                 // todo: recursive includes.
-                List<MetaDataWithIncludes> tbd = null;
-                MetaDataWithIncludes backup = new MetaDataWithIncludes(metaDataMap.get(includedVersionId), tbd);
-                metaDataWithIncludesList.add(backup);
+//                List<MetaDataWithIncludes> tbd = null;
+//                MetaDataWithIncludes backup = new MetaDataWithIncludes(metaDataMap.get(includedVersionId), tbd);
+                metaDataWithIncludesList.add(metaDataMap.get(includedVersionId));
             }
         }
-        metaDataMap.put(study.getOID() + "/" + version.getOID(), version);
+        currentMetaData = new MetaDataWithIncludes(version, metaDataWithIncludesList);
+        metaDataMap.put(getMetaDataKey(study), currentMetaData);
         MetaDataWithIncludes metaDataWithIncludes = new MetaDataWithIncludes(version, metaDataWithIncludesList);
 
         if (version.getProtocol().getStudyEventRef() != null) {
@@ -295,6 +297,10 @@ public class I2B2ODMStudyHandler implements IConstants {
                     saveEvent(study, metaDataWithIncludes, studyEventDef, studyPath, studyName, studyToolTip);
             }
         }
+    }
+
+    private String getMetaDataKey(ODMcomplexTypeDefinitionStudy study) {
+        return study.getOID() + "/" + study.getMetaDataVersion().get(0).getOID();
     }
 
     /**
@@ -508,7 +514,8 @@ public class I2B2ODMStudyHandler implements IConstants {
 
         String studyName = study.getGlobalVariables().getStudyName().getValue();
         String itemValue = itemData.getValue();
-        ODMcomplexTypeDefinitionItemDef item = ODMUtil.getItem(study, itemData.getItemOID());
+//        ODMcomplexTypeDefinitionItemDef item = ODMUtil.getItem(study, itemData.getItemOID());
+        ODMcomplexTypeDefinitionItemDef item = getMetaData(study).getItemDef(itemData.getItemOID());
 
         String conceptCd;
 
@@ -582,6 +589,10 @@ public class I2B2ODMStudyHandler implements IConstants {
             sError += " item: " + itemData.getItemOID();
             log.error(sError, e);
         }
+    }
+
+    private MetaDataWithIncludes getMetaData(ODMcomplexTypeDefinitionStudy study) {
+        return metaDataMap.get(getMetaDataKey(study));
     }
 
     private void logStudyInfo() {
