@@ -107,4 +107,26 @@ public class MetaDataWithIncludes {
         }
         return result;
     }
+
+    public ODMcomplexTypeDefinitionCodeList getCodeList(String codeListOID) {
+        ODMcomplexTypeDefinitionCodeList codeList = searchCodeList(codeListOID);
+
+        int includeIndex = 0;
+        while (codeList == null && includeIndex < metaDataIncludes.size()) {
+            codeList = metaDataIncludes.get(includeIndex).getCodeList(codeListOID);
+            includeIndex++;
+        }
+
+        return codeList;
+    }
+
+    private ODMcomplexTypeDefinitionCodeList searchCodeList(final String codeListOID) {
+        ODMcomplexTypeDefinitionCodeList result = null;
+        for (ODMcomplexTypeDefinitionCodeList codeList : metaDataVersion.getCodeList()) {
+            if (codeList.getOID().equals(codeListOID)) {
+                result = codeList;
+            }
+        }
+        return result;
+    }
 }

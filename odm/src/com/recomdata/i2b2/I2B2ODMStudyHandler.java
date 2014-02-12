@@ -523,7 +523,7 @@ public class I2B2ODMStudyHandler implements IConstants {
             clinicalDataInfo.setValTypeCd("T");
             clinicalDataInfo.setNvalNum(null);
 
-            ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(study, item.getCodeListRef().getCodeListOID());
+            ODMcomplexTypeDefinitionCodeList codeList = getMetaData(study).getCodeList(item.getCodeListRef().getCodeListOID());
             ODMcomplexTypeDefinitionCodeListItem codeListItem = ODMUtil.getCodeListItem(codeList, itemValue);
 
             if (codeListItem == null) {
