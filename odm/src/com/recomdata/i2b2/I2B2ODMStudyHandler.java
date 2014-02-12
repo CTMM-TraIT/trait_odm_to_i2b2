@@ -44,6 +44,7 @@ public class I2B2ODMStudyHandler implements IConstants {
     private String exportFilePath = null;
     private boolean exportToDatabase;
     private Map<String, FileExporter> fileExporters;
+    private Map<String, ODMcomplexTypeDefinitionMetaDataVersion> metaDataMap;
     private IStudyDao studyDao = null;
     private IClinicalDataDao clinicalDataDao = null;
 
@@ -67,6 +68,7 @@ public class I2B2ODMStudyHandler implements IConstants {
         this.exportToDatabase = exportToDatabase;
         this.exportFilePath = exportFilePath;
         this.fileExporters = new HashMap<>();
+        this.metaDataMap = new HashMap<>();
 
         if (exportToDatabase) {
             studyDao = new StudyDao();
@@ -103,7 +105,6 @@ public class I2B2ODMStudyHandler implements IConstants {
         // 1) Lookup all definition values in tree nodes.
         // 2) Set node values into i2b2 bean info and ready for populating into i2b2 database.
 
-        Map<String, ODMcomplexTypeDefinitionMetaDataVersion> metaDataMap = new HashMap<>();
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
             String studyName = study.getGlobalVariables().getStudyName().getValue();
             log.info("Processing study metadata for study " + studyName + "(OID " + study.getOID() + ")");
@@ -116,10 +117,10 @@ public class I2B2ODMStudyHandler implements IConstants {
             log.info("Inserting study metadata into i2b2");
             long startTime = System.currentTimeMillis();
 
-            FileExporter fileExporter = new FileExporter(exportFilePath + "\\", studyName);  // todo: add new file exporter to map
+            FileExporter fileExporter = new FileExporter(exportFilePath + "\\", studyName);
             fileExporters.put(studyName, fileExporter);
 
-            saveStudy(study, metaDataMap);
+            saveStudy(study);
 
             long endTime = System.currentTimeMillis();
             log.info("Completed loading study metadata into i2b2 in " + (endTime - startTime) + " ms");
@@ -188,7 +189,6 @@ public class I2B2ODMStudyHandler implements IConstants {
         for (ODMcomplexTypeDefinitionSubjectData subjectData : clinicalData.getSubjectData()) {
             if (subjectData.getStudyEventData() != null) {
                 encounterNum++;
-
                 saveStudyEventData(study, encounterNum, subjectData);
             }
         }
@@ -238,9 +238,7 @@ public class I2B2ODMStudyHandler implements IConstants {
      *
      * @throws JAXBException
      */
-    private void saveStudy(ODMcomplexTypeDefinitionStudy study,
-                           Map<String, ODMcomplexTypeDefinitionMetaDataVersion> metaDataMap)
-            throws SQLException, JAXBException {
+    private void saveStudy(ODMcomplexTypeDefinitionStudy study) throws SQLException, JAXBException {
         // Need to include source system in path to avoid conflicts between servers
         String studyKey = odm.getSourceSystem() + ":" + study.getOID();
 
@@ -276,28 +274,25 @@ public class I2B2ODMStudyHandler implements IConstants {
 
         // save child events
         ODMcomplexTypeDefinitionMetaDataVersion version = study.getMetaDataVersion().get(0);
-        ODMcomplexTypeDefinitionInclude include = version.getInclude();
-        List<MetaDataWithIncludes> metaDataIncludes = new ArrayList<>();
-        if (include != null) {
-            if (metaDataMap.containsKey(include.getMetaDataVersionOID())) {
+        ODMcomplexTypeDefinitionInclude includedVersion = version.getInclude();
+        List<MetaDataWithIncludes> metaDataWithIncludesList = new ArrayList<>();
+        if (includedVersion != null) {
+            String includedVersionId = includedVersion.getStudyOID() + "/" + includedVersion.getMetaDataVersionOID();
+            if (metaDataMap.containsKey(includedVersionId)) {
                 // todo: recursive includes.
                 List<MetaDataWithIncludes> tbd = null;
-                metaDataIncludes.add(new MetaDataWithIncludes(metaDataMap.get(include.getMetaDataVersionOID()), tbd));
+                MetaDataWithIncludes backup = new MetaDataWithIncludes(metaDataMap.get(includedVersionId), tbd);
+                metaDataWithIncludesList.add(backup);
             }
         }
-        metaDataMap.put(version.getOID(), version);
-        MetaDataWithIncludes metaDataWithIncludes = new MetaDataWithIncludes(version, metaDataIncludes);
+        metaDataMap.put(study.getOID() + "/" + version.getOID(), version);
+        MetaDataWithIncludes metaDataWithIncludes = new MetaDataWithIncludes(version, metaDataWithIncludesList);
 
         if (version.getProtocol().getStudyEventRef() != null) {
             for (ODMcomplexTypeDefinitionStudyEventRef studyEventRef : version.getProtocol().getStudyEventRef()) {
                 ODMcomplexTypeDefinitionStudyEventDef studyEventDef =
                         metaDataWithIncludes.getStudyEventDef(studyEventRef.getStudyEventOID());
-                //if (studyEventDef != null) {
                     saveEvent(study, metaDataWithIncludes, studyEventDef, studyPath, studyName, studyToolTip);
-                //} else {
-                //    log.warn("Study event definition is null. Study event reference identifier: "
-                //            + studyEventRef.getStudyEventOID());
-                //}
             }
         }
     }
