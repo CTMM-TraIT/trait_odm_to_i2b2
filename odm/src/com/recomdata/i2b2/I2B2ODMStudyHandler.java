@@ -515,15 +515,15 @@ public class I2B2ODMStudyHandler implements IConstants {
         String studyName = study.getGlobalVariables().getStudyName().getValue();
         String itemValue = itemData.getValue();
 //        ODMcomplexTypeDefinitionItemDef item = ODMUtil.getItem(study, itemData.getItemOID());
-        ODMcomplexTypeDefinitionItemDef item = getMetaData(study).getItemDef(itemData.getItemOID());
+        ODMcomplexTypeDefinitionItemDef itemDef = getMetaData(study).getItemDef(itemData.getItemOID());
 
         String conceptCd;
 
-        if (item.getCodeListRef() != null) {
+        if (itemDef.getCodeListRef() != null) {
             clinicalDataInfo.setValTypeCd("T");
             clinicalDataInfo.setNvalNum(null);
 
-            ODMcomplexTypeDefinitionCodeList codeList = getMetaData(study).getCodeList(item.getCodeListRef().getCodeListOID());
+            ODMcomplexTypeDefinitionCodeList codeList = getMetaData(study).getCodeList(itemDef.getCodeListRef().getCodeListOID());
             ODMcomplexTypeDefinitionCodeListItem codeListItem = ODMUtil.getCodeListItem(codeList, itemValue);
 
             if (codeListItem == null) {
@@ -540,7 +540,7 @@ public class I2B2ODMStudyHandler implements IConstants {
                         itemValue);
                 clinicalDataInfo.setTvalChar(ODMUtil.getTranslatedValue(codeListItem, "en"));
             }
-        } else if (ODMUtil.isNumericDataType(item.getDataType())) {
+        } else if (ODMUtil.isNumericDataType(itemDef.getDataType())) {
             conceptCd = generateConceptCode(
                     study.getOID(),
                     studyEventData.getStudyEventOID(),
@@ -550,7 +550,7 @@ public class I2B2ODMStudyHandler implements IConstants {
 
             clinicalDataInfo.setValTypeCd("N");
             clinicalDataInfo.setTvalChar("E");
-            clinicalDataInfo.setNvalNum(itemValue == null || itemValue.length() == 0 ? null : new BigDecimal(itemValue));
+            clinicalDataInfo.setNvalNum(itemValue == null || itemValue.equals(" ") || itemValue.length() == 0 ? null : new BigDecimal(itemValue));
         } else {
             conceptCd = generateConceptCode(
                     study.getOID(),
