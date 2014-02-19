@@ -6,6 +6,7 @@ package com.recomdata.i2b2;
  * @author: Alex Wu
  * @date: September 2, 2011
  */
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.security.MessageDigest;
@@ -118,7 +119,7 @@ public class I2B2ODMStudyHandler implements IConstants {
             log.info("Inserting study metadata into i2b2");
             long startTime = System.currentTimeMillis();
 
-            FileExporter fileExporter = new FileExporter(exportFilePath + "\\", studyName);
+            FileExporter fileExporter = new FileExporter(exportFilePath + new File(File.separator), studyName);  // + "\\"
             fileExporters.put(studyName, fileExporter);
 
             saveStudy(study);
@@ -393,7 +394,7 @@ public class I2B2ODMStudyHandler implements IConstants {
                     for (ODMcomplexTypeDefinitionItemRef itemRef : itemGroupDef.getItemRef()) {
                         ODMcomplexTypeDefinitionItemDef itemDef = metaDataWithIncludes.getItemDef(itemRef.getItemOID());
 
-                        saveItem(study, studyEventDef, formDef, itemDef, formPath, formNamePath, formToolTip);
+                        saveItem(study, studyEventDef, formDef, itemGroupDef, itemDef, formPath, formNamePath, formToolTip);
                     }
                 }
             }
@@ -409,12 +410,16 @@ public class I2B2ODMStudyHandler implements IConstants {
     private void saveItem(ODMcomplexTypeDefinitionStudy study,
                           ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
                           ODMcomplexTypeDefinitionFormDef formDef,
-                          ODMcomplexTypeDefinitionItemDef itemDef, String formPath, String formNamePath,
+                          ODMcomplexTypeDefinitionItemGroupDef itemGroupDef,
+                          ODMcomplexTypeDefinitionItemDef itemDef,
+                          String formPath,
+                          String formNamePath,
                           String formToolTip) throws SQLException, JAXBException {
         String studyName = study.getGlobalVariables().getStudyName().getValue();
         String itemPath = formPath + itemDef.getOID() + "\\";
+        String itemGroupName = itemGroupDef.getName();
+        String itemNamePath = formNamePath + "+" + itemGroupName;
         String itemName = getTranslatedDescription(itemDef.getDescription(), "en", itemDef.getName());
-        String itemNamePath = formNamePath + "+" + itemName;
         String itemConceptCode = generateConceptCode(study.getOID(), studyEventDef.getOID(), formDef.getOID(),
                                                      itemDef.getOID(), null);
         String itemToolTip = formToolTip + "\\" + itemDef.getOID();
@@ -423,11 +428,17 @@ public class I2B2ODMStudyHandler implements IConstants {
         studyInfo.setChlevel(IConstants.C_HLEVEL_4);
         studyInfo.setCfullname(itemPath);
         studyInfo.setCname(itemName);
-        studyInfo.setNamePath(formNamePath);
+        studyInfo.setNamePath(itemNamePath);
         studyInfo.setCbasecode(itemConceptCode);
         studyInfo.setCdimcode(itemPath);
         studyInfo.setCtooltip(itemToolTip);
         studyInfo.setCmetadataxml(createMetadataXml(study, itemDef));
+        String questionValue = getQuestionValue(itemDef);
+        studyInfo.setPreferredName(questionValue != null ? questionValue : itemName);
+//        if (itemDef.getComment() == null) {
+//        if (questionValue == null) {
+//            studyInfo.setPreferredName(itemName);
+//        }
 
         // It is a leaf node
         if (itemDef.getCodeListRef() == null) {
@@ -457,6 +468,16 @@ public class I2B2ODMStudyHandler implements IConstants {
                 }
             }
         }
+    }
+
+    private String getQuestionValue(ODMcomplexTypeDefinitionItemDef itemDef) {
+        return itemDef.getQuestion() != null
+                && itemDef.getQuestion().getTranslatedText() != null
+                && itemDef.getQuestion().getTranslatedText().size() >= 1
+                && itemDef.getQuestion().getTranslatedText().get(0) != null
+                && itemDef.getQuestion().getTranslatedText().get(0).getValue() != null
+                ? itemDef.getQuestion().getTranslatedText().get(0).getValue().trim()
+                : null;
     }
 
     /**

@@ -224,13 +224,13 @@ public class FileExporter {
      */
     public void writeExportConceptMap(I2B2StudyInfo studyInfo) {
         if (writeConceptMapHeaders) {
-            writeLine(conceptMapWriter, "EDC_path\ttranSMART_path\tControl Vocab Cd");
+            writeLine(conceptMapWriter, "tranSMART_path\\tEDC_path\tControl Vocab Cd");
             writeConceptMapHeaders = false;
         }
 
-        writeLine(conceptMapWriter, studyInfo.getNamePath() + "+" + studyInfo.getCname() + "\t"
-                                  + studyInfo.getNamePath() + "+" + studyInfo.getCname() + "\t");
-        columnHeaders.add(studyName + "_" + studyInfo.getCname());
+        writeLine(conceptMapWriter, studyInfo.getNamePath() + "+" + studyInfo.getPreferredName() + "\t"
+                                  + studyInfo.getNamePath() + "+" + studyInfo.getPreferredName() + "\t");
+        columnHeaders.add(studyName + "_" + studyInfo.getPreferredName());
         columnIds.add(studyInfo.getCfullname());
     }
 
@@ -249,7 +249,7 @@ public class FileExporter {
             writeLine(columnsWriter, clinicalDataFileName + "\t\t1\tSUBJ_ID\t\t");
         } else {
             writeLine(columnsWriter, clinicalDataFileName + "\t" + studyInfo.getNamePath() + "\t" +
-                                     currentColumnNumber + "\t" + studyInfo.getCname() + "\t\t" );
+                                      currentColumnNumber + "\t" + studyInfo.getPreferredName() + "\t\t" );
         }
         currentColumnNumber++;
         increasedColumnNumber = true;

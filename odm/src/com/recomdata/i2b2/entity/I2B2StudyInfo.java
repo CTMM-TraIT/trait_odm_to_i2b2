@@ -32,6 +32,15 @@ public class I2B2StudyInfo
 	  java.util.Date importDate = null;
 	  String sourceSystemCd = null;
 	  String valuetype = null;
+    String preferredName = null;
+
+    public String getPreferredName() {
+        return preferredName;
+    }
+
+    public void setPreferredName(String preferredName) {
+        this.preferredName = preferredName;
+    }
 
 	/**
 	 * @return the chlevel
