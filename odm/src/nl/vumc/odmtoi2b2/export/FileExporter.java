@@ -156,12 +156,13 @@ public class FileExporter {
      * @throws IOException when creating the file fails.
      */
     public FileExporter(String exportFilePath, String studyName) throws IOException {
+        String studyNameWithUnderscores = studyName.replace(' ','_');
         this.exportFilePath = exportFilePath;
-        this.studyName = studyName;
-        this.conceptMapFileName = studyName + "_concept_map.txt";
-        this.columnsFileName = studyName + "_columns.txt";
-        this.wordMapFileName = studyName + "_word_map.txt";
-        this.clinicalDataFileName = studyName + "_clinical_data.txt";
+        this.studyName = studyNameWithUnderscores;
+        this.conceptMapFileName = studyNameWithUnderscores + "_concept_map.txt";
+        this.columnsFileName = studyNameWithUnderscores + "_columns.txt";
+        this.wordMapFileName = studyNameWithUnderscores + "_word_map.txt";
+        this.clinicalDataFileName = studyNameWithUnderscores + "_clinical_data.txt";
         setConceptMapName(this.conceptMapFileName);
         setColumnsName(this.columnsFileName);
         setWordMapName(this.wordMapFileName);

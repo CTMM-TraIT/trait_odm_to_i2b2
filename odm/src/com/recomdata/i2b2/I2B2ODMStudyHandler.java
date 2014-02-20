@@ -476,6 +476,7 @@ public class I2B2ODMStudyHandler implements IConstants {
                 && itemDef.getQuestion().getTranslatedText().size() >= 1
                 && itemDef.getQuestion().getTranslatedText().get(0) != null
                 && itemDef.getQuestion().getTranslatedText().get(0).getValue() != null
+                && !itemDef.getQuestion().getTranslatedText().get(0).getValue().trim().equals("")
                 ? itemDef.getQuestion().getTranslatedText().get(0).getValue().trim()
                 : null;
     }
