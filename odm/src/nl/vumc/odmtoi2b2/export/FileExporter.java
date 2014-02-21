@@ -175,7 +175,9 @@ public class FileExporter {
         this.currentColumnNumber = 1;
         this.currentColumnId = null;
         this.columnHeaders = new ArrayList<>();
+        columnHeaders.add(studyName + "_SUBJ_ID");
         this.columnIds = new ArrayList<>();
+        columnIds.add("firstColumnIdWithSubjectIds");
         this.patientData = new HashMap<>();
         this.wordMap = new HashMap<>();
     }
@@ -246,12 +248,11 @@ public class FileExporter {
         if (currentColumnNumber == 1) {
             writeLine(columnsWriter, "Filename\tCategory Code\tColumn Number\tData Label\tData Label Source\t"
                                      + "Control Vocab Cd");
-            // This first data line is required by tranSMART. The data in the first study info object is ignored.
+            // This first data line is required by tranSMART.
             writeLine(columnsWriter, clinicalDataFileName + "\t\t1\tSUBJ_ID\t\t");
-        } else {
-            writeLine(columnsWriter, clinicalDataFileName + "\t" + studyInfo.getNamePath() + "\t" +
-                                      currentColumnNumber + "\t" + studyInfo.getPreferredName() + "\t\t" );
         }
+        writeLine(columnsWriter, clinicalDataFileName + "\t" + studyInfo.getNamePath() + "\t" +
+                currentColumnNumber + "\t" + studyInfo.getPreferredName() + "\t\t" );
         currentColumnNumber++;
         increasedColumnNumber = true;
         currentColumnId = studyInfo.getCfullname();
@@ -294,6 +295,7 @@ public class FileExporter {
         if (!clinicalDataInfo.getPatientNum().equals(currentPatientNumber)) {
             writePatientData();
             currentPatientNumber = clinicalDataInfo.getPatientNum();
+            patientData.put("firstColumnIdWithSubjectIds", currentPatientNumber);  //problem when currentPatientNumber is longer than 20
         }
         if (wordMap.get(columnId + wordValue) != null) {
             patientData.put(columnId, wordMap.get(columnId + wordValue));
