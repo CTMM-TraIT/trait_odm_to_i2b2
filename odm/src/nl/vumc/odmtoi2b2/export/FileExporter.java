@@ -12,10 +12,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -128,6 +125,8 @@ public class FileExporter {
      */
     private List<String> columnIds;
 
+    private List<String> patientIds;
+
     /**
      * The patient number that clinical data info records are being processed for. All data for a patient is collected
      * and written on one line.
@@ -145,14 +144,11 @@ public class FileExporter {
     private String currentColumnId;
 
     /**
-     * Mapping of column ID to values for the current patient.
-     */
-    private Map<String, String> patientData;
-
-    /**
      * Mapping of (column ID + word) to values for the current patient.
      */
     private Map<String, String> wordMap;
+
+    private Map<String, Map<String, String>> clinicalDataMap;
 
     /**
      * Construct a file exporter.
@@ -184,8 +180,9 @@ public class FileExporter {
         columnHeaders.add(studyName + "_SUBJ_ID");
         this.columnIds = new ArrayList<>();
         columnIds.add(FIRST_COLUMN_ID_WITH_SUBJECT_IDS);
-        this.patientData = new HashMap<>();
+        this.patientIds = new ArrayList<>();
         this.wordMap = new HashMap<>();
+        this.clinicalDataMap = new HashMap<>();
     }
 
     /**
@@ -257,21 +254,6 @@ public class FileExporter {
         writeLine(conceptMapWriter, path + path);
         columnHeaders.add(studyName + "_" + studyInfo.getPreferredName());
         columnIds.add(studyInfo.getCfullname());
-
-
-        Map<String, Map<Integer, Object>> clinicalDataMap = new HashMap<>();
-        Map<Integer, Object> subjectMap = new HashMap<>();
-        subjectMap.put(16, 75);
-        subjectMap.put(28, "yes!");
-        clinicalDataMap.put("subject-id-1", subjectMap);
-        // update or insert
-        if (clinicalDataMap.containsKey("subject-id-1")) {
-            System.out.println("Do update...");
-            Map<Integer, Object> subjectMapUpdate = clinicalDataMap.get("subject-id-1");
-            subjectMapUpdate.put(6, "75");
-            // ...
-        } else
-            System.out.println("Do insert...");
     }
 
     /**
@@ -288,10 +270,10 @@ public class FileExporter {
             // This first data line is required by tranSMART.
             writeLine(columnsWriter, clinicalDataFileName + "\t\t1\tSUBJ_ID\t\t");
         }
-        writeLine(columnsWriter, clinicalDataFileName + "\t" + studyInfo.getNamePath() + "\t" +
-                currentColumnNumber + "\t" + studyInfo.getPreferredName() + "\t\t" );
         currentColumnNumber++;
         increasedColumnNumber = true;
+        writeLine(columnsWriter, clinicalDataFileName + "\t" + studyInfo.getNamePath() + "\t" +
+                currentColumnNumber + "\t" + studyInfo.getPreferredName() + "\t\t" );
         currentColumnId = studyInfo.getCfullname();
     }
 
@@ -315,30 +297,42 @@ public class FileExporter {
         }
         String value = String.valueOf(valueCounter);
         wordMap.put(currentColumnId + studyInfo.getCname(), value);
-        writeLine(wordMapWriter, clinicalDataFileName + "\t" + (currentColumnNumber - 1) + "\t" + valueCounter + "\t" + studyInfo.getCname());
+        writeLine(wordMapWriter, clinicalDataFileName + "\t" + currentColumnNumber + "\t" + valueCounter + "\t" + studyInfo.getCname());
     }
 
     /**
      * Write the clinical data to a tab-delimited text file.
-     *
      * @param clinicalDataInfo the clinical data to be written to the file
      */
     public void writeExportClinicalDataInfo(I2B2ClinicalDataInfo clinicalDataInfo) {
         String columnId = clinicalDataInfo.getConceptCd();
+
+        /**
+         * Mapping of column number to values for the current patient.
+         */
+        Map<String, String> patientData = new HashMap<>();
+
         String wordValue = clinicalDataInfo.getTvalChar();
         if (clinicalDataInfo.getNvalNum() != null) {
             wordValue = clinicalDataInfo.getNvalNum().toString();
         }
-        if (!clinicalDataInfo.getPatientNum().equals(currentPatientNumber)) {
-            writePatientData();
-            currentPatientNumber = clinicalDataInfo.getPatientNum();
+        currentPatientNumber = clinicalDataInfo.getPatientNum();
+
+        if (clinicalDataMap.containsKey(currentPatientNumber)) {
+            patientData = clinicalDataMap.get(currentPatientNumber);
+        } else {
+            patientIds.add(currentPatientNumber);
             patientData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, currentPatientNumber);  //problem when currentPatientNumber is longer than 20
+            clinicalDataMap.put(currentPatientNumber, patientData);
         }
+
         if (wordMap.get(columnId + wordValue) != null) {
             patientData.put(columnId, wordMap.get(columnId + wordValue));
         } else {
             patientData.put(columnId, wordValue); //fills clinical data with words from wordmap
         }
+
+        clinicalDataMap.put(currentPatientNumber, patientData);
 
         String className = clinicalDataInfo.getClass().getName();
         logger.trace("[I2B2ODMStudyHandler] " + className.substring(className.lastIndexOf('.') + 1) + ":");
@@ -348,7 +342,7 @@ public class FileExporter {
         logger.trace("");
     }
 
-    private void writePatientData() {
+    public void writePatientData() {
         if (writeClinicalDataHeaders) {
             StringBuilder headers = new StringBuilder();
             for (String columnHeader : columnHeaders) {
@@ -357,19 +351,24 @@ public class FileExporter {
                 headers.append(columnHeader);
             }
             writeLine(clinicalDataWriter, headers.toString());
-            writeClinicalDataHeaders = false;
+            writeClinicalDataHeaders = true;
         }
 
-        if (!patientData.isEmpty()) {
-            StringBuilder line = new StringBuilder();
-            for (String columnId : columnIds) {
-                if (line.length() > 0)
-                    line.append("\t");
-                if (patientData.containsKey(columnId))
-                    line.append(patientData.get(columnId));
+        if (!clinicalDataMap.isEmpty()) {
+
+            for (String patientId : patientIds) {
+                StringBuilder line = new StringBuilder();
+                Map<String, String> patientData = clinicalDataMap.get(patientId);
+                for (String columnId : columnIds) {
+                    if (line.length() > 0)
+                        line.append("\t");
+                    if (patientData.containsKey(columnId))
+                        line.append(patientData.get(columnId));
+                }
+                writeLine(clinicalDataWriter, line.toString());
             }
-            writeLine(clinicalDataWriter, line.toString());
-            patientData.clear();
+
+            //patientData.clear();
         }
     }
 
