@@ -55,7 +55,6 @@ public class I2B2ODMStudyHandlerClientTest
 		Assert.assertNotNull(exportFilePath);
         String userDefinedConversionFile = System.getProperty("userdefinedconversionfile");
 
-
         I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
 		
 		if (!odmXmlPath.equals("") && !exportFilePath.equals("")) {

@@ -37,40 +37,102 @@ import com.recomdata.i2b2.util.ODMUtil;
 public class I2B2ODMStudyHandler implements IConstants {
     private static final Log log = LogFactory.getLog(I2B2ODMStudyHandler.class);
 
+    /**
+     * The odm object that contains both the study metadata info and the clinical data info.
+     */
     private ODM odm = null;
 
+    /**
+     * The study metadata info that is either loaded to the database or written to tabular text files.
+     */
     private I2B2StudyInfo studyInfo = new I2B2StudyInfo();
+
+    /**
+     * The plain clinical data info that is either loaded to the database
+     * or written to a single tabular text file per study.
+     */
     private I2B2ClinicalDataInfo clinicalDataInfo = new I2B2ClinicalDataInfo();
 
+    /**
+     * The path of the export files, without a slash.
+     */
     private String exportFilePath = null;
+
+    /**
+     * True: load directly into i2b2 database tables by producing SQL.
+     * False: export tabular text files.
+     */
     private boolean exportToDatabase;
+
+    /**
+     * Map with keys: study names and values: fileExporter objects.
+     */
     private Map<String, FileExporter> fileExporters;
+
+    /**
+     * Recursive map with keys: metadataversion IDs (or keys) and values: MetaDataWithIncludes object.
+     */
     private Map<String, MetaDataWithIncludes> metaDataMap;
-    private MetaDataWithIncludes currentMetaData;
+
+    /**
+     * The study data access object for inserting the study metadata info in the database.
+     */
     private IStudyDao studyDao = null;
+
+    /**
+     * The clinical data access object for inserting the clinical data in the database.
+     */
     private IClinicalDataDao clinicalDataDao = null;
 
+    /**
+     * The current date.
+     */
     private Date currentDate = null;
+
+    /**
+     * Digest for shortening identifiers for loading to the database.
+     */
     private MessageDigest messageDigest = null;
+
+    /**
+     * Concept buffer for loading to the database.
+     */
 	private StringBuffer conceptBuffer = new StringBuffer("STUDY|");
+
+    /**
+     * MetaDataXML object as part of the study info. Not used for exporting to files.
+     */
     private MetaDataXML mdx = new MetaDataXML();
 
     /**
      * Constructor to create an ODM study handler object.
      *
+     * @throws NoSuchAlgorithmException if the message digest algorithm is not supported.
+     */
+    public I2B2ODMStudyHandler() throws NoSuchAlgorithmException {
+        this.fileExporters = new HashMap<>();
+        this.metaDataMap = new HashMap<>();
+
+        currentDate = Calendar.getInstance().getTime();
+		messageDigest = MessageDigest.getInstance("MD5");
+    }
+
+    /**
+     * Parse ODM and save data into i2b2 format.
+     *
      * @param odm Operational Data Model object
      * @param exportToDatabase whether to export to a database or to files.
-     * @param exportFilePath the path of the export file.
-     * @throws SQLException
-     * @throws NoSuchAlgorithmException
+     * @param exportFilePath the path of the export files.
+     * @throws JAXBException
+     * @throws ParseException
      */
-    public I2B2ODMStudyHandler(ODM odm, boolean exportToDatabase, String exportFilePath) throws SQLException,
-            NoSuchAlgorithmException, IOException {
+    public void processODM(ODM odm, boolean exportToDatabase, String exportFilePath)
+            throws SQLException, JAXBException, ParseException, IOException {
+        log.info("Start to parse ODM xml and save to i2b2");
+
         this.odm = odm;
         this.exportToDatabase = exportToDatabase;
         this.exportFilePath = exportFilePath;
-        this.fileExporters = new HashMap<>();
-        this.metaDataMap = new HashMap<>();
 
         if (exportToDatabase) {
             studyDao = new StudyDao();
@@ -80,20 +142,6 @@ public class I2B2ODMStudyHandler implements IConstants {
         studyInfo.setSourceSystemCd(odm.getSourceSystem());
         clinicalDataInfo.setSourcesystemCd(odm.getSourceSystem());
 
-        currentDate = Calendar.getInstance().getTime();
-		messageDigest = MessageDigest.getInstance("MD5");
-    }
-
-    /**
-     * Parse ODM and save data into i2b2 format.
-     *
-     * @throws JAXBException
-     * @throws ParseException
-     */
-    public void processODM() throws SQLException, JAXBException, ParseException, IOException {
-        log.info("Start to parse ODM xml and save to i2b2");
-
-        // build the call
         processODMStudy();
         processODMClinicalData();
     }
@@ -287,7 +335,7 @@ public class I2B2ODMStudyHandler implements IConstants {
                 metaDataWithIncludesList.add(metaDataMap.get(includedVersionId));
             }
         }
-        currentMetaData = new MetaDataWithIncludes(version, metaDataWithIncludesList);
+        MetaDataWithIncludes currentMetaData = new MetaDataWithIncludes(version, metaDataWithIncludesList);
         metaDataMap.put(getMetaDataKey(study), currentMetaData);
         MetaDataWithIncludes metaDataWithIncludes = new MetaDataWithIncludes(version, metaDataWithIncludesList);
 
@@ -300,6 +348,10 @@ public class I2B2ODMStudyHandler implements IConstants {
         }
     }
 
+    /**
+     * @param study the study for which the metadata key will be returned
+     * @return a unique identifier for the first metadata version of a study (assumes there is only 1 per study)
+     */
     private String getMetaDataKey(ODMcomplexTypeDefinitionStudy study) {
         return study.getOID() + "/" + study.getMetaDataVersion().get(0).getOID();
     }
@@ -672,8 +724,8 @@ public class I2B2ODMStudyHandler implements IConstants {
 
             byte[] digest = messageDigest.digest();
 
-            for (int i = 0; i < digest.length; i++) {
-                conceptBuffer.append(Integer.toHexString(0xFF & digest[i]));
+            for (byte digestByte : digest) {
+                conceptBuffer.append(Integer.toHexString(0xFF & digestByte));
             }
 
             conceptCode = conceptBuffer.toString();

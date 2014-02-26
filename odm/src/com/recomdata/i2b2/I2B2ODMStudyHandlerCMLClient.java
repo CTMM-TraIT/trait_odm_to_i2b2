@@ -34,18 +34,20 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * 
 	 * @param odmXmlPath the ODM file to process.
 	 * @param exportFilePath the path of the export file.
+     * todo: parameter userDefinedConversionFile is no longer needed?
 	 * @throws Exception
 	 */
-	public void loadODMFile2I2B2(String odmXmlPath, String exportFilePath, String userDefinedConversionFile) throws Exception {
-		File xml = new File(odmXmlPath);
+	@SuppressWarnings("UnusedParameters")
+    public void loadODMFile2I2B2(String odmXmlPath, String exportFilePath, String userDefinedConversionFile) throws Exception {
+		File xmlFile = new File(odmXmlPath);
 
-		if (!xml.exists()) {
-			throw new FileNotFoundException(xml.getPath());
+		if (!xmlFile.exists()) {
+			throw new FileNotFoundException(xmlFile.getPath());
 		}
 
 		// Load and parse ODM xml here by jaxb
 		ODMLoader odmLoader = new ODMLoader();
-		ODM odm = odmLoader.unmarshall(xml);
+		ODM odm = odmLoader.unmarshall(xmlFile);
 
 		if (odm == null || odm.getStudy() == null || odm.getStudy().size() == 0) {
 			// TODO: Define more specific exception
@@ -53,8 +55,8 @@ public class I2B2ODMStudyHandlerCMLClient {
 		}
 
 		 // parse ODM XML and save as i2b2 metadata and demodata records
-		I2B2ODMStudyHandler odmHandler = new I2B2ODMStudyHandler(odm, EXPORT_TO_DATABASE, exportFilePath);
-		odmHandler.processODM();
+		I2B2ODMStudyHandler odmHandler = new I2B2ODMStudyHandler();
+		odmHandler.processODM(odm, EXPORT_TO_DATABASE, exportFilePath);
 
 		if (odmHandler.exportedToFile()) {
 			odmHandler.closeExportWriters();
