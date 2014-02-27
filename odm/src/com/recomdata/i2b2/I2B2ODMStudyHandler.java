@@ -146,6 +146,18 @@ public class I2B2ODMStudyHandler implements IConstants {
         processODMClinicalData();
     }
 
+    public boolean exportedToFile() {
+        return !exportToDatabase;
+    }
+
+    public void closeExportWriters() {
+        if (!exportToDatabase) {
+            for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
+                fileExporters.get(study.getGlobalVariables().getStudyName().getValue()).close();
+            }
+        }
+    }
+
     /*
      * This method takes ODM XML io.File obj as input and parsed by JAXB API and then traverses through ODM tree object
      * and save data into i2b2 metadata database in i2b2 data format.
@@ -289,8 +301,8 @@ public class I2B2ODMStudyHandler implements IConstants {
      * @throws JAXBException
      */
     private void saveStudy(ODMcomplexTypeDefinitionStudy study) throws SQLException, JAXBException {
-        // Need to include source system in path to avoid conflicts between servers
-        String studyKey = odm.getSourceSystem() + ":" + study.getOID();
+        final String studyOID = study.getOID();
+        String studyKey = odm.getSourceSystem() + ":" + studyOID;
 
         String studyPath = "\\" + "STUDY" + "\\" + studyKey + "\\";
         String studyName = study.getGlobalVariables().getStudyName().getValue();
@@ -335,9 +347,9 @@ public class I2B2ODMStudyHandler implements IConstants {
                 metaDataWithIncludesList.add(metaDataMap.get(includedVersionId));
             }
         }
-        MetaDataWithIncludes currentMetaData = new MetaDataWithIncludes(version, metaDataWithIncludesList);
+        MetaDataWithIncludes currentMetaData = new MetaDataWithIncludes(version, studyOID, metaDataWithIncludesList);
         metaDataMap.put(getMetaDataKey(study), currentMetaData);
-        MetaDataWithIncludes metaDataWithIncludes = new MetaDataWithIncludes(version, metaDataWithIncludesList);
+        MetaDataWithIncludes metaDataWithIncludes = new MetaDataWithIncludes(version, studyOID, metaDataWithIncludesList);
 
         if (version.getProtocol().getStudyEventRef() != null) {
             for (ODMcomplexTypeDefinitionStudyEventRef studyEventRef : version.getProtocol().getStudyEventRef()) {
@@ -361,8 +373,11 @@ public class I2B2ODMStudyHandler implements IConstants {
      *
      * @throws JAXBException
      */
-    private void saveEvent(ODMcomplexTypeDefinitionStudy study, MetaDataWithIncludes metaDataWithIncludes,
-                           ODMcomplexTypeDefinitionStudyEventDef studyEventDef, String studyPath, String studyNamePath,
+    private void saveEvent(ODMcomplexTypeDefinitionStudy study,
+                           MetaDataWithIncludes metaDataWithIncludes,
+                           ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                           String studyPath,
+                           String studyNamePath,
                            String studyToolTip) throws SQLException,
             JAXBException {
         String eventPath = studyPath + studyEventDef.getOID() + "\\";   //(studyEventDef != null ? studyEventDef.getOID() : "")
@@ -407,8 +422,11 @@ public class I2B2ODMStudyHandler implements IConstants {
      * @throws JAXBException
      */
     private void saveForm(ODMcomplexTypeDefinitionStudy study,
-                          MetaDataWithIncludes metaDataWithIncludes, ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
-                          ODMcomplexTypeDefinitionFormDef formDef, String eventPath, String eventNamePath,
+                          MetaDataWithIncludes metaDataWithIncludes,
+                          ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                          ODMcomplexTypeDefinitionFormDef formDef,
+                          String eventPath,
+                          String eventNamePath,
                           String eventToolTip) throws SQLException, JAXBException {
         String formPath = eventPath + formDef.getOID() + "\\";
         String formName = getTranslatedDescription(formDef.getDescription(), "en", formDef.getName());
@@ -696,7 +714,7 @@ public class I2B2ODMStudyHandler implements IConstants {
      * @param itemOID  the item identifier.
      * @return the concept code for this item.
      */
-    private String generateConceptCode(String studyOID, String studyEventOID,
+    public String generateConceptCode(String studyOID, String studyEventOID,
                                        String formOID, String itemOID, String value) {
         String conceptCode;
         String studyKey = odm.getSourceSystem() + ":" + studyOID;
@@ -785,16 +803,5 @@ public class I2B2ODMStudyHandler implements IConstants {
 
         return metadataXml;
     }
-
-    public boolean exportedToFile() {
-        return !exportToDatabase;
-    }
-
-    public void closeExportWriters() {
-        if (!exportToDatabase) {
-            for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
-                fileExporters.get(study.getGlobalVariables().getStudyName().getValue()).close();
-            }
-        }
-    }
 }
+

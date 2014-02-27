@@ -12,12 +12,23 @@ import java.util.List;
  */
 public class MetaDataWithIncludes {
     private ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion;
+    private String studyOID;
     private List<MetaDataWithIncludes> metaDataIncludes;
 
     public MetaDataWithIncludes(final ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
+                                String studyOID,
                                 final List<MetaDataWithIncludes> metaDataIncludes) {
         this.metaDataVersion = metaDataVersion;
+        this.studyOID = studyOID;
         this.metaDataIncludes = metaDataIncludes;
+    }
+
+    public String getDefiningStudyOID () {
+        String definingStudyOID = studyOID;
+        if (metaDataIncludes.size() > 0) {
+            definingStudyOID = metaDataIncludes.get(metaDataIncludes.size()-1).studyOID;
+        }
+        return definingStudyOID;
     }
 
     public ODMcomplexTypeDefinitionStudyEventDef getStudyEventDef(String studyEventOID) {
