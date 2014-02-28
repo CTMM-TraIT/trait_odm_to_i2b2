@@ -265,8 +265,6 @@ public class FileExporter {
 
         final String path = String.format("%s+%s\t", studyInfo.getNamePath(), studyInfo.getPreferredName());
         writeLine(conceptMapWriter, path + path);
-        columnHeaders.add(studyName + "_" + studyInfo.getPreferredName());
-        columnIds.add(studyInfo.getCfullname());
     }
 
     /**
@@ -288,6 +286,8 @@ public class FileExporter {
         writeLine(columnsWriter, clinicalDataFileName + "\t" + studyInfo.getNamePath() + "\t"
                 + currentColumnNumber + "\t" + studyInfo.getPreferredName() + "\t\t");
         currentColumnId = studyInfo.getCfullname();
+        columnHeaders.add(studyName + "_" + studyInfo.getPreferredName());
+        columnIds.add(studyInfo.getCfullname());
     }
 
     /**
