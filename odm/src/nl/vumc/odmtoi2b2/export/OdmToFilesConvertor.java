@@ -5,9 +5,13 @@
 
 package nl.vumc.odmtoi2b2.export;
 
+import com.recomdata.i2b2.util.ODMUtil;
 import com.recomdata.odm.MetaDataWithIncludes;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.cdisk.odm.jaxb.*;
 
+import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -21,8 +25,9 @@ import java.util.Map;
  * to a file exporter (one for each study), which writes the data to a set of four files.
  */
 public class OdmToFilesConvertor {
-
+    private static final Log log = LogFactory.getLog(OdmToFilesConvertor.class);
     private ODM odm;
+    private ODMcomplexTypeDefinitionStudy study;
     private String exportFilePath;
     private String studyName;
     private String studyOID;
@@ -37,7 +42,7 @@ public class OdmToFilesConvertor {
 
     }
 
-    public void processODM(ODM odm, String exportFilePath) throws IOException {
+    public void processODM(ODM odm, String exportFilePath) throws IOException, JAXBException {
         this.odm = odm;
         this.exportFilePath = exportFilePath;
 
@@ -47,29 +52,28 @@ public class OdmToFilesConvertor {
 
     public void closeExportWriters() {
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
-            fileExporters.get(study.getGlobalVariables().getStudyName().getValue()).close();
+            final String studyName = study.getGlobalVariables().getStudyName().getValue();
+            fileExporters.get(studyName).close();
         }
     }
 
 
-    private void processODMStudy() throws IOException {
+    private void processODMStudy() throws IOException, JAXBException {
         // Need to traverse through the study metadata to:
         // 1) Lookup all metadata definition values and paths for each tree leaf.
         // 2) Pass the metadata to the corresponding file exporter.
 
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
-            saveStudy(study);
+            this.study = study;
+            this.studyName = study.getGlobalVariables().getStudyName().getValue();
+            this.studyOID = study.getOID();
+
+            saveStudy();
         }
 
     }
 
-    private String getMetaDataKey(ODMcomplexTypeDefinitionStudy study) {
-        return study.getOID() + "/" + study.getMetaDataVersion().get(0).getOID();
-    }
-
-    private void saveStudy(ODMcomplexTypeDefinitionStudy study) throws IOException {
-        studyName = study.getGlobalVariables().getStudyName().getValue();
-        studyOID = study.getOID();
+    private void saveStudy() throws IOException, JAXBException {
 
         ODMcomplexTypeDefinitionMetaDataVersion metaData = study.getMetaDataVersion().get(0);
         ODMcomplexTypeDefinitionInclude includedMetaData = metaData.getInclude();
@@ -93,14 +97,17 @@ public class OdmToFilesConvertor {
             for (ODMcomplexTypeDefinitionStudyEventRef studyEventRef : metaData.getProtocol().getStudyEventRef()) {
                 ODMcomplexTypeDefinitionStudyEventDef studyEventDef =
                         metaDataWithIncludes.getStudyEventDef(studyEventRef.getStudyEventOID());
+
                 saveEvent(studyEventDef);
             }
         }
-
-
     }
 
-    private void saveEvent(ODMcomplexTypeDefinitionStudyEventDef studyEventDef) {
+    private String getMetaDataKey(ODMcomplexTypeDefinitionStudy study) {
+        return study.getOID() + "/" + study.getMetaDataVersion().get(0).getOID();
+    }
+
+    private void saveEvent(ODMcomplexTypeDefinitionStudyEventDef studyEventDef) throws JAXBException {
         oidPath = studyOID + "\\" + studyEventDef.getOID();   //(studyEventDef != null ? studyEventDef.getOID() : "")
         namePath = studyName + "+" + studyEventDef.getName();
 
@@ -112,11 +119,9 @@ public class OdmToFilesConvertor {
                 saveForm(formDef);
             }
         }
-
-
     }
 
-    private void saveForm(ODMcomplexTypeDefinitionFormDef formDef) {
+    private void saveForm(ODMcomplexTypeDefinitionFormDef formDef) throws JAXBException {
         oidPath += "\\" + formDef.getOID();
         namePath += "+" + getTranslatedDescription(formDef.getDescription(), "en", formDef.getName());
 
@@ -130,7 +135,7 @@ public class OdmToFilesConvertor {
         }
     }
 
-    private void saveItemGroup(ODMcomplexTypeDefinitionItemGroupDef itemGroupDef) {
+    private void saveItemGroup(ODMcomplexTypeDefinitionItemGroupDef itemGroupDef) throws JAXBException {
         oidPath += "\\" + itemGroupDef.getOID();
         namePath += "+" + getTranslatedDescription(itemGroupDef.getDescription(), "en", itemGroupDef.getName());
 
@@ -143,18 +148,27 @@ public class OdmToFilesConvertor {
         }
     }
 
-    private void saveItem(ODMcomplexTypeDefinitionItemDef itemDef) {
+    private void saveItem(ODMcomplexTypeDefinitionItemDef itemDef) throws JAXBException {
         String itemName = getTranslatedDescription(itemDef.getDescription(), "en", itemDef.getName());
         String questionValue = getQuestionValue(itemDef);
         String preferredItemName = questionValue != null ? questionValue : itemName;
         oidPath += "\\" + itemDef.getOID();
 
-//      fileExporters.get(studyName).writeExportConceptMap(namePath, preferredItemName);
-//      fileExporters.get(studyName).writeExportColumns(namePath, preferredItemName, oidPath);
+//      fileExporters.get(studyName).writeExportConceptMap(namePath, preferredItemName);  //TODO: uncomment
+//      fileExporters.get(studyName).writeExportColumns(namePath, preferredItemName, oidPath); //TODO: uncomment
 
         namePath += "+" + preferredItemName;
 
+        if (itemDef.getCodeListRef() != null) {
+            ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(study, itemDef.getCodeListRef().getCodeListOID());
 
+            if (codeList != null) {
+                for (ODMcomplexTypeDefinitionCodeListItem codeListItem : codeList.getCodeListItem()) {
+
+                    saveCodeListItem(codeListItem);
+                }
+            }
+        }
     }
 
     private String getQuestionValue(ODMcomplexTypeDefinitionItemDef itemDef) {
@@ -168,9 +182,10 @@ public class OdmToFilesConvertor {
                 : null;
     }
 
+    private void saveCodeListItem(ODMcomplexTypeDefinitionCodeListItem codeListItem) {
+        String DataValue = ODMUtil.getTranslatedValue(codeListItem, "en");
+//      fileExporters.get(studyName).writeExportWordMap(DataValue);  //TODO: uncomment
 
-
-    private void processODMClinicalData() {
     }
 
     private String getTranslatedDescription(ODMcomplexTypeDefinitionDescription description, String lang,
@@ -183,6 +198,37 @@ public class OdmToFilesConvertor {
             }
         }
         return defaultValue;
+    }
+
+    private void processODMClinicalData() {
+        for (ODMcomplexTypeDefinitionClinicalData clinicalData : odm.getClinicalData()) {
+            if (clinicalData.getSubjectData() != null) {
+                studyOID = clinicalData.getStudyOID();
+                this.study = ODMUtil.getStudy(odm, studyOID);
+                if (study != null) {
+
+                    saveStudyClinicalData(clinicalData);
+                } else {
+                    log.error("ODM does not contain study metadata for study OID " + studyOID);
+                }
+            }
+        }
+    }
+
+    private void saveStudyClinicalData(ODMcomplexTypeDefinitionClinicalData clinicalData) {
+        log.info("Write Clinical data for study OID " + studyOID + " to clinical data file...");
+
+        for (ODMcomplexTypeDefinitionSubjectData subjectData : clinicalData.getSubjectData()) {
+            if (subjectData.getStudyEventData() != null) {
+
+                saveEventData(subjectData);
+            }
+        }
+
+
+    }
+
+    private void saveEventData(ODMcomplexTypeDefinitionSubjectData subjectData) {
     }
 
 
