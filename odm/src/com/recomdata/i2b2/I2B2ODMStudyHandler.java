@@ -524,7 +524,7 @@ public class I2B2ODMStudyHandler implements IConstants {
             studyDao.insertMetadata(studyInfo);
         } else {
             fileExporters.get(studyName).writeExportConceptMap(studyInfo);
-            fileExporters.get(studyName).writeExportColumns(studyInfo);
+//            fileExporters.get(studyName).writeExportColumns(studyInfo);
         }
 
         if (itemDef.getCodeListRef() != null) {

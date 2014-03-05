@@ -10,6 +10,7 @@ import com.recomdata.i2b2.entity.I2B2ClinicalDataInfo;
 import com.recomdata.i2b2.entity.I2B2StudyInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemDef;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -272,9 +273,11 @@ public class FileExporter {
      * user's input concept map without the last node, then the column number and then the last node of the path.
      * todo: update comment above (user's input concept map: in manual mode; empty columns at the end)
      *
-     * @param studyInfo the metadata study information
+     * @param namePath
+     * @param preferredItemName
+     * @param oidPath
      */
-    public void writeExportColumns(final I2B2StudyInfo studyInfo) {
+    public void writeExportColumns(String namePath, String preferredItemName, String oidPath) {
         if (currentColumnNumber == 1) {
             writeLine(columnsWriter, "Filename\tCategory Code\tColumn Number\tData Label\tData Label Source\t"
                     + "Control Vocab Cd");
@@ -283,11 +286,11 @@ public class FileExporter {
         }
         currentColumnNumber++;
         increasedColumnNumber = true;
-        writeLine(columnsWriter, clinicalDataFileName + "\t" + studyInfo.getNamePath() + "\t"
-                + currentColumnNumber + "\t" + studyInfo.getPreferredName() + "\t\t");
-        currentColumnId = studyInfo.getCfullname();
-        columnHeaders.add(studyName + "_" + studyInfo.getPreferredName());
-        columnIds.add(studyInfo.getCfullname());
+        writeLine(columnsWriter, clinicalDataFileName + "\t" + namePath + "\t"
+                + currentColumnNumber + "\t" + preferredItemName + "\t\t");
+        currentColumnId = oidPath;
+        columnHeaders.add(studyName + "_" + preferredItemName);
+        columnIds.add(oidPath);
     }
 
     /**

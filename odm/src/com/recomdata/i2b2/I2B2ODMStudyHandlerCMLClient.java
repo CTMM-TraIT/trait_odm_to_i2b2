@@ -10,6 +10,7 @@ package com.recomdata.i2b2;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import nl.vumc.odmtoi2b2.export.OdmToFilesConvertor;
 import org.cdisk.odm.jaxb.ODM;
 
 import com.recomdata.config.Config;
@@ -55,13 +56,15 @@ public class I2B2ODMStudyHandlerCMLClient {
 		}
 
 		 // parse ODM XML and save as i2b2 metadata and demodata records
-		I2B2ODMStudyHandler odmHandler = new I2B2ODMStudyHandler();
-		odmHandler.processODM(odm, EXPORT_TO_DATABASE, exportFilePath);
-
-		if (odmHandler.exportedToFile()) {
-			odmHandler.closeExportWriters();
-		}
-	}
+        if (EXPORT_TO_DATABASE) {
+            I2B2ODMStudyHandler odmHandler = new I2B2ODMStudyHandler();
+            odmHandler.processODM(odm, EXPORT_TO_DATABASE, exportFilePath);
+        } else {
+            OdmToFilesConvertor odmHandler = new OdmToFilesConvertor();
+            odmHandler.processODM(odm, exportFilePath);
+            odmHandler.closeExportWriters();
+        }
+    }
 
 	/**
 	 * main method for command-line user
