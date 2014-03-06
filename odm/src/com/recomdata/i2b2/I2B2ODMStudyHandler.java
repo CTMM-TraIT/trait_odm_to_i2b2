@@ -522,10 +522,11 @@ public class I2B2ODMStudyHandler implements IConstants {
         // insert level 4 data
         if (exportToDatabase) {
             studyDao.insertMetadata(studyInfo);
-        } else {
-            fileExporters.get(studyName).writeExportConceptMap(studyInfo);
-//            fileExporters.get(studyName).writeExportColumns(studyInfo);
         }
+//        else {
+//            fileExporters.get(studyName).writeExportConceptMap(studyInfo);
+//            fileExporters.get(studyName).writeExportColumns(studyInfo);
+//        }
 
         if (itemDef.getCodeListRef() != null) {
             ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(study, itemDef.getCodeListRef().getCodeListOID());
@@ -591,9 +592,10 @@ public class I2B2ODMStudyHandler implements IConstants {
 
         if (exportToDatabase) {
             studyDao.insertMetadata(studyInfo);
-        } else {
-            fileExporters.get(studyName).writeExportWordMap(studyInfo);
         }
+//        else {
+//            fileExporters.get(studyName).writeExportWordMap(studyInfo);
+//        }
     }
 
     private void saveItemData(
@@ -672,9 +674,10 @@ public class I2B2ODMStudyHandler implements IConstants {
             log.info("clinicalDataInfo: " + clinicalDataInfo);
             if (exportToDatabase) {
                 clinicalDataDao.insertObservation(clinicalDataInfo);
-            } else {
-                fileExporters.get(studyName).writeExportClinicalDataInfo(clinicalDataInfo);
             }
+//            else {
+//                fileExporters.get(studyName).writeExportClinicalDataInfo(clinicalDataInfo);
+//            }
         } catch (SQLException e) {
             String sError = "Error inserting observation_fact record.";
             sError += " study: " + study.getOID();

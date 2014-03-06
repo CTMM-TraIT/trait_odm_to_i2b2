@@ -16,6 +16,7 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -256,15 +257,16 @@ public class FileExporter {
      * appear in i2b2, the second column is the original tree structure from the ODM. Concepts are separated
      * by + symbols.
      *
-     * @param studyInfo the metadata study information
+     * @param namePath
+     * @param preferredItemName
      */
-    public void writeExportConceptMap(final I2B2StudyInfo studyInfo) {
+    public void writeExportConceptMap(String namePath, String preferredItemName) {
         if (writeConceptMapHeaders) {
             writeLine(conceptMapWriter, "tranSMART_path\tEDC_path\tControl Vocab Cd");
             writeConceptMapHeaders = false;
         }
 
-        final String path = String.format("%s+%s\t", studyInfo.getNamePath(), studyInfo.getPreferredName());
+        final String path = String.format("%s+%s\t", namePath, preferredItemName);
         writeLine(conceptMapWriter, path + path);
     }
 
@@ -297,10 +299,10 @@ public class FileExporter {
      * Write the word mapping file: first the clinical data file name, then the column number, then the data value,
      * and then the mapped word.
      *
-     * @param studyInfo the metadata study information
+     * @param dataValue
      */
 
-    public void writeExportWordMap(final I2B2StudyInfo studyInfo) {
+    public void writeExportWordMap(String dataValue) {
         if (writeWordMapHeaders) {
             writeLine(wordMapWriter, "Filename\tColumn Number\tOriginal Data Value\tNew Data Values");
             writeWordMapHeaders = false;
@@ -312,28 +314,31 @@ public class FileExporter {
             valueCounter++;
         }
         final String value = String.valueOf(valueCounter);
-        wordMap.put(currentColumnId + studyInfo.getCname(), value);
-        writeLine(wordMapWriter, clinicalDataFileName + "\t" + currentColumnNumber + "\t" + valueCounter + "\t" + studyInfo.getCname());
+        wordMap.put(currentColumnId + dataValue, value);
+        writeLine(wordMapWriter, clinicalDataFileName + "\t" + currentColumnNumber + "\t" + valueCounter + "\t" + dataValue);
     }
 
     /**
      * Write the clinical data to a tab-delimited text file.
      *
-     * @param clinicalDataInfo the clinical data to be written to the file
+     * @param oidPath
+     * @param tvalChar
+     * @param nvalNum
+     * @param patientNum
      */
-    public void writeExportClinicalDataInfo(final I2B2ClinicalDataInfo clinicalDataInfo) {
-        final String columnId = clinicalDataInfo.getConceptCd();
+    public void writeExportClinicalDataInfo(String oidPath, String tvalChar, BigDecimal nvalNum, String patientNum) {
+        final String columnId = oidPath;
 
         /**
          * Mapping of column ID to values for the current patient.
          */
         Map<String, String> patientData = new HashMap<>();
 
-        String wordValue = clinicalDataInfo.getTvalChar();
-        if (clinicalDataInfo.getNvalNum() != null) {
-            wordValue = clinicalDataInfo.getNvalNum().toString();
+        String wordValue = tvalChar;
+        if (nvalNum != null) {
+            wordValue = nvalNum.toString();
         }
-        currentPatientNumber = clinicalDataInfo.getPatientNum();
+        currentPatientNumber = patientNum;
 
         if (clinicalDataMap.containsKey(currentPatientNumber)) {
             patientData = clinicalDataMap.get(currentPatientNumber);
@@ -353,12 +358,6 @@ public class FileExporter {
 
         clinicalDataMap.put(currentPatientNumber, patientData);
 
-        final String className = clinicalDataInfo.getClass().getName();
-        logger.trace("[I2B2ODMStudyHandler] " + className.substring(className.lastIndexOf('.') + 1) + ":");
-        logger.trace("+ PatientNum = " + clinicalDataInfo.getPatientNum());
-        logger.trace("+ ConceptCd  = " + clinicalDataInfo.getConceptCd());
-        logger.trace("+ TValChar   = " + clinicalDataInfo.getTvalChar());
-        logger.trace("");
     }
 
     public void writePatientData() {

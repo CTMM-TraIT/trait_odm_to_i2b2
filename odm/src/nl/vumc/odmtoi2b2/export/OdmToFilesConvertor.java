@@ -28,12 +28,7 @@ import java.util.Map;
 public class OdmToFilesConvertor {
     private static final Log log = LogFactory.getLog(OdmToFilesConvertor.class);
     private ODM odm;
-    private ODMcomplexTypeDefinitionStudy study;
     private String exportFilePath;
-    private String studyName;
-    private String studyOID;
-    private String oidPath;
-    private String namePath;
     MetaDataWithIncludes metaDataWithIncludes;
     private Map<String, FileExporter> fileExporters;
     private Map<String, MetaDataWithIncludes> metaDataMap;
@@ -73,7 +68,8 @@ public class OdmToFilesConvertor {
     }
 
     private void saveStudy(ODMcomplexTypeDefinitionStudy study) throws IOException, JAXBException {
-        String studyName = study.getGlobalVariables().getStudyName().getValue();
+        final String studyName = study.getGlobalVariables().getStudyName().getValue();
+        String studyOID = study.getOID();
         ODMcomplexTypeDefinitionMetaDataVersion metaData = study.getMetaDataVersion().get(0);
         ODMcomplexTypeDefinitionInclude includedMetaData = metaData.getInclude();
         List<MetaDataWithIncludes> metaDataWithIncludesList = new ArrayList<>();
@@ -168,13 +164,10 @@ public class OdmToFilesConvertor {
         String oidPath = study.getOID() + "\\"
                 + studyEventDef.getOID() + "\\"
                 + formDef.getOID() + "\\"
-                + itemGroupDef + "\\"
-                + itemDef.getOID();
+                + itemDef.getOID() + "\\";
 
-//      fileExporters.get(studyName).writeExportConceptMap(namePath, preferredItemName);  //TODO: uncomment
-        fileExporters.get(studyName).writeExportColumns(namePath, preferredItemName, oidPath); //TODO: uncomment
-
-//        namePath += "+" + preferredItemName;              //TODO: delete these lines
+        fileExporters.get(studyName).writeExportConceptMap(namePath, preferredItemName);
+        fileExporters.get(studyName).writeExportColumns(namePath, preferredItemName, oidPath);
 
         if (itemDef.getCodeListRef() != null) {
             ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(study, itemDef.getCodeListRef().getCodeListOID());
@@ -182,7 +175,7 @@ public class OdmToFilesConvertor {
             if (codeList != null) {
                 for (ODMcomplexTypeDefinitionCodeListItem codeListItem : codeList.getCodeListItem()) {
 
-                    saveCodeListItem(codeListItem);
+                    saveCodeListItem(study, codeListItem);
                 }
             }
         }
@@ -199,9 +192,11 @@ public class OdmToFilesConvertor {
                 : null;
     }
 
-    private void saveCodeListItem(ODMcomplexTypeDefinitionCodeListItem codeListItem) {
+    private void saveCodeListItem(ODMcomplexTypeDefinitionStudy study,
+                                  ODMcomplexTypeDefinitionCodeListItem codeListItem) {
+        String studyName = study.getGlobalVariables().getStudyName().getValue();
         String DataValue = ODMUtil.getTranslatedValue(codeListItem, "en");
-//      fileExporters.get(studyName).writeExportWordMap(DataValue);  //TODO: uncomment
+        fileExporters.get(studyName).writeExportWordMap(DataValue);
 
     }
 
@@ -225,11 +220,11 @@ public class OdmToFilesConvertor {
     private void processODMClinicalData() {
         for (ODMcomplexTypeDefinitionClinicalData clinicalData : odm.getClinicalData()) {
             if (clinicalData.getSubjectData() != null) {
-                studyOID = clinicalData.getStudyOID();
-                this.study = ODMUtil.getStudy(odm, studyOID);
+                String studyOID = clinicalData.getStudyOID();
+                ODMcomplexTypeDefinitionStudy study = ODMUtil.getStudy(odm, studyOID);
                 if (study != null) {
 
-                    saveClinicalData(clinicalData);
+                    saveClinicalData(study, clinicalData);
                 } else {
                     log.error("ODM does not contain study metadata for study OID " + studyOID);
                 }
@@ -237,65 +232,88 @@ public class OdmToFilesConvertor {
         }
     }
 
-    private void saveClinicalData(ODMcomplexTypeDefinitionClinicalData clinicalData) {
+    private void saveClinicalData(ODMcomplexTypeDefinitionStudy study,
+                                  ODMcomplexTypeDefinitionClinicalData clinicalData) {
+        String studyOID = clinicalData.getStudyOID();
         log.info("Write Clinical data for study OID " + studyOID + " to clinical data file...");
 
         for (ODMcomplexTypeDefinitionSubjectData subjectData : clinicalData.getSubjectData()) {
             if (subjectData.getStudyEventData() != null) {
 
-                saveSubjectData(subjectData);
+                saveSubjectData(study, clinicalData, subjectData);
             }
         }
 
 
     }
 
-    private void saveSubjectData(ODMcomplexTypeDefinitionSubjectData subjectData) {
-        patientNum = subjectData.getSubjectKey();
+    private void saveSubjectData(ODMcomplexTypeDefinitionStudy study,
+                                 ODMcomplexTypeDefinitionClinicalData clinicalData,
+                                 ODMcomplexTypeDefinitionSubjectData subjectData) {
         for (ODMcomplexTypeDefinitionStudyEventData eventData : subjectData.getStudyEventData()) {
             if (eventData.getFormData() != null) {
 
-                saveEventData(eventData);
+                saveEventData(study, clinicalData, subjectData, eventData);
             }
         }
     }
 
-    private void saveEventData(ODMcomplexTypeDefinitionStudyEventData eventData) {
-        oidPath = studyOID + "\\" + eventData.getStudyEventOID();
+    private void saveEventData(ODMcomplexTypeDefinitionStudy study,
+                               ODMcomplexTypeDefinitionClinicalData clinicalData,
+                               ODMcomplexTypeDefinitionSubjectData subjectData,
+                               ODMcomplexTypeDefinitionStudyEventData eventData) {
         for (ODMcomplexTypeDefinitionFormData formData : eventData.getFormData()) {
             if (formData.getItemGroupData() != null) {
 
-                saveFormData(formData);
+                saveFormData(study, clinicalData, subjectData, eventData, formData);
             }
         }
     }
 
-    private void saveFormData(ODMcomplexTypeDefinitionFormData formData) {
-        oidPath += "\\" + formData.getFormOID();
+    private void saveFormData(ODMcomplexTypeDefinitionStudy study,
+                              ODMcomplexTypeDefinitionClinicalData clinicalData,
+                              ODMcomplexTypeDefinitionSubjectData subjectData,
+                              ODMcomplexTypeDefinitionStudyEventData eventData,
+                              ODMcomplexTypeDefinitionFormData formData) {
         for (ODMcomplexTypeDefinitionItemGroupData itemGroupData : formData.getItemGroupData()) {
             if (itemGroupData.getItemDataGroup() != null) {
 
-                saveItemGroupData(itemGroupData);
+                saveItemGroupData(study, clinicalData, subjectData, eventData, formData, itemGroupData);
             }
         }
     }
 
-    private void saveItemGroupData(ODMcomplexTypeDefinitionItemGroupData itemGroupData) {
-        oidPath += "\\" + itemGroupData.getItemGroupOID();
+    private void saveItemGroupData(ODMcomplexTypeDefinitionStudy study,
+                                   ODMcomplexTypeDefinitionClinicalData clinicalData,
+                                   ODMcomplexTypeDefinitionSubjectData subjectData,
+                                   ODMcomplexTypeDefinitionStudyEventData eventData,
+                                   ODMcomplexTypeDefinitionFormData formData,
+                                   ODMcomplexTypeDefinitionItemGroupData itemGroupData) {
         for (ODMcomplexTypeDefinitionItemData itemData : itemGroupData.getItemDataGroup()) {
             if (itemData.getValue() != null) {
-                saveItemData(itemData);
+                saveItemData(study, clinicalData, subjectData, eventData, formData, itemGroupData, itemData);
             }
         }
     }
 
-    private void saveItemData(ODMcomplexTypeDefinitionItemData itemData) {
-        oidPath += "\\" + itemData.getItemOID();
+    private void saveItemData(ODMcomplexTypeDefinitionStudy study,
+                              ODMcomplexTypeDefinitionClinicalData clinicalData,
+                              ODMcomplexTypeDefinitionSubjectData subjectData,
+                              ODMcomplexTypeDefinitionStudyEventData eventData,
+                              ODMcomplexTypeDefinitionFormData formData,
+                              ODMcomplexTypeDefinitionItemGroupData itemGroupData,
+                              ODMcomplexTypeDefinitionItemData itemData) {
+        String studyName = study.getGlobalVariables().getStudyName().getValue();
+        String oidPath = clinicalData.getStudyOID() + "\\"
+                + eventData.getStudyEventOID() + "\\"
+                + formData.getFormOID() + "\\"
+                + itemData.getItemOID() + "\\";
         String itemValue = itemData.getValue();
 //      ODMcomplexTypeDefinitionItemDef item = ODMUtil.getItem(study, itemData.getItemOID());
         ODMcomplexTypeDefinitionItemDef itemDef = getMetaData(study).getItemDef(itemData.getItemOID());
-        BigDecimal nvalNum;
         String tvalChar;
+        BigDecimal nvalNum;
+        String patientNum = subjectData.getSubjectKey();
 
         if (itemDef.getCodeListRef() != null) {
             nvalNum = null;
@@ -317,7 +335,7 @@ public class OdmToFilesConvertor {
             nvalNum = null;
         }
 
-//        fileExporters.get(studyName).writeExportClinicalDataInfo(oidPath, tvalChar, nvalNum, patientNum); //TODO: uncomment
+        fileExporters.get(studyName).writeExportClinicalDataInfo(oidPath, tvalChar, nvalNum, patientNum); //TODO: uncomment
 
 
     }
