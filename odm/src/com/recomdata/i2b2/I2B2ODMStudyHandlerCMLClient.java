@@ -10,7 +10,7 @@ package com.recomdata.i2b2;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-import nl.vumc.odmtoi2b2.export.OdmToFilesConvertor;
+import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 import org.cdisk.odm.jaxb.ODM;
 
 import com.recomdata.config.Config;
@@ -57,10 +57,10 @@ public class I2B2ODMStudyHandlerCMLClient {
 
 		 // parse ODM XML and save as i2b2 metadata and demodata records
         if (EXPORT_TO_DATABASE) {
-            I2B2ODMStudyHandler odmHandler = new I2B2ODMStudyHandler();
-            odmHandler.processODM(odm, EXPORT_TO_DATABASE, exportFilePath);
+            I2B2ODMStudyHandler odmHandler = new I2B2ODMStudyHandler(odm);
+            odmHandler.processODM();
         } else {
-            OdmToFilesConvertor odmHandler = new OdmToFilesConvertor();
+            OdmToFilesConverter odmHandler = new OdmToFilesConverter();
             odmHandler.processODM(odm, exportFilePath);
             odmHandler.closeExportWriters();
         }
@@ -90,7 +90,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 				I2B2DBUtils.init(config);
 			}
 
-			System.out.println("Loading ODM file " + odmFilePath + " to i2b2...");
+			System.out.println("Parsing ODM file " + odmFilePath);
 
 			I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
 			client.loadODMFile2I2B2(odmFilePath, exportFilePath, userDefinedConversionFile);

@@ -25,8 +25,8 @@ import java.util.Map;
  * First, the metadata is crawled, after the clinical data. The data that is retrieved is passed
  * to a file exporter (one for each study), which writes the data to a set of four files.
  */
-public class OdmToFilesConvertor {
-    private static final Log log = LogFactory.getLog(OdmToFilesConvertor.class);
+public class OdmToFilesConverter {
+    private static final Log log = LogFactory.getLog(OdmToFilesConverter.class);
     private ODM odm;
     private String exportFilePath;
     MetaDataWithIncludes metaDataWithIncludes;
@@ -34,7 +34,7 @@ public class OdmToFilesConvertor {
     private Map<String, MetaDataWithIncludes> metaDataMap;
     private String patientNum;
 
-    public OdmToFilesConvertor() {
+    public OdmToFilesConverter() {
         this.fileExporters = new HashMap<>();
         this.metaDataMap = new HashMap<>();
     }
@@ -335,7 +335,7 @@ public class OdmToFilesConvertor {
             nvalNum = null;
         }
 
-        fileExporters.get(studyName).writeExportClinicalDataInfo(oidPath, tvalChar, nvalNum, patientNum); //TODO: uncomment
+        fileExporters.get(studyName).writeExportClinicalDataInfo(oidPath, tvalChar, nvalNum, patientNum);
 
 
     }
