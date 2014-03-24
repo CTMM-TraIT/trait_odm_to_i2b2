@@ -55,6 +55,9 @@ import com.recomdata.i2b2.util.ODMUtil;
  *
  */
 public class I2B2ODMStudyHandler implements IConstants {
+    /**
+     * The log for this class.
+     */
     private static final Log log = LogFactory.getLog(I2B2ODMStudyHandler.class);
 
     // initialize ODM object

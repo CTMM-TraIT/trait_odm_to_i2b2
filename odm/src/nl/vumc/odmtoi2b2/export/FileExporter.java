@@ -6,11 +6,9 @@
 package nl.vumc.odmtoi2b2.export;
 
 import com.google.common.base.Joiner;
-import com.recomdata.i2b2.entity.I2B2ClinicalDataInfo;
-import com.recomdata.i2b2.entity.I2B2StudyInfo;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemDef;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -35,9 +33,9 @@ import java.util.Map;
  */
 public class FileExporter {
     /**
-     * Logger for this class.
+     * The log for this class.
      */
-    private static final Log logger = LogFactory.getLog(FileExporter.class);
+    private static final Log log = LogFactory.getLog(FileExporter.class);
 
     /**
      * The column identifier of the very first column, which contains the subject identifiers.
@@ -204,9 +202,9 @@ public class FileExporter {
     private void setColumnsName(final String columnsFileName) {
         try {
             columnsWriter = new BufferedWriter(new FileWriter(exportFilePath + columnsFileName));
-            logger.info("Writing columns to file " + exportFilePath + columnsFileName);
+            log.info("Writing columns to file " + exportFilePath + columnsFileName);
         } catch (final IOException e) {
-            logger.error("Error while setting the columns filename.", e);
+            log.error("Error while setting the columns filename.", e);
         }
     }
 
@@ -218,23 +216,23 @@ public class FileExporter {
     private void setWordMapName(final String wordMapFileName) {
         try {
             wordMapWriter = new BufferedWriter(new FileWriter(exportFilePath + wordMapFileName));
-            logger.info("Writing word mappings to file " + exportFilePath + wordMapFileName);
+            log.info("Writing word mappings to file " + exportFilePath + wordMapFileName);
         } catch (final IOException e) {
-            logger.error("Error while setting the wordmap filename.", e);
+            log.error("Error while setting the wordmap filename.", e);
         }
     }
 
     /**
-     * Set the output filename for the conceptmap metadata file.
+     * Set the output filename for the concept map metadata file.
      *
      * @param conceptMapFileName the output filename.
      */
     private void setConceptMapName(final String conceptMapFileName) {
         try {
             conceptMapWriter = new BufferedWriter(new FileWriter(exportFilePath + conceptMapFileName));
-            logger.info("Writing concept map to file " + exportFilePath + conceptMapFileName);
+            log.info("Writing concept map to file " + exportFilePath + conceptMapFileName);
         } catch (final IOException e) {
-            logger.error("Error while setting the conceptmap filename.", e);
+            log.error("Error while setting the concept map filename.", e);
         }
     }
 
@@ -246,9 +244,9 @@ public class FileExporter {
     private void setClinicalDataName(final String clinicalDataFileName) {
         try {
             clinicalDataWriter = new BufferedWriter(new FileWriter(exportFilePath + clinicalDataFileName));
-            logger.info("Writing clinical data to file " + exportFilePath + clinicalDataFileName);
+            log.info("Writing clinical data to file " + exportFilePath + clinicalDataFileName);
         } catch (final IOException e) {
-            logger.error("Error while setting the clinical data filename.", e);
+            log.error("Error while setting the clinical data filename.", e);
         }
     }
 
@@ -356,8 +354,8 @@ public class FileExporter {
             patientData.put(columnId, wordValue);
         }
 
+        log.debug("Adding patient data for " + currentPatientNumber);
         clinicalDataMap.put(currentPatientNumber, patientData);
-
     }
 
     public void writePatientData() {
@@ -413,15 +411,15 @@ public class FileExporter {
     @SuppressWarnings("UnusedDeclaration")
     public void writeExportDataObject(Object dataObject) {
         String className = dataObject.getClass().getName();
-        logger.info("[I2B2ODMStudyHandler] " + className.substring(className.lastIndexOf('.') + 1) + ":");
+        log.info("[I2B2ODMStudyHandler] " + className.substring(className.lastIndexOf('.') + 1) + ":");
         try {
             for (Field field : dataObject.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
-                logger.info("- " + field.getName() + ": " + field.get(dataObject));
+                log.info("- " + field.getName() + ": " + field.get(dataObject));
             }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        logger.info("");
+        log.info("");
     }
 }
