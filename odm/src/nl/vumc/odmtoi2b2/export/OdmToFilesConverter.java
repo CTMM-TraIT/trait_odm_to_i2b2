@@ -23,8 +23,9 @@ import java.util.Map;
 
 /**
  * In this class, the data object odm is crawled systematically through a series of loops.
- * First, the metadata is crawled, after the clinical data. The data that is retrieved is passed
- * to a file exporter (one for each study), which writes the data to a set of four files.
+ * First, the metadata is crawled; after that, the clinical data. The data that is retrieved is passed
+ * to a file exporter (one for each study), which writes the data to a set of four files that can be
+ * imported by tranSMART.
  */
 public class OdmToFilesConverter {
     private static final Log log = LogFactory.getLog(OdmToFilesConverter.class);
@@ -42,7 +43,7 @@ public class OdmToFilesConverter {
     /**
      * The metadata of a study, including the metadata fragments that are included with an include tag
      */
-    MetaDataWithIncludes metaDataWithIncludes;
+    private MetaDataWithIncludes metaDataWithIncludes;
 
     /**
      * Map<studyName, fileExporter> to keep track of all the FileExporter objects that were created
@@ -57,6 +58,7 @@ public class OdmToFilesConverter {
     /**
      * A unique identifier for a patient (patient = subject)
      */
+    @SuppressWarnings("UnusedDeclaration")
     private String patientNum;
 
     public OdmToFilesConverter() {
@@ -79,17 +81,14 @@ public class OdmToFilesConverter {
         }
     }
 
-
     private void processODMStudy() throws IOException, JAXBException {
         // Need to traverse through the study metadata to:
         // 1) Lookup all metadata definition values and paths for each tree leaf.
         // 2) Pass the metadata to the corresponding file exporter.
 
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
-
             saveStudy(study);
         }
-
     }
 
     private void saveStudy(ODMcomplexTypeDefinitionStudy study) throws IOException, JAXBException {
@@ -115,6 +114,7 @@ public class OdmToFilesConverter {
             if (definingStudy.getOID().equals(definingStudyOID)) {
                 study = definingStudy;
                 studyName = study.getGlobalVariables().getStudyName().getValue();
+                break;
             }
         }
 
@@ -207,7 +207,6 @@ public class OdmToFilesConverter {
 
             if (codeList != null) {
                 for (ODMcomplexTypeDefinitionCodeListItem codeListItem : codeList.getCodeListItem()) {
-
                     saveCodeListItem(study, codeListItem);
                 }
             }
@@ -276,8 +275,6 @@ public class OdmToFilesConverter {
                 saveSubjectData(study, clinicalData, subjectData);
             }
         }
-
-
     }
 
     private void saveSubjectData(ODMcomplexTypeDefinitionStudy study,
@@ -297,7 +294,6 @@ public class OdmToFilesConverter {
                                ODMcomplexTypeDefinitionStudyEventData eventData) {
         for (ODMcomplexTypeDefinitionFormData formData : eventData.getFormData()) {
             if (formData.getItemGroupData() != null) {
-
                 saveFormData(study, clinicalData, subjectData, eventData, formData);
             }
         }
@@ -310,7 +306,6 @@ public class OdmToFilesConverter {
                               ODMcomplexTypeDefinitionFormData formData) {
         for (ODMcomplexTypeDefinitionItemGroupData itemGroupData : formData.getItemGroupData()) {
             if (itemGroupData.getItemDataGroup() != null) {
-
                 saveItemGroupData(study, clinicalData, subjectData, eventData, formData, itemGroupData);
             }
         }
@@ -334,7 +329,7 @@ public class OdmToFilesConverter {
                               ODMcomplexTypeDefinitionSubjectData subjectData,
                               ODMcomplexTypeDefinitionStudyEventData eventData,
                               ODMcomplexTypeDefinitionFormData formData,
-                              ODMcomplexTypeDefinitionItemGroupData itemGroupData,
+                              @SuppressWarnings("UnusedParameters") ODMcomplexTypeDefinitionItemGroupData itemGroupData,
                               ODMcomplexTypeDefinitionItemData itemData) {
         String studyName = study.getGlobalVariables().getStudyName().getValue();
         String oidPath = clinicalData.getStudyOID() + "\\"
@@ -369,14 +364,9 @@ public class OdmToFilesConverter {
         }
 
         fileExporters.get(studyName).writeExportClinicalDataInfo(oidPath, tvalChar, nvalNum, patientNum);
-
-
     }
 
     private MetaDataWithIncludes getMetaData(ODMcomplexTypeDefinitionStudy study) {
         return metaDataMap.get(getMetaDataKey(study));
     }
-
-
-
 }

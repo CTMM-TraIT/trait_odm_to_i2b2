@@ -4,7 +4,7 @@
     Copyright 2014 VU University Medical Center.
     Licensed under the Apache License version 2.0 (see http://opensource.org/licenses/Apache-2.0).
 
-    Description: Maven configuration for the Workflow Runner tool.
+    Description: Maven configuration for the ODM to i2b2 tool.
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12,11 +12,11 @@
 
     <modelVersion>4.0.0</modelVersion>
 
-    <name>Workflow Runner</name>
-    <description>Workflow Runner tool for running a workflow on a Galaxy server</description>
-    <url>https://github.com/CTMM-TraIT/trait_workflow_runner/tree/master</url>
+    <name>ODM to i2b2</name>
+    <description>ODM to i2b2 tool for converting ODM data to i2b2 format in a database or files</description>
+    <url>https://github.com/CTMM-TraIT/trait_odm_to_i2b2</url>
     <groupId>nl.vumc.biomedbridges</groupId>
-    <artifactId>WorkflowRunner</artifactId>
+    <artifactId>odm-to-i2b2</artifactId>
     <version>0.1.0</version>
     <packaging>jar</packaging>
 
