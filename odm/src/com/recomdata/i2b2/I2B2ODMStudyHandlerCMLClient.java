@@ -52,7 +52,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 
 		if (odm == null || odm.getStudy() == null || odm.getStudy().size() == 0) {
 			// TODO: Define more specific exception
-			throw new Exception("No study definitions were found in ODM file");
+			throw new Exception("No study definitions were found in ODM file.");
 		}
 
 		 // parse ODM XML and save as i2b2 metadata and demodata records
@@ -90,13 +90,13 @@ public class I2B2ODMStudyHandlerCMLClient {
 				I2B2DBUtils.init(config);
 			}
 
-			System.out.println("Parsing ODM file " + odmFilePath);
+			System.out.println("Parsing ODM file ..." + odmFilePath);
 
 			I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
 			client.loadODMFile2I2B2(odmFilePath, exportFilePath, userDefinedConversionFile);
 
 			if (EXPORT_TO_DATABASE) {
-				System.out.println("Releasing database connection...");
+				System.out.println("Releasing database connection.");
 				I2B2DBUtils.shutdown();
 			}
 

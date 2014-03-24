@@ -7,6 +7,7 @@ package nl.vumc.odmtoi2b2.export;
 
 import com.recomdata.i2b2.util.ODMUtil;
 import com.recomdata.odm.MetaDataWithIncludes;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cdisk.odm.jaxb.*;
@@ -27,11 +28,35 @@ import java.util.Map;
  */
 public class OdmToFilesConverter {
     private static final Log log = LogFactory.getLog(OdmToFilesConverter.class);
+
+    /**
+     * The odm object with all the content from the ODM xml file.
+     */
     private ODM odm;
+
+    /**
+     * The path to the directory where the export files will be written to (has no slash yet)
+     */
     private String exportFilePath;
+
+    /**
+     * The metadata of a study, including the metadata fragments that are included with an include tag
+     */
     MetaDataWithIncludes metaDataWithIncludes;
+
+    /**
+     * Map<studyName, fileExporter> to keep track of all the FileExporter objects that were created
+     */
     private Map<String, FileExporter> fileExporters;
+
+    /**
+     * Map<studyOID+metadata_ID, metaDataWithIncludes> to keep track of all the metadata objects that were created
+     */
     private Map<String, MetaDataWithIncludes> metaDataMap;
+
+    /**
+     * A unique identifier for a patient (patient = subject)
+     */
     private String patientNum;
 
     public OdmToFilesConverter() {
@@ -68,7 +93,7 @@ public class OdmToFilesConverter {
     }
 
     private void saveStudy(ODMcomplexTypeDefinitionStudy study) throws IOException, JAXBException {
-        final String studyName = study.getGlobalVariables().getStudyName().getValue();
+        String studyName = study.getGlobalVariables().getStudyName().getValue();
         String studyOID = study.getOID();
         ODMcomplexTypeDefinitionMetaDataVersion metaData = study.getMetaDataVersion().get(0);
         ODMcomplexTypeDefinitionInclude includedMetaData = metaData.getInclude();
@@ -84,6 +109,14 @@ public class OdmToFilesConverter {
         }
         metaDataWithIncludes = new MetaDataWithIncludes(metaData, studyOID, metaDataWithIncludesList);
         metaDataMap.put(getMetaDataKey(study), metaDataWithIncludes);
+
+        String definingStudyOID = metaDataWithIncludes.getDefiningStudyOID();
+        for (ODMcomplexTypeDefinitionStudy definingStudy : odm.getStudy()) {
+            if (definingStudy.getOID().equals(definingStudyOID)) {
+                study = definingStudy;
+                studyName = study.getGlobalVariables().getStudyName().getValue();
+            }
+        }
 
         FileExporter fileExporter = new FileExporter(exportFilePath + new File(File.separator), studyName);
         fileExporters.put(studyName, fileExporter);
