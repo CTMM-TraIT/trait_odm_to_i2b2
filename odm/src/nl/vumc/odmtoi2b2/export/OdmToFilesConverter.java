@@ -122,7 +122,7 @@ public class OdmToFilesConverter {
         for (ODMcomplexTypeDefinitionStudy definingStudy : odm.getStudy()) {
             if (definingStudy.getOID().equals(definingStudyOID)) {
                 metaDataStudy = definingStudy;
-                studyName = study.getGlobalVariables().getStudyName().getValue();
+                studyName = metaDataStudy.getGlobalVariables().getStudyName().getValue();
                 break;
             }
         }
