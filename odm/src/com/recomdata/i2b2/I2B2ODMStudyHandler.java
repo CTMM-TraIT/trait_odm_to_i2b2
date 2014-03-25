@@ -55,12 +55,15 @@ import com.recomdata.i2b2.util.ODMUtil;
  *
  */
 public class I2B2ODMStudyHandler implements IConstants {
+    /**
+     * The log for this class.
+     */
     private static final Log log = LogFactory.getLog(I2B2ODMStudyHandler.class);
 
     // initialize ODM object
     private ODM odm = null;
 
-    private I2B2StudyInfo studyInfo = new I2B2StudyInfo();;
+    private I2B2StudyInfo studyInfo = new I2B2StudyInfo();
     private I2B2ClinicalDataInfo clinicalDataInfo = new I2B2ClinicalDataInfo();
 
     private IStudyDao studyDao = null;
@@ -74,7 +77,7 @@ public class I2B2ODMStudyHandler implements IConstants {
     /**
      * Constructor to set ODM object
      *
-     * @param odm
+     * @param odm the entire ODM tree.
      * @throws SQLException
      * @throws NoSuchAlgorithmException
      */
@@ -93,7 +96,7 @@ public class I2B2ODMStudyHandler implements IConstants {
     }
 
     /**
-     * set up i2b2 metadate level 1 (Study) info into STUDY
+     * set up i2b2 metadata level 1 (Study) info into STUDY
      *
      * @throws JAXBException
      */
@@ -141,10 +144,8 @@ public class I2B2ODMStudyHandler implements IConstants {
         }
     }
 
-
-
     /**
-     * set up i2b2 metadate level 2 (Event) info into STUDY
+     * set up i2b2 metadata level 2 (Event) info into STUDY
      *
      * @throws JAXBException
      */
@@ -184,7 +185,7 @@ public class I2B2ODMStudyHandler implements IConstants {
     }
 
     /**
-     * set up i2b2 metadate level 3 (Form) info into STUDY
+     * set up i2b2 metadata level 3 (Form) info into STUDY
      *
      * @throws JAXBException
      */
@@ -232,7 +233,7 @@ public class I2B2ODMStudyHandler implements IConstants {
     }
 
     /**
-     * set up i2b2 metadate level 4 (Item) info into STUDY and CONCEPT_DIMENSION
+     * set up i2b2 metadata level 4 (Item) info into STUDY and CONCEPT_DIMENSION
      *
      * @throws SQLException
      * @throws JAXBException
@@ -336,7 +337,7 @@ public class I2B2ODMStudyHandler implements IConstants {
     }
 
     /**
-     * set up i2b2 metadate level 5 (TranslatedText) info into STUDY
+     * set up i2b2 metadata level 5 (TranslatedText) info into STUDY
      *
      * @throws SQLException
      */
@@ -416,17 +417,17 @@ public class I2B2ODMStudyHandler implements IConstants {
 
     /*
      * This method takes ODM XML io.File obj as input and parsed by JAXB API and
-     * thentraversal through ODM tree object and save clinical data into i2b2
+     * then traversal through ODM tree object and save clinical data into i2b2
      * demo database ini2b2 data format. Keep method public in case of only want
      * to parse demodata.
      */
     public void processODMClinicalData() throws JAXBException, ParseException, SQLException {
         log.info("Parse and save ODM clinical data into i2b2...");
 
-        // travese through the clinical data to:
+        // traverse through the clinical data to:
         // 1) Lookup the concept path from odm study metadata.
         // 2) Set patient and clinical information into observation fact.
-        if (odm.getClinicalData() == null && odm.getClinicalData().size() == 0) {
+        if (odm.getClinicalData() == null || odm.getClinicalData().size() == 0) {
             log.info("ODM does not contain clinical data");
             return;
         }
@@ -507,7 +508,7 @@ public class I2B2ODMStudyHandler implements IConstants {
 
     private void saveItemData(
             ODMcomplexTypeDefinitionStudy study,
-            ODMcomplexTypeDefinitionClinicalData clinicalData,
+            @SuppressWarnings("UnusedParameters") ODMcomplexTypeDefinitionClinicalData clinicalData,
             ODMcomplexTypeDefinitionSubjectData subjectData,
             ODMcomplexTypeDefinitionStudyEventData studyEventData,
             ODMcomplexTypeDefinitionFormData formData,
@@ -517,7 +518,7 @@ public class I2B2ODMStudyHandler implements IConstants {
         String itemValue = itemData.getValue();
         ODMcomplexTypeDefinitionItemDef item = ODMUtil.getItem(study, itemData.getItemOID());
 
-        String conceptCd = null;
+        String conceptCd;
 
         if (item.getCodeListRef() != null) {
             clinicalDataInfo.setValTypeCd("T");
@@ -591,10 +592,10 @@ public class I2B2ODMStudyHandler implements IConstants {
     }
 
     /**
-     * Create concept code with all oids and make the total length less than 50
+     * Create concept code with all OIDs and make the total length less than 50
      * and unique
      *
-     * @return
+     * @return the unique concept code.
      */
     private String generateConceptCode(String studyOID, String studyEventOID,
                                        String formOID, String itemOID, String value) {
@@ -615,9 +616,8 @@ public class I2B2ODMStudyHandler implements IConstants {
         }
 
         byte[] digest = messageDigest.digest();
-
-        for (int i = 0; i < digest.length; i++) {
-            conceptBuffer.append(Integer.toHexString(0xFF & digest[i]));
+        for (byte digestByte : digest) {
+            conceptBuffer.append(Integer.toHexString(0xFF & digestByte));
         }
 
         String conceptCode = conceptBuffer.toString();

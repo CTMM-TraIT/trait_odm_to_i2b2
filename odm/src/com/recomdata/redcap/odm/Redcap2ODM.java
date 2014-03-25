@@ -57,6 +57,9 @@ import com.recomdata.i2b2.util.ODMUtil;
 import com.recomdata.redcap.ws.GetRedcapService;
 
 public class Redcap2ODM {
+    /**
+     * The log for this class.
+     */
 	private Log log = LogFactory.getLog(Redcap2ODM.class);
 
 	public ODM buildODM(String projectID, String projectName, String projectDescription,
