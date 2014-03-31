@@ -23,12 +23,18 @@ public class MetaDataWithIncludes {
         this.metaDataIncludes = metaDataIncludes;
     }
 
-    public String getDefiningStudyOID () {
+    public ODMcomplexTypeDefinitionStudy getDefiningStudy(ODM odm) {
         String definingStudyOID = studyOID;
         if (metaDataIncludes.size() > 0) {
             definingStudyOID = metaDataIncludes.get(metaDataIncludes.size()-1).studyOID;
         }
-        return definingStudyOID;
+
+        for (ODMcomplexTypeDefinitionStudy definingStudy : odm.getStudy()) {
+            if (definingStudy.getOID().equals(definingStudyOID)) {
+                return definingStudy;
+            }
+        }
+        return null;
     }
 
     public ODMcomplexTypeDefinitionStudyEventDef getStudyEventDef(String studyEventOID) {

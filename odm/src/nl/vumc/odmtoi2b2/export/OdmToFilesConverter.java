@@ -116,16 +116,10 @@ public class OdmToFilesConverter {
         }
         metaDataWithIncludes = new MetaDataWithIncludes(metaData, studyOID, metaDataWithIncludesList);
         metaDataMap.put(getMetaDataKey(study), metaDataWithIncludes);
+// todo!!!        metaDataMap.get(getMetaDataKey(study)).getDefiningStudy(odm);   // todo take to clinical data
 
-        String definingStudyOID = metaDataWithIncludes.getDefiningStudyOID();
-        ODMcomplexTypeDefinitionStudy metaDataStudy = null;
-        for (ODMcomplexTypeDefinitionStudy definingStudy : odm.getStudy()) {
-            if (definingStudy.getOID().equals(definingStudyOID)) {
-                metaDataStudy = definingStudy;
-                studyName = metaDataStudy.getGlobalVariables().getStudyName().getValue();
-                break;
-            }
-        }
+        ODMcomplexTypeDefinitionStudy metaDataStudy = metaDataWithIncludes.getDefiningStudy(odm);
+        studyName = metaDataStudy.getGlobalVariables().getStudyName().getValue();
 
         if (!fileExporters.containsKey(studyName)) {
             log.debug("Creating file exporter for study " + studyName);
@@ -144,7 +138,8 @@ public class OdmToFilesConverter {
         return study.getOID() + "/" + study.getMetaDataVersion().get(0).getOID();
     }
 
-    private void saveEvent(ODMcomplexTypeDefinitionStudy study, ODMcomplexTypeDefinitionStudy metaDataStudy,
+    private void saveEvent(ODMcomplexTypeDefinitionStudy study,
+                           ODMcomplexTypeDefinitionStudy metaDataStudy,
                            ODMcomplexTypeDefinitionStudyEventDef studyEventDef)
             throws JAXBException {
 
@@ -158,8 +153,10 @@ public class OdmToFilesConverter {
         }
     }
 
-    private void saveForm(ODMcomplexTypeDefinitionStudy study, ODMcomplexTypeDefinitionStudy metaDataStudy,
-                          ODMcomplexTypeDefinitionStudyEventDef studyEventDef, ODMcomplexTypeDefinitionFormDef formDef)
+    private void saveForm(ODMcomplexTypeDefinitionStudy study,
+                          ODMcomplexTypeDefinitionStudy metaDataStudy,
+                          ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                          ODMcomplexTypeDefinitionFormDef formDef)
             throws JAXBException {
 
         if (formDef.getItemGroupRef() != null) {
@@ -172,7 +169,8 @@ public class OdmToFilesConverter {
         }
     }
 
-    private void saveItemGroup(ODMcomplexTypeDefinitionStudy study, ODMcomplexTypeDefinitionStudy metaDataStudy,
+    private void saveItemGroup(ODMcomplexTypeDefinitionStudy study,
+                               ODMcomplexTypeDefinitionStudy metaDataStudy,
                                ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
                                ODMcomplexTypeDefinitionFormDef formDef,
                                ODMcomplexTypeDefinitionItemGroupDef itemGroupDef)
@@ -187,7 +185,8 @@ public class OdmToFilesConverter {
         }
     }
 
-    private void saveItem(ODMcomplexTypeDefinitionStudy study, ODMcomplexTypeDefinitionStudy metaDataStudy,
+    private void saveItem(ODMcomplexTypeDefinitionStudy study,
+                          ODMcomplexTypeDefinitionStudy metaDataStudy,
                           ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
                           ODMcomplexTypeDefinitionFormDef formDef,
                           ODMcomplexTypeDefinitionItemGroupDef itemGroupDef,
