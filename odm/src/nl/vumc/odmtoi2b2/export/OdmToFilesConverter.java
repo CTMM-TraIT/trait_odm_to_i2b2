@@ -116,7 +116,6 @@ public class OdmToFilesConverter {
         }
         metaDataWithIncludes = new MetaDataWithIncludes(metaData, studyOID, metaDataWithIncludesList);
         metaDataMap.put(getMetaDataKey(study), metaDataWithIncludes);
-// todo!!!        metaDataMap.get(getMetaDataKey(study)).getDefiningStudy(odm);   // todo take to clinical data
 
         ODMcomplexTypeDefinitionStudy metaDataStudy = metaDataWithIncludes.getDefiningStudy(odm);
         studyName = metaDataStudy.getGlobalVariables().getStudyName().getValue();
@@ -338,7 +337,8 @@ public class OdmToFilesConverter {
                               ODMcomplexTypeDefinitionFormData formData,
                               @SuppressWarnings("UnusedParameters") ODMcomplexTypeDefinitionItemGroupData itemGroupData,
                               ODMcomplexTypeDefinitionItemData itemData) {
-        String studyName = study.getGlobalVariables().getStudyName().getValue();
+        ODMcomplexTypeDefinitionStudy definingStudy = metaDataMap.get(getMetaDataKey(study)).getDefiningStudy(odm);
+        String studyName = definingStudy.getGlobalVariables().getStudyName().getValue();
         String oidPath = clinicalData.getStudyOID() + "\\"
                 + eventData.getStudyEventOID() + "\\"
                 + formData.getFormOID() + "\\"

@@ -14,6 +14,7 @@ import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.PropertyConfigurator;
 import org.cdisk.odm.jaxb.ODM;
 
 import com.recomdata.config.Config;
@@ -51,6 +52,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 		File xmlFile = new File(odmXmlPath);
 
 		if (!xmlFile.exists()) {
+            log.error("ODM file not found: " + odmXmlPath);
 			throw new FileNotFoundException(xmlFile.getPath());
 		}
 
@@ -81,16 +83,19 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 */
 	public static void main(String[] args) {
 		try {
-			if (args.length < 2) {
-				log.info("Please provide the ODM file (plus path) to process, "
+            PropertyConfigurator.configure(args[0]);
+
+			if (args.length < 3) {
+				log.info("Please provide the logging configuration (log4j.properties), "
+                         + "ODM file (plus path) to process, "
                          + "the path of the export directory (without slash), "
                          + "and an optional concept mapping file (plus path).");
 				return;
 			}
 
-			String odmFilePath = args[0];
-			String exportFilePath = args[1];
-            String userDefinedConversionFile = args.length >= 3 ? args[2] : null;
+			String odmFilePath = args[1];
+            String exportFilePath = args[2];
+            String userDefinedConversionFile = args.length >= 4 ? args[3] : null;
 
 			if (EXPORT_TO_DATABASE) {
                 log.info("Initializing database connection...");
