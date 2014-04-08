@@ -11,6 +11,7 @@ import com.recomdata.odm.MetaDataWithIncludes;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.cdisk.odm.jaxb.*;
+import org.jsoup.Jsoup;
 
 import javax.xml.bind.JAXBException;
 import java.io.File;
@@ -211,7 +212,8 @@ public class OdmToFilesConverter {
         String namePath       = studyEventName + "+" + formName + "+" + itemGroupName;
         String itemName       = getTranslatedDescription(itemDef.getDescription(),       "en", itemDef.getName());
         String questionValue  = getQuestionValue(itemDef);
-        String preferredItemName = questionValue != null ? questionValue : itemName;
+        String preferredItemNameWithHtml = questionValue != null ? questionValue : itemName;
+        String preferredItemName = html2text(preferredItemNameWithHtml);
 
         String oidPath = definingStudy.getOID() + "\\"
                 + studyEventDef.getOID() + "\\"
@@ -244,6 +246,14 @@ public class OdmToFilesConverter {
                 && !itemDef.getQuestion().getTranslatedText().get(0).getValue().trim().equals("")
                 ? itemDef.getQuestion().getTranslatedText().get(0).getValue().trim()
                 : null;
+    }
+
+    /**
+     * @param html the string that contains html tags
+     * @return the string in which only the plain text is preserved
+     */
+    public static String html2text(String html) {
+        return Jsoup.parse(html).text();
     }
 
     private void saveCodeListItem(ODMcomplexTypeDefinitionStudy definingStudy,

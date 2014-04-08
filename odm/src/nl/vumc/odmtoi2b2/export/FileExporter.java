@@ -229,10 +229,10 @@ public class FileExporter {
      */
     private void setConceptMapName(final String conceptMapFileName) {
         try {
-            conceptMapWriter = new BufferedWriter(new FileWriter(exportFilePath + conceptMapFileName));
             log.info("Writing concept map to file " + exportFilePath + conceptMapFileName);
+            conceptMapWriter = new BufferedWriter(new FileWriter(exportFilePath + conceptMapFileName));
         } catch (final IOException e) {
-            log.error("Error while setting the concept map filename.", e);
+            log.error("Error while setting the concept map filename to " + exportFilePath + conceptMapFileName + ".", e);
         }
     }
 
