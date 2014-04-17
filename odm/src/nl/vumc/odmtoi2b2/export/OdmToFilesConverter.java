@@ -55,6 +55,12 @@ public class OdmToFilesConverter {
     private String exportFilePath;
 
     /**
+     * Is set to true when different studies that are written to the same files,
+     * need to be modelled as a separate column.
+     */
+    Boolean modelStudiesAsColumn;
+
+    /**
      * The metadata of a study, including the metadata fragments that are included with an include tag
      */
     private MetaDataWithIncludes metaDataWithIncludes;
@@ -69,15 +75,13 @@ public class OdmToFilesConverter {
      */
     private Map<String, MetaDataWithIncludes> metaDataMap;
 
-    /**
-     * A unique identifier for a patient (patient = subject)
-     */
-    @SuppressWarnings("UnusedDeclaration")
-    private String patientNum;
+    private List<String> studies;
+
 
     public OdmToFilesConverter() {
         this.fileExporters = new HashMap<>();
         this.metaDataMap = new HashMap<>();
+        this.studies = new ArrayList<>();
     }
 
     public void processODM(ODM odm, String exportFilePath) throws IOException, JAXBException {
@@ -129,9 +133,11 @@ public class OdmToFilesConverter {
 //                MetaDataWithIncludes backup = new MetaDataWithIncludes(metaDataMap.get(includedMetaDataKey), tbd);
                 metaDataWithIncludesList.add(metaDataMap.get(includedMetaDataKey));
             }
+            modelStudiesAsColumn = true;
         }
         metaDataWithIncludes = new MetaDataWithIncludes(metaData, studyOID, metaDataWithIncludesList);
         metaDataMap.put(getMetaDataKey(study), metaDataWithIncludes);
+        studies.add(studyName);
 
         ODMcomplexTypeDefinitionStudy definingStudy = metaDataWithIncludes.getDefiningStudy(odm);
         studyName = definingStudy.getGlobalVariables().getStudyName().getValue();
@@ -213,7 +219,7 @@ public class OdmToFilesConverter {
         String itemName       = getTranslatedDescription(itemDef.getDescription(),       "en", itemDef.getName());
         String questionValue  = getQuestionValue(itemDef);
         String preferredItemNameWithHtml = questionValue != null ? questionValue : itemName;
-        String preferredItemName = html2text(preferredItemNameWithHtml);
+        String preferredItemName = Jsoup.parse(preferredItemNameWithHtml).text();
 
         String oidPath = definingStudy.getOID() + "\\"
                 + studyEventDef.getOID() + "\\"
@@ -246,14 +252,6 @@ public class OdmToFilesConverter {
                 && !itemDef.getQuestion().getTranslatedText().get(0).getValue().trim().equals("")
                 ? itemDef.getQuestion().getTranslatedText().get(0).getValue().trim()
                 : null;
-    }
-
-    /**
-     * @param html the string that contains html tags
-     * @return the string in which only the plain text is preserved
-     */
-    public static String html2text(String html) {
-        return Jsoup.parse(html).text();
     }
 
     private void saveCodeListItem(ODMcomplexTypeDefinitionStudy definingStudy,
