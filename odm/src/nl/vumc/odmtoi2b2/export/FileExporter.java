@@ -319,22 +319,20 @@ public class FileExporter {
     /**
      * Write the clinical data to a tab-delimited text file.
      *
-     * @param oidPath
-     * @param tvalChar
-     * @param nvalNum
+     * @param columnId
+     * @param wordValue
+     * @param bigDecimal
      * @param patientNum
      */
-    public void writeExportClinicalDataInfo(String oidPath, String tvalChar, BigDecimal nvalNum, String patientNum) {
-        final String columnId = oidPath;
+    public void writeExportClinicalDataInfo(String columnId, String wordValue, BigDecimal bigDecimal, String patientNum) {
 
         /**
          * Mapping of column ID to values for the current patient.
          */
         Map<String, String> patientData = new HashMap<>();
 
-        String wordValue = tvalChar;
-        if (nvalNum != null) {
-            wordValue = nvalNum.toString();
+        if (bigDecimal != null) {
+            wordValue = bigDecimal.toString();
         }
         currentPatientNumber = patientNum;
 
