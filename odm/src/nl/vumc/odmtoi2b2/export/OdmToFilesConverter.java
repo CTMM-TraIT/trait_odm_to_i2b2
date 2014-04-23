@@ -115,15 +115,33 @@ public class OdmToFilesConverter {
             saveStudy(study);
         }
 
-        for (String definingStudyName: studies.keySet()) {
-            if (!definingStudyName.equals(studies.get(definingStudyName))) {
+        /**
+         * The metadata of studies are sometimes defined by other studies. This correspondence is saved
+         * in the studies map, where the study is the key and the defining study the value. Take for instance
+         * the following studies map:
+         * study 1 - study 1
+         * study A - study 1
+         * study B - study 1
+         * study 2 - study 2
+         * We want an extra line in the columns file of study 1, and three extra lines in its wordmap file. We
+         * do not want anything extra for study 2.
+         */
+
+        Map<String, Boolean> handledStudies = new HashMap<>();
+        for (String evaluatedStudyName : studies.keySet()) {
+            handledStudies.put(studies.get(evaluatedStudyName), false);
+        }
+        for (String evaluatedStudyName : studies.keySet()) {
+            String definingStudyName = studies.get(evaluatedStudyName);
+            if (!evaluatedStudyName.equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
                 String oidPath = definingStudyName + "\\" + STUDYSITE;
                 fileExporters.get(definingStudyName).writeExportColumns("", STUDYSITE, oidPath);
-                for (String studyName: studies.keySet()) {
+                for (String studyName : studies.keySet()) {
                     if (studies.get(studyName).equals(definingStudyName)) {
                         fileExporters.get(definingStudyName).writeExportWordMap(studyName);
                     }
                 }
+                handledStudies.put(definingStudyName, true);
             }
         }
     }
@@ -170,13 +188,7 @@ public class OdmToFilesConverter {
                         metaDataWithIncludes.getStudyEventDef(studyEventRef.getStudyEventOID());
                 saveEvent(definingStudy, studyEventDef);
             }
-//            if (modelStudiesAsColumn) {
-//                fileExporters.get(definingStudyName).writeExportColumns("", STUDYSITE, oidPath);
-//            }
         }
-//        if (modelStudiesAsColumn) {
-//            fileExporters.get(definingStudyName).writeExportWordMap(studyName);
-//        }
     }
 
     private String getMetaDataKey(ODMcomplexTypeDefinitionStudy study) {
