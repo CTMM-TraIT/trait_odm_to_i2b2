@@ -68,6 +68,8 @@ public class OdmToFilesConverter {
      */
     private MetaDataWithIncludes metaDataWithIncludes;
 
+    private List<String> namePathList;
+
     /**
      * Map<studyName, fileExporter> to keep track of all the FileExporter objects that were created
      */
@@ -85,6 +87,7 @@ public class OdmToFilesConverter {
         this.fileExporters = new HashMap<>();
         this.metaDataMap = new HashMap<>();
         this.modelStudiesAsColumn = false;
+        this.namePathList = new ArrayList<>();
         this.studies = new HashMap<>();
     }
 
@@ -250,10 +253,7 @@ public class OdmToFilesConverter {
         String formName       = getTranslatedDescription(formDef.getDescription(),       "en", formDef.getName());
         String itemGroupName  = getTranslatedDescription(itemGroupDef.getDescription(),  "en", itemGroupDef.getName());
         String namePath       = studyEventName + "+" + formName + "+" + itemGroupName;
-        String itemName       = getTranslatedDescription(itemDef.getDescription(),       "en", itemDef.getName());
-        String questionValue  = getQuestionValue(itemDef);
-        String preferredItemNameWithHtml = questionValue != null ? questionValue : itemName;
-        String preferredItemName = Jsoup.parse(preferredItemNameWithHtml).text();
+        String preferredItemName = getPreferredItemName(itemDef, namePath);
 
         String oidPath = definingStudy.getOID() + "\\"
                 + studyEventDef.getOID() + "\\"
@@ -275,6 +275,20 @@ public class OdmToFilesConverter {
                 }
             }
         }
+    }
+
+    private String getPreferredItemName(ODMcomplexTypeDefinitionItemDef itemDef, String namePath) {
+        String itemName       = getTranslatedDescription(itemDef.getDescription(),       "en", itemDef.getName());
+        String questionValue  = getQuestionValue(itemDef);
+        String preferredItemNameWithHtml = questionValue != null ? questionValue : itemName;
+        String preferredItemName =  Jsoup.parse(preferredItemNameWithHtml).text();
+        for (String fullNamePath : namePathList) {
+            if (fullNamePath.equals(namePath + preferredItemName)) {
+                preferredItemName = itemName;
+            }
+        }
+        namePathList.add(namePath + preferredItemName);
+        return preferredItemName;
     }
 
     private String getQuestionValue(ODMcomplexTypeDefinitionItemDef itemDef) {
