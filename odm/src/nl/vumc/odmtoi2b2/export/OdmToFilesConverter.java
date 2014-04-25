@@ -53,7 +53,7 @@ public class OdmToFilesConverter {
     private ODM odm;
 
     /**
-     * The path to the directory where the export files will be written to (has no slash yet)
+     * The path to the directory where the export files will be written to (has no slash yet).
      */
     private String exportFilePath;
 
@@ -64,30 +64,39 @@ public class OdmToFilesConverter {
     Boolean modelStudiesAsColumn;
 
     /**
-     * The metadata of a study, including the metadata fragments that are included with an include tag
+     * The metadata of a study, including the metadata fragments that are included with an include tag.
      */
     private MetaDataWithIncludes metaDataWithIncludes;
 
-    private List<String> namePathList;
+    /**
+     * A list with the full human-readable names of the columns, which are used as identifiers within tranSMART.
+     * For this reason, they should be kept unique.
+     */
+    private List<String> columnFullNameList;
 
     /**
-     * Map<studyName, fileExporter> to keep track of all the FileExporter objects that were created
+     * Map<studyName, fileExporter> to keep track of all the FileExporter objects that were created.
      */
     private Map<String, FileExporter> fileExporters;
 
     /**
-     * Map<studyOID+metadata_ID, metaDataWithIncludes> to keep track of all the metadata objects that were created
+     * Map<studyOID+metadata_ID, metaDataWithIncludes> to keep track of all the metadata objects that were created.
      */
     private Map<String, MetaDataWithIncludes> metaDataMap;
 
+    /**
+     * Key: ODM-study, value: defining study with the metadata. File exporters are only made for the latter.
+     */
     private Map<String, String> studies;
+
+
 
 
     public OdmToFilesConverter() {
         this.fileExporters = new HashMap<>();
         this.metaDataMap = new HashMap<>();
         this.modelStudiesAsColumn = false;
-        this.namePathList = new ArrayList<>();
+        this.columnFullNameList = new ArrayList<>();
         this.studies = new HashMap<>();
     }
 
@@ -282,12 +291,14 @@ public class OdmToFilesConverter {
         String questionValue  = getQuestionValue(itemDef);
         String preferredItemNameWithHtml = questionValue != null ? questionValue : itemName;
         String preferredItemName =  Jsoup.parse(preferredItemNameWithHtml).text();
-        for (String fullNamePath : namePathList) {
-            if (fullNamePath.equals(namePath + preferredItemName)) {
+        for (String fullNamePath : columnFullNameList) {
+            if (fullNamePath.equals(namePath + "+" + preferredItemName)) {
+                log.warn("\"" + fullNamePath + "\" was found more than once. " +
+                        itemName + " is now taken as preferred name.");
                 preferredItemName = itemName;
             }
         }
-        namePathList.add(namePath + preferredItemName);
+        columnFullNameList.add(namePath + "+" + preferredItemName);
         return preferredItemName;
     }
 
