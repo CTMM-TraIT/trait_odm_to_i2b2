@@ -5,6 +5,7 @@
 
 package nl.vumc.odmtoi2b2.export;
 
+import au.com.bytecode.opencsv.CSVWriter;
 import com.google.common.base.Joiner;
 
 import org.apache.commons.logging.Log;
@@ -13,6 +14,7 @@ import org.apache.commons.logging.LogFactory;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -258,14 +260,22 @@ public class FileExporter {
      * @param namePath
      * @param preferredItemName
      */
-    public void writeExportConceptMap(String namePath, String preferredItemName) {
+    public void writeExportConceptMap(String namePath, String preferredItemName) throws IOException {
         if (writeConceptMapHeaders) {
-            writeLine(conceptMapWriter, "tranSMART_path\tEDC_path\tControl Vocab Cd");
+            List<String> rowAsList = new ArrayList<>();
+            rowAsList.add("tranSMART_path");
+            rowAsList.add("EDC_path");
+            rowAsList.add("Control Vocab Cd");
+            writeCSVData(conceptMapWriter, rowAsList);
             writeConceptMapHeaders = false;
         }
 
-        final String path = String.format("%s+%s\t", namePath, preferredItemName);
-        writeLine(conceptMapWriter, path + path);
+        final String path = String.format("%s+%s", namePath, preferredItemName);
+        List<String> rowAsList = new ArrayList<>();
+        rowAsList.add(path);
+        rowAsList.add(path);
+        rowAsList.add("");
+        writeCSVData(conceptMapWriter, rowAsList);
     }
 
     /**
@@ -277,17 +287,36 @@ public class FileExporter {
      * @param preferredItemName
      * @param oidPath
      */
-    public void writeExportColumns(String namePath, String preferredItemName, String oidPath) {
+    public void writeExportColumns(String namePath, String preferredItemName, String oidPath) throws IOException {
         if (currentColumnNumber == 1) {
-            writeLine(columnsWriter, "Filename\tCategory Code\tColumn Number\tData Label\tData Label Source\t"
-                    + "Control Vocab Cd");
+            List<String> rowAsList = new ArrayList<>();
+            rowAsList.add("Filename");
+            rowAsList.add("Category Code");
+            rowAsList.add("Column Number");
+            rowAsList.add("Data Label");
+            rowAsList.add("Data Label Source");
+            rowAsList.add("Control Vocab Cd");
+            writeCSVData(columnsWriter, rowAsList);
             // This first data line is required by tranSMART.
-            writeLine(columnsWriter, clinicalDataFileName + "\t\t1\tSUBJ_ID\t\t");
+            List<String> rowAsList2 = new ArrayList<>();
+            rowAsList2.add(clinicalDataFileName);
+            rowAsList2.add("");
+            rowAsList2.add("1");
+            rowAsList2.add("SUBJ_ID");
+            rowAsList2.add("");
+            rowAsList2.add("");
+            writeCSVData(columnsWriter, rowAsList2);
         }
         currentColumnNumber++;
         increasedColumnNumber = true;
-        writeLine(columnsWriter, clinicalDataFileName + "\t" + namePath + "\t"
-                + currentColumnNumber + "\t" + preferredItemName + "\t\t");
+        List<String> rowAsList = new ArrayList<>();
+        rowAsList.add(clinicalDataFileName);
+        rowAsList.add(namePath);
+        rowAsList.add(currentColumnNumber + "");
+        rowAsList.add(preferredItemName);
+        rowAsList.add("");
+        rowAsList.add("");
+        writeCSVData(columnsWriter, rowAsList);
         currentColumnId = oidPath;
         columnHeaders.add(studyName + "_" + preferredItemName);
         columnIds.add(oidPath);
@@ -300,9 +329,14 @@ public class FileExporter {
      * @param dataValue
      */
 
-    public void writeExportWordMap(String dataValue) {
+    public void writeExportWordMap(String dataValue) throws IOException {
         if (writeWordMapHeaders) {
-            writeLine(wordMapWriter, "Filename\tColumn Number\tOriginal Data Value\tNew Data Values");
+            List<String> rowAsList = new ArrayList<>();
+            rowAsList.add("Filename");
+            rowAsList.add("Column Number");
+            rowAsList.add("Original Data Value");
+            rowAsList.add("New Data Values");
+            writeCSVData(wordMapWriter, rowAsList);
             writeWordMapHeaders = false;
         }
         if (increasedColumnNumber) {
@@ -313,7 +347,12 @@ public class FileExporter {
         }
         final String value = String.valueOf(valueCounter);
         wordMap.put(currentColumnId + dataValue, value);
-        writeLine(wordMapWriter, clinicalDataFileName + "\t" + currentColumnNumber + "\t" + valueCounter + "\t" + dataValue);
+        List<String> rowAsList = new ArrayList<>();
+        rowAsList.add(clinicalDataFileName);
+        rowAsList.add(currentColumnNumber + "");
+        rowAsList.add(valueCounter + "");
+        rowAsList.add(dataValue);
+        writeCSVData(wordMapWriter, rowAsList);
     }
 
     /**
@@ -356,34 +395,22 @@ public class FileExporter {
         clinicalDataMap.put(currentPatientNumber, patientData);
     }
 
-    public void writePatientData() {
-        writeLine(clinicalDataWriter, Joiner.on('\t').join(columnHeaders));
+    public void writePatientData() throws IOException {
+        writeCSVData(clinicalDataWriter, columnHeaders);
         for (final String patientId : patientIds) {
-            final StringBuilder line = new StringBuilder();
+            final List<String> rowAsList = new ArrayList<>();
             Map<String, String> patientData = clinicalDataMap.get(patientId);
             for (final String columnId : columnIds) {
-                if (line.length() > 0)
-                    line.append("\t");
-                if (patientData.containsKey(columnId))
-                    line.append(patientData.get(columnId));
+                rowAsList.add(patientData.get(columnId));
             }
-            writeLine(clinicalDataWriter, line.toString());
+            writeCSVData(clinicalDataWriter, rowAsList);
         }
     }
 
-    /**
-     * Write a line to the export file.
-     *
-     * @param writer the writer to write to.
-     * @param line   the line to be written.
-     */
-    private void writeLine(BufferedWriter writer, String line) {
-        try {
-            writer.write(line);
-            writer.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    private static void writeCSVData(BufferedWriter writer, List<String> rowAsList) throws IOException {
+        String[] rowAsArray = rowAsList.toArray(new String[rowAsList.size()]);
+        CSVWriter csvWriter = new CSVWriter(writer,'\t', CSVWriter.NO_QUOTE_CHARACTER);
+        csvWriter.writeNext(rowAsArray);
     }
 
     /**

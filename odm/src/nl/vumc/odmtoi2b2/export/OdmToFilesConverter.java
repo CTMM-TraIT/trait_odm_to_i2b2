@@ -209,7 +209,7 @@ public class OdmToFilesConverter {
 
     private void saveEvent(ODMcomplexTypeDefinitionStudy definingStudy,
                            ODMcomplexTypeDefinitionStudyEventDef studyEventDef)
-            throws JAXBException {
+            throws JAXBException, IOException {
 
         if (studyEventDef.getFormRef() != null) {
             for (ODMcomplexTypeDefinitionFormRef formRef : studyEventDef.getFormRef()) {
@@ -224,7 +224,7 @@ public class OdmToFilesConverter {
     private void saveForm(ODMcomplexTypeDefinitionStudy definingStudy,
                           ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
                           ODMcomplexTypeDefinitionFormDef formDef)
-            throws JAXBException {
+            throws JAXBException, IOException {
 
         if (formDef.getItemGroupRef() != null) {
             for (ODMcomplexTypeDefinitionItemGroupRef itemGroupRef : formDef.getItemGroupRef()) {
@@ -240,7 +240,7 @@ public class OdmToFilesConverter {
                                ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
                                ODMcomplexTypeDefinitionFormDef formDef,
                                ODMcomplexTypeDefinitionItemGroupDef itemGroupDef)
-            throws JAXBException {
+            throws JAXBException, IOException {
 
         if (itemGroupDef.getItemRef() != null) {
             for (ODMcomplexTypeDefinitionItemRef itemRef : itemGroupDef.getItemRef()) {
@@ -256,7 +256,7 @@ public class OdmToFilesConverter {
                           ODMcomplexTypeDefinitionFormDef formDef,
                           ODMcomplexTypeDefinitionItemGroupDef itemGroupDef,
                           ODMcomplexTypeDefinitionItemDef itemDef)
-            throws JAXBException {
+            throws JAXBException, IOException {
         String studyName      = definingStudy.getGlobalVariables().getStudyName().getValue();
         String studyEventName = getTranslatedDescription(studyEventDef.getDescription(), "en", studyEventDef.getName());
         String formName       = getTranslatedDescription(formDef.getDescription(),       "en", formDef.getName());
@@ -314,7 +314,7 @@ public class OdmToFilesConverter {
     }
 
     private void saveCodeListItem(ODMcomplexTypeDefinitionStudy definingStudy,
-                                  ODMcomplexTypeDefinitionCodeListItem codeListItem) {
+                                  ODMcomplexTypeDefinitionCodeListItem codeListItem) throws IOException {
         String studyName = definingStudy.getGlobalVariables().getStudyName().getValue();
         String DataValue = ODMUtil.getTranslatedValue(codeListItem, "en");
         fileExporters.get(studyName).writeExportWordMap(DataValue);
