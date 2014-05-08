@@ -1,0 +1,95 @@
+<?xml version="1.0"?>
+
+<project name="odm" default="all" basedir=".">
+
+	<echo message="pulling in property files" />
+	<property file="build.properties" />
+
+	<property name="src.dir" value="${basedir}/src" />
+	<property name="test.dir" value="${basedir}/test" />
+	<property name="lib.dir" value="${basedir}/lib" />
+	<property name="scripts.dir" value="${basedir}/scripts" />
+	<property name="build.dir" value="${basedir}/build" />
+	<property name="deploy.dir" value="../redcapui/lib" />
+	<property name="gensrc.dir" value="${basedir}/gensrc" />
+	<property name="classes.dir" value="${basedir}/classes" />
+	<property name="xsd.dir" value="${basedir}/xsd" />
+
+	<path id="build.classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<target name="all" depends="clean,gensrc,compile,build,deploy" />
+
+	<target name="compile">
+		<mkdir dir="${classes.dir}" />
+		<javac destdir="${classes.dir}" debug="true">
+			<src path="${src.dir}" />
+			<src path="${test.dir}" />
+			<classpath refid="build.classpath" />
+			<compilerarg value="-Xlint" />
+		</javac>
+	</target>
+
+	<target name="gensrc">
+		<mkdir dir="${gensrc.dir}" />
+
+		<echo message="calling xjc generation tool: odm" />
+		<exec executable="xjc">
+			<arg value="-d" />
+			<arg value="${gensrc.dir}" />
+			<arg value="-b" />
+			<arg value="${xsd.dir}/OpenClinica-ToODM1-3-0-OC2-0/bindings.xml" />
+			<arg value="${xsd.dir}/OpenClinica-ToODM1-3-0-OC2-0/ODM1-3-0.xsd" />
+			<arg value="${xsd.dir}/OpenClinica-ToODM1-3-0-OC2-0/OpenClinica-ToODM1-3-0-OC2-0.xsd" />
+		</exec>
+
+		<mkdir dir="${classes.dir}" />
+		<javac srcdir="${gensrc.dir}" destdir="${classes.dir}" />
+	</target>
+
+	<target name="build" depends="compile">
+		<mkdir dir="${build.dir}" />
+		<mkdir dir="${build.dir}/lib" />
+		<mkdir dir="${build.dir}/conf" />
+		<mkdir dir="${build.dir}/logs" />
+		<mkdir dir="${build.dir}/files" />
+		<mkdir dir="${build.dir}/files/inbox" />
+		<mkdir dir="${build.dir}/files/archive" />
+
+		<jar destfile="${build.dir}/lib/redcap2i2b2.jar" basedir="${classes.dir}" />
+		<copy todir="${build.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+
+		<copy todir="${build.dir}">
+			<fileset dir="${scripts.dir}">
+				<include name="*.bat" />
+				<include name="*.sh" />
+			</fileset>
+		</copy>
+
+		<copy todir="${build.dir}/conf">
+			<fileset dir="${src.dir}">
+				<include name="*.properties" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="deploy" depends="build">
+		<copy file="${build.dir}/lib/redcap2i2b2.jar" todir="${deploy.dir}" overwrite="true" />
+	</target>
+
+	<target name="clean">
+		<delete failonerror="false">
+			<fileset dir="${classes.dir}" />
+			<fileset dir="${gensrc.dir}" />
+			<fileset dir="${build.dir}" />
+		</delete>
+	</target>
+
+</project>
