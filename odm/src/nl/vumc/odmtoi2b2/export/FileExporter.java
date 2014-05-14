@@ -6,21 +6,20 @@
 package nl.vumc.odmtoi2b2.export;
 
 import au.com.bytecode.opencsv.CSVWriter;
-import com.google.common.base.Joiner;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+
 
 /**
  * For each study, there is one FileExporter object. This class supports exporting ODM data to four files in i2b2
@@ -241,7 +240,7 @@ public class FileExporter {
     /**
      * Set the output filename for the clinical data file.
      *
-     * @param clinicalDataFileName the output filename.
+     * @param clinicalDataFileName The output filename.
      */
     private void setClinicalDataName(final String clinicalDataFileName) {
         try {
@@ -257,12 +256,14 @@ public class FileExporter {
      * appear in i2b2, the second column is the original tree structure from the ODM. Concepts are separated
      * by + symbols.
      *
-     * @param namePath
-     * @param preferredItemName
+     * @param namePath The full path of names, without the last node.
+     *                 This is used as column identifier in tranSMART.
+     * @param preferredItemName The name of the last node in the concept tree.
+     * @throws IOException An input-output exception.
      */
-    public void writeExportConceptMap(String namePath, String preferredItemName) throws IOException {
+    public void writeExportConceptMap(final String namePath, final String preferredItemName) throws IOException {
         if (writeConceptMapHeaders) {
-            List<String> rowAsList = new ArrayList<>();
+            final List<String> rowAsList = new ArrayList<>();
             rowAsList.add("tranSMART_path");
             rowAsList.add("EDC_path");
             rowAsList.add("Control Vocab Cd");
@@ -271,7 +272,7 @@ public class FileExporter {
         }
 
         final String path = String.format("%s+%s", namePath, preferredItemName);
-        List<String> rowAsList = new ArrayList<>();
+        final List<String> rowAsList = new ArrayList<>();
         rowAsList.add(path);
         rowAsList.add(path);
         rowAsList.add("");
@@ -283,13 +284,16 @@ public class FileExporter {
      * user's input concept map without the last node, then the column number and then the last node of the path.
      * todo: update comment above (user's input concept map: in manual mode; empty columns at the end)
      *
-     * @param namePath
-     * @param preferredItemName
-     * @param oidPath
+     * @param namePath The full path of names, without the last node.
+     *                 This is used as column identifier in tranSMART.
+     * @param preferredItemName The name of the last node in the concept tree.
+     * @param oidPath The full path of OID's, which provides a unique identifier for the columns.
+     * @throws IOException An input-output exception.
      */
-    public void writeExportColumns(String namePath, String preferredItemName, String oidPath) throws IOException {
+    public void writeExportColumns(final String namePath, final String preferredItemName, final String oidPath)
+            throws IOException {
         if (currentColumnNumber == 1) {
-            List<String> rowAsList = new ArrayList<>();
+            final List<String> rowAsList = new ArrayList<>();
             rowAsList.add("Filename");
             rowAsList.add("Category Code");
             rowAsList.add("Column Number");
@@ -298,7 +302,7 @@ public class FileExporter {
             rowAsList.add("Control Vocab Cd");
             writeCSVData(columnsWriter, rowAsList);
             // This first data line is required by tranSMART.
-            List<String> rowAsList2 = new ArrayList<>();
+            final List<String> rowAsList2 = new ArrayList<>();
             rowAsList2.add(clinicalDataFileName);
             rowAsList2.add("");
             rowAsList2.add("1");
@@ -309,7 +313,7 @@ public class FileExporter {
         }
         currentColumnNumber++;
         increasedColumnNumber = true;
-        List<String> rowAsList = new ArrayList<>();
+        final List<String> rowAsList = new ArrayList<>();
         rowAsList.add(clinicalDataFileName);
         rowAsList.add(namePath);
         rowAsList.add(currentColumnNumber + "");
@@ -326,12 +330,13 @@ public class FileExporter {
      * Write the word mapping file: first the clinical data file name, then the column number, then the data value,
      * and then the mapped word.
      *
-     * @param dataValue
+     * @param wordValue The possible values for those columns for which the values are mapped to a number.
+     * @throws IOException An input-output exception.
      */
 
-    public void writeExportWordMap(String dataValue) throws IOException {
+    public void writeExportWordMap(final String wordValue) throws IOException {
         if (writeWordMapHeaders) {
-            List<String> rowAsList = new ArrayList<>();
+            final List<String> rowAsList = new ArrayList<>();
             rowAsList.add("Filename");
             rowAsList.add("Column Number");
             rowAsList.add("Original Data Value");
@@ -346,33 +351,31 @@ public class FileExporter {
             valueCounter++;
         }
         final String value = String.valueOf(valueCounter);
-        wordMap.put(currentColumnId + dataValue, value);
-        List<String> rowAsList = new ArrayList<>();
+        wordMap.put(currentColumnId + wordValue, value);
+        final List<String> rowAsList = new ArrayList<>();
         rowAsList.add(clinicalDataFileName);
         rowAsList.add(currentColumnNumber + "");
         rowAsList.add(valueCounter + "");
-        rowAsList.add(dataValue);
+        rowAsList.add(wordValue);
         writeCSVData(wordMapWriter, rowAsList);
     }
 
     /**
      * Write the clinical data to a tab-delimited text file.
      *
-     * @param columnId
-     * @param wordValue
-     * @param bigDecimal
-     * @param patientNum
+     * @param columnId The full path of OID's, which identifies a column.
+     * @param dataValue The value, which might not yet be converted to a number.
+     * @param patientNum The identifier of the patient (aka subject).
      */
-    public void writeExportClinicalDataInfo(String columnId, String wordValue, BigDecimal bigDecimal, String patientNum) {
+    public void writeExportClinicalDataInfo(final String columnId,
+                                            final String dataValue,
+                                            final String patientNum) {
 
         /**
          * Mapping of column ID to values for the current patient.
          */
         Map<String, String> patientData = new HashMap<>();
 
-        if (bigDecimal != null) {
-            wordValue = bigDecimal.toString();
-        }
         currentPatientNumber = patientNum;
 
         if (clinicalDataMap.containsKey(currentPatientNumber)) {
@@ -384,22 +387,26 @@ public class FileExporter {
             clinicalDataMap.put(currentPatientNumber, patientData);
         }
 
-        if (wordMap.get(columnId + wordValue) != null) {
+        if (wordMap.get(columnId + dataValue) != null) {
             //fills clinical data with words from wordmap
-            patientData.put(columnId, wordMap.get(columnId + wordValue));
+            patientData.put(columnId, wordMap.get(columnId + dataValue));
         } else {
-            patientData.put(columnId, wordValue);
+            patientData.put(columnId, dataValue);
         }
 
         log.debug("Adding patient data for " + currentPatientNumber);
         clinicalDataMap.put(currentPatientNumber, patientData);
     }
 
+    /**
+     * Write the clinical data, which was kept in the memory, to the clinical data file.
+     * @throws IOException An input-output exception.
+     */
     public void writePatientData() throws IOException {
         writeCSVData(clinicalDataWriter, columnHeaders);
         for (final String patientId : patientIds) {
             final List<String> rowAsList = new ArrayList<>();
-            Map<String, String> patientData = clinicalDataMap.get(patientId);
+            final Map<String, String> patientData = clinicalDataMap.get(patientId);
             for (final String columnId : columnIds) {
                 rowAsList.add(patientData.get(columnId));
             }
@@ -407,9 +414,15 @@ public class FileExporter {
         }
     }
 
-    private static void writeCSVData(BufferedWriter writer, List<String> rowAsList) throws IOException {
-        String[] rowAsArray = rowAsList.toArray(new String[rowAsList.size()]);
-        CSVWriter csvWriter = new CSVWriter(writer,'\t', CSVWriter.NO_QUOTE_CHARACTER);
+    /**
+     * Write one line of tab separated data to the correct file.
+     * @param writer The correct file.
+     * @param rowAsList The line as a list of items that will be separated by tabs.
+     * @throws IOException An input-output exception.
+     */
+    private static void writeCSVData(final BufferedWriter writer, final List<String> rowAsList) throws IOException {
+        final CSVWriter csvWriter = new CSVWriter(writer, '\t', CSVWriter.NO_QUOTE_CHARACTER);
+        final String[] rowAsArray = rowAsList.toArray(new String[rowAsList.size()]);
         csvWriter.writeNext(rowAsArray);
     }
 
@@ -423,7 +436,7 @@ public class FileExporter {
             wordMapWriter.close();
             conceptMapWriter.close();
             clinicalDataWriter.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             e.printStackTrace();
         }
     }
@@ -434,15 +447,15 @@ public class FileExporter {
      * @param dataObject the data object that is prepared for loading to the database
      */
     @SuppressWarnings("UnusedDeclaration")
-    public void writeExportDataObject(Object dataObject) {
-        String className = dataObject.getClass().getName();
+    public void writeExportDataObject(final Object dataObject) {
+        final String className = dataObject.getClass().getName();
         log.info("[I2B2ODMStudyHandler] " + className.substring(className.lastIndexOf('.') + 1) + ":");
         try {
             for (Field field : dataObject.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
                 log.info("- " + field.getName() + ": " + field.get(dataObject));
             }
-        } catch (IllegalAccessException e) {
+        } catch (final IllegalAccessException e) {
             e.printStackTrace();
         }
         log.info("");

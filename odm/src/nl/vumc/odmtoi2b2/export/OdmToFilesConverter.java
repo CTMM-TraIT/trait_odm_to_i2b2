@@ -8,11 +8,6 @@ package nl.vumc.odmtoi2b2.export;
 import com.recomdata.i2b2.util.ODMUtil;
 import com.recomdata.odm.MetaDataWithIncludes;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.cdisk.odm.jaxb.*;
-import org.jsoup.Jsoup;
-
 import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
@@ -21,6 +16,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.cdisk.odm.jaxb.*;
+import org.jsoup.Jsoup;
 
 /**
  * In this class, the data object odm is crawled systematically through a series of loops.
@@ -40,12 +40,15 @@ import java.util.Map;
  */
 public class OdmToFilesConverter {
 
-    private String STUDYSITE = "Study-site";
-
     /**
      * The log for this class.
      */
     private static final Log log = LogFactory.getLog(OdmToFilesConverter.class);
+
+    /**
+     * The name for the node in tranSMART under which different sites will be arranged.
+     */
+    private String STUDYSITE = "Study-site";
 
     /**
      * The odm object with all the content from the ODM xml file.
@@ -379,7 +382,7 @@ public class OdmToFilesConverter {
             }
         }
         if (modelStudiesAsColumn) {
-            fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, wordValue, null, patientNum);
+            fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, wordValue, patientNum);
         }
     }
 
@@ -459,7 +462,8 @@ public class OdmToFilesConverter {
             bigDecimal = null;
         }
 
-        fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, wordValue, bigDecimal, patientNum);
+        final String finalValue = (bigDecimal != null) ? bigDecimal.toString() : wordValue;
+        fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, finalValue, patientNum);
     }
 
     private MetaDataWithIncludes getMetaData(ODMcomplexTypeDefinitionStudy study) {
