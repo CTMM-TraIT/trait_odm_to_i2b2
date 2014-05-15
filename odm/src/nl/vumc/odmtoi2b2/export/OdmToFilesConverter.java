@@ -23,10 +23,20 @@ import org.cdisk.odm.jaxb.*;
 import org.jsoup.Jsoup;
 
 /**
- * In this class, the data object odm is crawled systematically through a series of loops.
+ * This class goes through the tree-structure of the odm object that was constructed by the
+ * unmarshaller. Going through the tree-structure of the odm object is done in a series of
+ * nested for-loops, in which each nested level is assigned to a separate method.
  * First, the metadata is crawled; after that, the clinical data. The data that is retrieved is passed
  * to a file exporter (one for each study), which writes the data to a set of four files that can be
  * imported by tranSMART.
+ * For the metadata, the order is: study - event - form (= CRF) - itemgroup - item - codeListItem
+ *
+ * The situation becomes more complicated when a study is spread over different sites (e.g. hospitals).
+ * In that case a separate "study" is present in the ODM file for each site, even though it is in fact
+ * the same study. In that case, the metadata is defined just once and is referred to in the so-called
+ * studies (in fact sites) by a metadata include tag. These study-sites contain the clinical data that
+ * was assembled in that site. An extra column is created to indicate which patient was treated in which
+ * site.
  *
  * study 1      study 2
  * metadata     <-(study 1)
@@ -46,7 +56,28 @@ public class OdmToFilesConverter {
     private static final Log log = LogFactory.getLog(OdmToFilesConverter.class);
 
     /**
-     * The name for the node in tranSMART under which different sites will be arranged.
+     * Is set to true when different studies that are written to the same files,
+     * need to be modelled as a separate Study-site column.
+     */
+    Boolean modelStudiesAsColumn;
+
+    /**
+     * The language variant of the label that is retrieved. en = english.
+     */
+    private String LANGUAGE = "en";
+
+    /**
+     * The separator that tranSMART expects to separate the names in the namepath.
+     */
+    private String PLUS = "+";
+
+    /**
+     * A separator to separate OIDs in the OIDPath.
+     */
+    private String SEP = "\\";
+
+    /**
+     * The name for the node in tranSMART under which different studies will be arranged as sites.
      */
     private String STUDYSITE = "Study-site";
 
@@ -59,12 +90,6 @@ public class OdmToFilesConverter {
      * The path to the directory where the export files will be written to (has no slash yet).
      */
     private String exportFilePath;
-
-    /**
-     * Is set to true when different studies that are written to the same files,
-     * need to be modelled as a separate column.
-     */
-    Boolean modelStudiesAsColumn;
 
     /**
      * The metadata of a study, including the metadata fragments that are included with an include tag.
@@ -93,8 +118,9 @@ public class OdmToFilesConverter {
     private Map<String, String> studies;
 
 
-
-
+    /**
+     * This class is instantiated once for each ODM file.
+     */
     public OdmToFilesConverter() {
         this.fileExporters = new HashMap<>();
         this.metaDataMap = new HashMap<>();
@@ -103,7 +129,18 @@ public class OdmToFilesConverter {
         this.studies = new HashMap<>();
     }
 
-    public void processODM(ODM odm, String exportFilePath) throws IOException, JAXBException {
+    /**
+     * This method is called once for each ODM file. It separates the processing of the ODM file
+     * in two phases: first the metadata and then the clinical data.
+     *
+     * @param odm The odm object with a tree-structure that is constructed from the XML file by
+     *            the unmarshaller. The unmarshaller uses automatically generated Java sources,
+     *            generated from xsd files.
+     * @param exportFilePath The path to the directory in which the export files will be written.
+     * @throws IOException An input-output exception.
+     * @throws JAXBException A Java Architecture for XML Binding exception.
+     */
+    public void processODM(final ODM odm, final String exportFilePath) throws IOException, JAXBException {
         this.odm = odm;
         this.exportFilePath = exportFilePath;
 
@@ -111,6 +148,9 @@ public class OdmToFilesConverter {
         processODMClinicalData();
     }
 
+    /**
+     * Closes the files after the data has been written.
+     */
     public void closeExportWriters() {
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
             final String studyName = study.getGlobalVariables().getStudyName().getValue();
@@ -121,6 +161,12 @@ public class OdmToFilesConverter {
         }
     }
 
+    /**
+     * Process the metadata by traversing all the studies in the ODM file.
+     *
+     * @throws IOException An input-output exception.
+     * @throws JAXBException A Java Architecture for XML Binding exception.
+     */
     private void processODMStudy() throws IOException, JAXBException {
         // Need to traverse through the study metadata to:
         // 1) Lookup all metadata definition values and paths for each tree leaf.
@@ -129,27 +175,31 @@ public class OdmToFilesConverter {
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
             saveStudy(study);
         }
+        writeStudySites();
+    }
 
-        /**
-         * The metadata of studies are sometimes defined by other studies. This correspondence is saved
-         * in the studies map, where the study is the key and the defining study the value. Take for instance
-         * the following studies map:
-         * study 1 - study 1
-         * study A - study 1
-         * study B - study 1
-         * study 2 - study 2
-         * We want an extra line in the columns file of study 1, and three extra lines in its wordmap file. We
-         * do not want anything extra for study 2.
-         */
-
-        Map<String, Boolean> handledStudies = new HashMap<>();
+    /**
+     * The metadata of studies are sometimes defined by other studies. This correspondence is saved
+     * in the studies map, where the study is the key and the defining study the value. Take for instance
+     * the following studies map:
+     * study 1 - study 1
+     * study A - study 1
+     * study B - study 1
+     * study 2 - study 2
+     * We want an extra line in the columns file of study 1, and three extra lines in its wordmap file. We
+     * do not want anything extra for study 2.
+     *
+     * @throws IOException An input-output exception.
+     */
+    private void writeStudySites() throws IOException {
+        final Map<String, Boolean> handledStudies = new HashMap<>();
         for (String evaluatedStudyName : studies.keySet()) {
             handledStudies.put(studies.get(evaluatedStudyName), false);
         }
         for (String evaluatedStudyName : studies.keySet()) {
-            String definingStudyName = studies.get(evaluatedStudyName);
+            final String definingStudyName = studies.get(evaluatedStudyName);
             if (!evaluatedStudyName.equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
-                String oidPath = definingStudyName + "\\" + STUDYSITE;
+                final String oidPath = definingStudyName + SEP + STUDYSITE;
                 fileExporters.get(definingStudyName).writeExportColumns("", STUDYSITE, oidPath);
                 for (String studyName : studies.keySet()) {
                     if (studies.get(studyName).equals(definingStudyName)) {
@@ -162,22 +212,30 @@ public class OdmToFilesConverter {
     }
 
     /**
+     * Handles a study in three steps:
+     * 1. Handle included metadata issue.
+     * 2. Create a fileExporter object for the study, but not if it is a study-site. If the study is not
+     *    a study-site, it contains its own metadata. It is then called a defining study.
+     * 3. Loop through all the events.
      *
      * @param study the current ODM study
      *              definingStudy: the furthest study from which metadata is included with an include tag
-     * @throws IOException
-     * @throws JAXBException
+     * @throws IOException An input-output exception.
+     * @throws JAXBException A Java Architecture for XML Binding exception.
      */
-    private void saveStudy(ODMcomplexTypeDefinitionStudy study) throws IOException, JAXBException {
-        String studyName = study.getGlobalVariables().getStudyName().getValue();
-        String studyOID = study.getOID();
-        ODMcomplexTypeDefinitionMetaDataVersion metaData = study.getMetaDataVersion().get(0);
-        ODMcomplexTypeDefinitionInclude includedMetaData = metaData.getInclude();
-        List<MetaDataWithIncludes> metaDataWithIncludesList = new ArrayList<>();
+    private void saveStudy(final ODMcomplexTypeDefinitionStudy study) throws IOException, JAXBException {
+        final String studyName = study.getGlobalVariables().getStudyName().getValue();
+        final String studyOID = study.getOID();
+
+        // 1. Handle included metadata issue.
+        final ODMcomplexTypeDefinitionMetaDataVersion metaData = study.getMetaDataVersion().get(0);
+        final ODMcomplexTypeDefinitionInclude includedMetaData = metaData.getInclude();
+        final List<MetaDataWithIncludes> metaDataWithIncludesList = new ArrayList<>();
         if (includedMetaData != null) {
-            String includedMetaDataKey = includedMetaData.getStudyOID() + "/" + includedMetaData.getMetaDataVersionOID();
+            final String includedMetaDataKey = includedMetaData.getStudyOID() + SEP + includedMetaData.getMetaDataVersionOID();
             if (metaDataMap.containsKey(includedMetaDataKey)) {
-                // todo: recursive includes.
+//                The following two lines may be of use in the case of recursive includes. We assume that
+//                the situation will not become so complicated for now.
 //                List<MetaDataWithIncludes> tbd = null;
 //                MetaDataWithIncludes backup = new MetaDataWithIncludes(metaDataMap.get(includedMetaDataKey), tbd);
                 metaDataWithIncludesList.add(metaDataMap.get(includedMetaDataKey));
@@ -187,51 +245,77 @@ public class OdmToFilesConverter {
         metaDataWithIncludes = new MetaDataWithIncludes(metaData, studyOID, metaDataWithIncludesList);
         metaDataMap.put(getMetaDataKey(study), metaDataWithIncludes);
 
-        ODMcomplexTypeDefinitionStudy definingStudy = metaDataWithIncludes.getDefiningStudy(odm);
-        String definingStudyName = definingStudy.getGlobalVariables().getStudyName().getValue();
+        // 2. Create a fileExporter for the defining studies.
+        final ODMcomplexTypeDefinitionStudy definingStudy = metaDataWithIncludes.getDefiningStudy(odm);
+        final String definingStudyName = definingStudy.getGlobalVariables().getStudyName().getValue();
         studies.put(studyName, definingStudyName);
 
         if (!fileExporters.containsKey(definingStudyName)) {
             log.debug("Creating file exporter for study " + definingStudyName);
-            FileExporter fileExporter = new FileExporter(exportFilePath + new File(File.separator), definingStudyName);
+            final FileExporter fileExporter = new FileExporter(exportFilePath + new File(File.separator), definingStudyName);
             fileExporters.put(definingStudyName, fileExporter);
         }
 
+        // 3. Loop through the events.
         if ((metaData.getProtocol().getStudyEventRef() != null) && (includedMetaData == null)) {
             for (ODMcomplexTypeDefinitionStudyEventRef studyEventRef : metaData.getProtocol().getStudyEventRef()) {
-                ODMcomplexTypeDefinitionStudyEventDef studyEventDef =
+                final ODMcomplexTypeDefinitionStudyEventDef studyEventDef =
                         metaDataWithIncludes.getStudyEventDef(studyEventRef.getStudyEventOID());
                 saveEvent(definingStudy, studyEventDef);
             }
         }
     }
 
-    private String getMetaDataKey(ODMcomplexTypeDefinitionStudy study) {
-        return study.getOID() + "/" + study.getMetaDataVersion().get(0).getOID();
+    /**
+     * Returns a unique ID for the first pack of metadata (we assume there is only one pack of metadata)
+     * for a given study.
+     *
+     * @param study The given study.
+     * @return The unique ID.
+     */
+    private String getMetaDataKey(final ODMcomplexTypeDefinitionStudy study) {
+        return study.getOID() + SEP + study.getMetaDataVersion().get(0).getOID();
     }
 
-    private void saveEvent(ODMcomplexTypeDefinitionStudy definingStudy,
-                           ODMcomplexTypeDefinitionStudyEventDef studyEventDef)
+    /**
+     * Handles an event by looping through all its forms (= Case Report Forms).
+     *
+     * @param definingStudy The study in which the metadata is defined.
+     * @param studyEventDef The event object, part of the odm object, that contains the data.
+     * @throws IOException An input-output exception.
+     * @throws JAXBException A Java Architecture for XML Binding exception.
+     */
+    private void saveEvent(final ODMcomplexTypeDefinitionStudy definingStudy,
+                           final ODMcomplexTypeDefinitionStudyEventDef studyEventDef)
             throws JAXBException, IOException {
 
         if (studyEventDef.getFormRef() != null) {
             for (ODMcomplexTypeDefinitionFormRef formRef : studyEventDef.getFormRef()) {
-//              ODMcomplexTypeDefinitionFormDef formDef = ODMUtil.getFormDef(study, formRef.getFormOID());
-                ODMcomplexTypeDefinitionFormDef formDef = metaDataWithIncludes.getFormDef(formRef.getFormOID());
+//              final ODMcomplexTypeDefinitionFormDef formDef = ODMUtil.getFormDef(study, formRef.getFormOID());
+                final ODMcomplexTypeDefinitionFormDef formDef = metaDataWithIncludes.getFormDef(formRef.getFormOID());
 
                 saveForm(definingStudy, studyEventDef, formDef);
             }
         }
     }
 
-    private void saveForm(ODMcomplexTypeDefinitionStudy definingStudy,
-                          ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
-                          ODMcomplexTypeDefinitionFormDef formDef)
+    /**
+     * Handles a form by looping through all its itemgroups.
+     *
+     * @param definingStudy The study in which the metadata is defined.
+     * @param studyEventDef The event object, part of the study object, that contains the data.
+     * @param formDef  The form object, part of the event object, that contains the data.
+     * @throws IOException An input-output exception.
+     * @throws JAXBException A Java Architecture for XML Binding exception.
+     */
+    private void saveForm(final ODMcomplexTypeDefinitionStudy definingStudy,
+                          final ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                          final ODMcomplexTypeDefinitionFormDef formDef)
             throws JAXBException, IOException {
 
         if (formDef.getItemGroupRef() != null) {
             for (ODMcomplexTypeDefinitionItemGroupRef itemGroupRef : formDef.getItemGroupRef()) {
-                ODMcomplexTypeDefinitionItemGroupDef itemGroupDef =
+                final ODMcomplexTypeDefinitionItemGroupDef itemGroupDef =
                         metaDataWithIncludes.getItemGroupDef(itemGroupRef.getItemGroupOID());
 
                 saveItemGroup(definingStudy, studyEventDef, formDef, itemGroupDef);
@@ -239,47 +323,70 @@ public class OdmToFilesConverter {
         }
     }
 
-    private void saveItemGroup(ODMcomplexTypeDefinitionStudy definingStudy,
-                               ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
-                               ODMcomplexTypeDefinitionFormDef formDef,
-                               ODMcomplexTypeDefinitionItemGroupDef itemGroupDef)
+    /**
+     * Handles an itemGroup by looping through all its items.
+     *
+     * @param definingStudy The study in which the metadata is defined.
+     * @param studyEventDef The event object, part of the study object, that contains the data.
+     * @param formDef  The form object, part of the event object, that contains the data.
+     * @param itemGroupDef The itemGroup object, part of the form object, that contains the data.
+     * @throws IOException An input-output exception.
+     * @throws JAXBException A Java Architecture for XML Binding exception.
+     */
+    private void saveItemGroup(final ODMcomplexTypeDefinitionStudy definingStudy,
+                               final ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                               final ODMcomplexTypeDefinitionFormDef formDef,
+                               final ODMcomplexTypeDefinitionItemGroupDef itemGroupDef)
             throws JAXBException, IOException {
 
         if (itemGroupDef.getItemRef() != null) {
             for (ODMcomplexTypeDefinitionItemRef itemRef : itemGroupDef.getItemRef()) {
-                ODMcomplexTypeDefinitionItemDef itemDef = metaDataWithIncludes.getItemDef(itemRef.getItemOID());
+                final ODMcomplexTypeDefinitionItemDef itemDef =
+                        metaDataWithIncludes.getItemDef(itemRef.getItemOID());
 
                 saveItem(definingStudy, studyEventDef, formDef, itemGroupDef, itemDef);
             }
         }
     }
 
-    private void saveItem(ODMcomplexTypeDefinitionStudy definingStudy,
-                          ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
-                          ODMcomplexTypeDefinitionFormDef formDef,
-                          ODMcomplexTypeDefinitionItemGroupDef itemGroupDef,
-                          ODMcomplexTypeDefinitionItemDef itemDef)
+    /**
+     * Handles an item. In this method the data assembled in all the loops are written to the
+     * columns file. After that it loops through the codes list for each item.
+     *
+     * @param definingStudy The study in which the metadata is defined.
+     * @param studyEventDef The event object, part of the study object, that contains the data.
+     * @param formDef  The form object, part of the event object, that contains the data.
+     * @param itemGroupDef The itemGroup object, part of the form object, that contains the data.
+     * @param itemDef The item object, part of the itemGroup object, that contains the data.
+     * @throws IOException An input-output exception.
+     * @throws JAXBException A Java Architecture for XML Binding exception.
+     */
+    private void saveItem(final ODMcomplexTypeDefinitionStudy definingStudy,
+                          final ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                          final ODMcomplexTypeDefinitionFormDef formDef,
+                          final ODMcomplexTypeDefinitionItemGroupDef itemGroupDef,
+                          final ODMcomplexTypeDefinitionItemDef itemDef)
             throws JAXBException, IOException {
-        String studyName      = definingStudy.getGlobalVariables().getStudyName().getValue();
-        String studyEventName = getTranslatedDescription(studyEventDef.getDescription(), "en", studyEventDef.getName());
-        String formName       = getTranslatedDescription(formDef.getDescription(),       "en", formDef.getName());
-        String itemGroupName  = getTranslatedDescription(itemGroupDef.getDescription(),  "en", itemGroupDef.getName());
-        String namePath       = studyEventName + "+" + formName + "+" + itemGroupName;
-        String preferredItemName = getPreferredItemName(itemDef, namePath);
+        final String studyName      = definingStudy.getGlobalVariables().getStudyName().getValue();
+        final String studyEventName = getTranslatedDescription(studyEventDef.getDescription(), LANGUAGE, studyEventDef.getName());
+        final String formName       = getTranslatedDescription(formDef.getDescription(),       LANGUAGE, formDef.getName());
+        final String itemGroupName  = getTranslatedDescription(itemGroupDef.getDescription(),  LANGUAGE, itemGroupDef.getName());
+        final String namePath       = studyEventName + PLUS + formName + PLUS + itemGroupName;
+        final String preferredItemName = getPreferredItemName(itemDef, namePath);
 
-        String oidPath = definingStudy.getOID() + "\\"
-                + studyEventDef.getOID() + "\\"
-                + formDef.getOID() + "\\"
-                + itemDef.getOID() + "\\";
+        final String oidPath = definingStudy.getOID() + SEP
+                + studyEventDef.getOID() + SEP
+                + formDef.getOID() + SEP
+                + itemDef.getOID() + SEP;
 
         log.trace("Write concept map and columns; name path: " + namePath + "; preferred item name: "
-                  + preferredItemName + "; OID path: " + oidPath);
+                + preferredItemName + "; OID path: " + oidPath);
         fileExporters.get(studyName).writeExportConceptMap(namePath, preferredItemName);
         fileExporters.get(studyName).writeExportColumns(namePath, preferredItemName, oidPath);
 
         if (itemDef.getCodeListRef() != null) {
-            ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(definingStudy,
-                                                                            itemDef.getCodeListRef().getCodeListOID());
+            final ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(definingStudy,
+                    itemDef.getCodeListRef().getCodeListOID());
 
             if (codeList != null) {
                 for (ODMcomplexTypeDefinitionCodeListItem codeListItem : codeList.getCodeListItem()) {
@@ -289,23 +396,39 @@ public class OdmToFilesConverter {
         }
     }
 
-    private String getPreferredItemName(ODMcomplexTypeDefinitionItemDef itemDef, String namePath) {
-        String itemName       = getTranslatedDescription(itemDef.getDescription(),       "en", itemDef.getName());
-        String questionValue  = getQuestionValue(itemDef);
-        String preferredItemNameWithHtml = questionValue != null ? questionValue : itemName;
+    /**
+     * This method strikes a balance in choosing for the human readable name in questionValue, or a
+     * unique identifier in itemName. At least the namePath + preferredItemName must be unique for
+     * loading in tranSMART. HTML tags are removed from the human readable strings.
+     *
+     * @param itemDef The item object in which both questionValue as itemName can be found.
+     * @param namePath The namePath that identifies a column, for checking uniqueness.
+     * @return The preferred name for an item to be written to the columns file.
+     */
+    private String getPreferredItemName(final ODMcomplexTypeDefinitionItemDef itemDef, final String namePath) {
+        final String itemName       = getTranslatedDescription(itemDef.getDescription(),       LANGUAGE, itemDef.getName());
+        final String questionValue  = getQuestionValue(itemDef);
+        final String preferredItemNameWithHtml = questionValue != null ? questionValue : itemName;
         String preferredItemName =  Jsoup.parse(preferredItemNameWithHtml).text();
         for (String fullNamePath : columnFullNameList) {
-            if (fullNamePath.equals(namePath + "+" + preferredItemName)) {
-                log.warn("\"" + fullNamePath + "\" was found more than once. " +
-                        itemName + " is now taken as preferred name.");
+            if (fullNamePath.equals(namePath + PLUS + preferredItemName)) {
+                log.warn("\"" + fullNamePath + "\" was found more than once. "
+                              + itemName + " is now taken as preferred name.");
                 preferredItemName = itemName;
             }
         }
-        columnFullNameList.add(namePath + "+" + preferredItemName);
+        columnFullNameList.add(namePath + PLUS + preferredItemName);
         return preferredItemName;
     }
 
-    private String getQuestionValue(ODMcomplexTypeDefinitionItemDef itemDef) {
+    /**
+     * This method checks whether a question value is present in the item object and returns it.
+     * It returns null otherwise.
+     *
+     * @param itemDef The item object.
+     * @return The question value, or null.
+     */
+    private String getQuestionValue(final ODMcomplexTypeDefinitionItemDef itemDef) {
         return itemDef.getQuestion() != null
                 && itemDef.getQuestion().getTranslatedText() != null
                 && itemDef.getQuestion().getTranslatedText().size() >= 1
@@ -316,10 +439,11 @@ public class OdmToFilesConverter {
                 : null;
     }
 
+
     private void saveCodeListItem(ODMcomplexTypeDefinitionStudy definingStudy,
                                   ODMcomplexTypeDefinitionCodeListItem codeListItem) throws IOException {
         String studyName = definingStudy.getGlobalVariables().getStudyName().getValue();
-        String DataValue = ODMUtil.getTranslatedValue(codeListItem, "en");
+        String DataValue = ODMUtil.getTranslatedValue(codeListItem, LANGUAGE);
         fileExporters.get(studyName).writeExportWordMap(DataValue);
 
     }
@@ -372,7 +496,7 @@ public class OdmToFilesConverter {
                                  ODMcomplexTypeDefinitionSubjectData subjectData) {
         ODMcomplexTypeDefinitionStudy definingStudy = metaDataMap.get(getMetaDataKey(study)).getDefiningStudy(odm);
         String definingStudyName = definingStudy.getGlobalVariables().getStudyName().getValue();
-        String oidPath = definingStudyName + "\\" + STUDYSITE;
+        String oidPath = definingStudyName + SEP + STUDYSITE;
         String wordValue = study.getGlobalVariables().getStudyName().getValue();
         String patientNum = subjectData.getSubjectKey();
 
@@ -431,10 +555,10 @@ public class OdmToFilesConverter {
                               ODMcomplexTypeDefinitionItemData itemData) {
         ODMcomplexTypeDefinitionStudy definingStudy = metaDataMap.get(getMetaDataKey(study)).getDefiningStudy(odm);
         String definingStudyName = definingStudy.getGlobalVariables().getStudyName().getValue();
-        String oidPath = definingStudy.getOID() + "\\"
-                + eventData.getStudyEventOID() + "\\"
-                + formData.getFormOID() + "\\"
-                + itemData.getItemOID() + "\\";
+        String oidPath = definingStudy.getOID() + SEP
+                + eventData.getStudyEventOID() + SEP
+                + formData.getFormOID() + SEP
+                + itemData.getItemOID() + SEP;
         String itemValue = itemData.getValue();
 //      ODMcomplexTypeDefinitionItemDef item = ODMUtil.getItem(study, itemData.getItemOID());
         ODMcomplexTypeDefinitionItemDef itemDef = getMetaData(study).getItemDef(itemData.getItemOID());
@@ -452,7 +576,7 @@ public class OdmToFilesConverter {
                 log.error("Code list item for coded value: " + itemValue + " not found in code list: " + codeList.getOID());
                 return;
             } else {
-                wordValue = ODMUtil.getTranslatedValue(codeListItem, "en");
+                wordValue = ODMUtil.getTranslatedValue(codeListItem, LANGUAGE);
             }
         } else if (ODMUtil.isNumericDataType(itemDef.getDataType())) {
             wordValue = "";
