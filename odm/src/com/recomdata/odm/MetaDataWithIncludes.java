@@ -1,18 +1,37 @@
-package com.recomdata.odm;
+/**
+ * Copyright(c) 2014 VU University Medical Center.
+ * Licensed under the Apache License version 2.0 (see http://opensource.org/licenses/Apache-2.0).
+ */
 
-import org.cdisk.odm.jaxb.*;
+package com.recomdata.odm;
 
 import java.util.List;
 
+import org.cdisk.odm.jaxb.*;
+
 /**
- * Created with IntelliJ IDEA.
- * User: Freek
- * Date: 11-2-14
- * Time: 12:00
+ * A MetaDataWithIncludes object contains a block of metadata that belongs to a study, even if that
+ * metadata is spread over different metadata blocks and over different studies. It contains all the
+ * information to retrieve the correct metadata.
+ *
+ * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
+ * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
 public class MetaDataWithIncludes {
+
+    /**
+     * The classical metadata block, which is incomplete if it contains an includes tag.
+     */
     private ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion;
+
+    /**
+     * The study that is described by the metadata.
+     */
     private String studyOID;
+
+    /**
+     *
+     */
     private List<MetaDataWithIncludes> metaDataIncludes;
 
     public MetaDataWithIncludes(final ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
