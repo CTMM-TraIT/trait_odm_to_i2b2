@@ -54,16 +54,6 @@ public class FileExporter {
     private final String studyName;
 
     /**
-     * Whether the line with the concept map headers still has to be written to file.
-     */
-    private boolean writeConceptMapHeaders;
-
-    /**
-     * The writer for writing the concept map file.
-     */
-    private BufferedWriter conceptMapWriter;
-
-    /**
      * The writer for writing the columns file.
      */
     private BufferedWriter columnsWriter;
@@ -143,17 +133,11 @@ public class FileExporter {
      */
     public FileExporter(final String exportFilePath, final String studyName) throws IOException {
         final String studyNameWithUnderscores = studyName.replace(' ', '_');
-        final String conceptMapFileName = studyNameWithUnderscores + "_concept_map.txt";
         final String columnsFileName = studyNameWithUnderscores + "_columns.txt";
         final String wordMapFileName = studyNameWithUnderscores + "_word_map.txt";
         this.clinicalDataFileName = studyNameWithUnderscores + "_clinical_data.txt";
-        setConceptMapName(conceptMapFileName);
-        setColumnsName(columnsFileName);
-        setWordMapName(wordMapFileName);
-        setClinicalDataName(this.clinicalDataFileName);
         this.exportFilePath = exportFilePath;
         this.studyName = studyNameWithUnderscores;
-        this.writeConceptMapHeaders = true;
         this.writeWordMapHeaders = true;
         this.valueCounter = 1;
         this.increasedColumnNumber = false;
@@ -166,6 +150,9 @@ public class FileExporter {
         this.patientIds = new ArrayList<>();
         this.wordMap = new HashMap<>();
         this.clinicalDataMap = new HashMap<>();
+        setColumnsName(columnsFileName);
+        setWordMapName(wordMapFileName);
+        setClinicalDataName(this.clinicalDataFileName);
     }
 
     /**
@@ -197,20 +184,6 @@ public class FileExporter {
     }
 
     /**
-     * Set the output filename for the concept map metadata file.
-     *
-     * @param conceptMapFileName the output filename.
-     */
-    private void setConceptMapName(final String conceptMapFileName) {
-        try {
-            logger.info("Writing concept map to file " + exportFilePath + conceptMapFileName);
-            conceptMapWriter = new BufferedWriter(new FileWriter(exportFilePath + conceptMapFileName));
-        } catch (final IOException e) {
-            logger.error("Error while setting the concept map filename to " + exportFilePath + conceptMapFileName + ".", e);
-        }
-    }
-
-    /**
      * Set the output filename for the clinical data file.
      *
      * @param clinicalDataFileName The output filename.
@@ -222,34 +195,6 @@ public class FileExporter {
         } catch (final IOException e) {
             logger.error("Error while setting the clinical data filename.", e);
         }
-    }
-
-    /**
-     * Write the concept mapping in two columns. The first column represents the tree structure as it will
-     * appear in i2b2, the second column is the original tree structure from the ODM. Concepts are separated
-     * by + symbols.
-     *
-     * @param namePath The full path of names, without the last node.
-     *                 This is used as column identifier in tranSMART.
-     * @param preferredItemName The name of the last node in the concept tree.
-     * @throws IOException An input-output exception.
-     */
-    public void writeExportConceptMap(final String namePath, final String preferredItemName) throws IOException {
-        if (writeConceptMapHeaders) {
-            final List<String> rowAsList = new ArrayList<>();
-            rowAsList.add("tranSMART_path");
-            rowAsList.add("EDC_path");
-            rowAsList.add("Control Vocab Cd");
-            writeCSVData(conceptMapWriter, rowAsList);
-            writeConceptMapHeaders = false;
-        }
-
-        final String path = String.format("%s+%s", namePath, preferredItemName);
-        final List<String> rowAsList = new ArrayList<>();
-        rowAsList.add(path);
-        rowAsList.add(path);
-        rowAsList.add("");
-        writeCSVData(conceptMapWriter, rowAsList);
     }
 
     /**
@@ -403,7 +348,6 @@ public class FileExporter {
             writePatientData();
             columnsWriter.close();
             wordMapWriter.close();
-            conceptMapWriter.close();
             clinicalDataWriter.close();
         } catch (final IOException e) {
             e.printStackTrace();
@@ -411,9 +355,9 @@ public class FileExporter {
     }
 
     /**
-     * For debugging: write all the data fields that would be written to the database in text-form.
+     * For debugging: write all the data fields that would be written to the i2b2 database in text-form.
      *
-     * @param dataObject the data object that is prepared for loading to the database
+     * @param dataObject The data object that is prepared for loading to the database.
      */
     @SuppressWarnings("UnusedDeclaration")
     public void writeExportDataObject(final Object dataObject) {

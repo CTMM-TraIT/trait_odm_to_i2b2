@@ -44,11 +44,10 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * 
 	 * @param odmXmlPath the ODM file to process.
 	 * @param exportFilePath the path of the export file.
-     * todo: parameter userDefinedConversionFile is no longer needed?
 	 * @throws Exception
 	 */
 	@SuppressWarnings("UnusedParameters")
-    public void loadODMFile2I2B2(String odmXmlPath, String exportFilePath, String userDefinedConversionFile) throws Exception {
+    public void loadODMFile2I2B2(String odmXmlPath, String exportFilePath) throws Exception {
 		File xmlFile = new File(odmXmlPath);
 
 		if (!xmlFile.exists()) {
@@ -61,7 +60,6 @@ public class I2B2ODMStudyHandlerCMLClient {
 		ODM odm = odmLoader.unmarshall(xmlFile);
 
 		if (odm == null || odm.getStudy() == null || odm.getStudy().size() == 0) {
-			// TODO: Define more specific exception
 			throw new Exception("No study definitions were found in ODM file.");
 		}
 
@@ -86,16 +84,14 @@ public class I2B2ODMStudyHandlerCMLClient {
             PropertyConfigurator.configure(args[0]);
 
 			if (args.length < 3) {
-				log.info("Please provide the logging configuration (log4j.properties), "
-                         + "ODM file (plus path) to process, "
-                         + "the path of the export directory (without slash), "
-                         + "and an optional concept mapping file (plus path).");
+				log.info("Please provide 1. the logging configuration (log4j.properties), "
+                         + "2. the ODM file (plus path) to process, and "
+                         + "3. the path of the export directory (without slash).");
 				return;
 			}
 
 			String odmFilePath = args[1];
             String exportFilePath = args[2];
-            String userDefinedConversionFile = args.length >= 4 ? args[3] : null;
 
 			if (EXPORT_TO_DATABASE) {
                 log.info("Initializing database connection...");
@@ -106,7 +102,7 @@ public class I2B2ODMStudyHandlerCMLClient {
             log.info("Parsing ODM file ..." + odmFilePath);
 
 			I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
-			client.loadODMFile2I2B2(odmFilePath, exportFilePath, userDefinedConversionFile);
+			client.loadODMFile2I2B2(odmFilePath, exportFilePath);
 
 			if (EXPORT_TO_DATABASE) {
                 log.info("Releasing database connection.");

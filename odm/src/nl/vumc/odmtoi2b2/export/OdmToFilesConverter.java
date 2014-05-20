@@ -275,7 +275,7 @@ public class OdmToFilesConverter {
 
         if (!fileExporters.containsKey(definingStudyName)) {
             logger.debug("Creating file exporter for study " + definingStudyName);
-            final FileExporter fileExporter = new FileExporter(exportFilePath + new File(File.separator), definingStudyName);
+            final FileExporter fileExporter = new FileExporter(exportFilePath + File.separator, definingStudyName);
             fileExporters.put(definingStudyName, fileExporter);
         }
 
@@ -415,7 +415,6 @@ public class OdmToFilesConverter {
 
         logger.trace("Write concept map and columns; name path: " + namePath + "; preferred item name: "
                 + preferredItemName + "; OID path: " + oidPath);
-        fileExporters.get(studyName).writeExportConceptMap(namePath, preferredItemName);
         fileExporters.get(studyName).writeExportColumns(namePath, preferredItemName, oidPath);
 
         if (itemDef.getCodeListRef() != null) {
@@ -512,8 +511,8 @@ public class OdmToFilesConverter {
     }
 
     /********************************************************************************************
-     * Above are the methods for processing the study metadata.
-     * Below this point are the methods for processing the clinical data itself.
+     * Above this point are the methods for processing the study metadata.
+     * Below are the methods for processing the clinical data itself.
      ********************************************************************************************/
 
     /**
