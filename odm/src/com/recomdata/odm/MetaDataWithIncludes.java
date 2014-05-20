@@ -7,7 +7,14 @@ package com.recomdata.odm;
 
 import java.util.List;
 
-import org.cdisk.odm.jaxb.*;
+import org.cdisk.odm.jaxb.ODM;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeList;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionFormDef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemDef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemGroupDef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionMetaDataVersion;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudy;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventDef;
 
 /**
  * A MetaDataWithIncludes object contains a block of metadata that belongs to a study, even if that
@@ -30,22 +37,38 @@ public class MetaDataWithIncludes {
     private String studyOID;
 
     /**
-     *
+     * The list of all the metadata blocks (= metadata versions) that are referred to by include tags,
+     * or includes in includes in includes, etc.
      */
     private List<MetaDataWithIncludes> metaDataIncludes;
 
+    /**
+     * Constructs a metadata object for a given study and a given metadata version in the study.
+     *
+     * @param metaDataVersion The given metadata version.
+     * @param studyOID The given study.
+     * @param metaDataIncludes The list with all the (recursively) included metadata.
+     */
     public MetaDataWithIncludes(final ODMcomplexTypeDefinitionMetaDataVersion metaDataVersion,
-                                String studyOID,
+                                final String studyOID,
                                 final List<MetaDataWithIncludes> metaDataIncludes) {
         this.metaDataVersion = metaDataVersion;
         this.studyOID = studyOID;
         this.metaDataIncludes = metaDataIncludes;
     }
 
-    public ODMcomplexTypeDefinitionStudy getDefiningStudy(ODM odm) {
+    /**
+     * This method assumes that the last study in the list of recursively included metadata is the
+     * study that defines the metadata. This study is therefore called the defining study. The method
+     * returns this study.
+     *
+     * @param odm The whole odm object, which contains the link between study and studyOID.
+     * @return The defining study.
+     */
+    public ODMcomplexTypeDefinitionStudy getDefiningStudy(final ODM odm) {
         String definingStudyOID = studyOID;
         if (metaDataIncludes.size() > 0) {
-            definingStudyOID = metaDataIncludes.get(metaDataIncludes.size()-1).studyOID;
+            definingStudyOID = metaDataIncludes.get(metaDataIncludes.size() - 1).studyOID;
         }
 
         for (ODMcomplexTypeDefinitionStudy definingStudy : odm.getStudy()) {
@@ -56,7 +79,13 @@ public class MetaDataWithIncludes {
         return null;
     }
 
-    public ODMcomplexTypeDefinitionStudyEventDef getStudyEventDef(String studyEventOID) {
+    /**
+     * Returns the study event object for a given study event OID.
+     *
+     * @param studyEventOID The given study event OID.
+     * @return The study event object.
+     */
+    public ODMcomplexTypeDefinitionStudyEventDef getStudyEventDef(final String studyEventOID) {
         ODMcomplexTypeDefinitionStudyEventDef studyEventDef = searchStudyEventDef(studyEventOID);
 
         int includeIndex = 0;
@@ -68,6 +97,13 @@ public class MetaDataWithIncludes {
         return studyEventDef;
     }
 
+    /**
+     * A helper method that searches the study event object in the list of recursively included
+     * metadata objects, for a given study event OID.
+     *
+     * @param studyEventOID The given study event OID.
+     * @return The study event object.
+     */
     private ODMcomplexTypeDefinitionStudyEventDef searchStudyEventDef(final String studyEventOID) {
         ODMcomplexTypeDefinitionStudyEventDef result = null;
         for (ODMcomplexTypeDefinitionStudyEventDef studyEventDef : metaDataVersion.getStudyEventDef()) {
@@ -78,7 +114,13 @@ public class MetaDataWithIncludes {
         return result;
     }
 
-    public ODMcomplexTypeDefinitionFormDef getFormDef(String formOID) {
+    /**
+     * Returns the form object for a given form OID.
+     *
+     * @param formOID The given form OID.
+     * @return The form object.
+     */
+    public ODMcomplexTypeDefinitionFormDef getFormDef(final String formOID) {
         ODMcomplexTypeDefinitionFormDef formDef = searchFormDef(formOID);
 
         int includeIndex = 0;
@@ -90,6 +132,13 @@ public class MetaDataWithIncludes {
         return formDef;
     }
 
+    /**
+     * A helper method that searches the form object in the list of recursively included
+     * metadata objects, for a given form OID.
+     *
+     * @param formOID The given form OID.
+     * @return The form object.
+     */
     private ODMcomplexTypeDefinitionFormDef searchFormDef(final String formOID) {
         ODMcomplexTypeDefinitionFormDef result = null;
         for (ODMcomplexTypeDefinitionFormDef formDef : metaDataVersion.getFormDef()) {
@@ -100,7 +149,13 @@ public class MetaDataWithIncludes {
         return result;
     }
 
-    public ODMcomplexTypeDefinitionItemGroupDef getItemGroupDef(String itemGroupOID) {
+    /**
+     * Returns the item group object for a given item group OID.
+     *
+     * @param itemGroupOID The given item group OID.
+     * @return The item group object.
+     */
+    public ODMcomplexTypeDefinitionItemGroupDef getItemGroupDef(final String itemGroupOID) {
         ODMcomplexTypeDefinitionItemGroupDef itemGroupDef = searchItemGroupDef(itemGroupOID);
 
         int includeIndex = 0;
@@ -112,6 +167,13 @@ public class MetaDataWithIncludes {
         return itemGroupDef;
     }
 
+    /**
+     * A helper method that searches the item group object in the list of recursively included
+     * metadata objects, for a given item group OID.
+     *
+     * @param itemGroupOID The given item group OID.
+     * @return The item group object.
+     */
     private ODMcomplexTypeDefinitionItemGroupDef searchItemGroupDef(final String itemGroupOID) {
         ODMcomplexTypeDefinitionItemGroupDef result = null;
         for (ODMcomplexTypeDefinitionItemGroupDef itemGroupDef : metaDataVersion.getItemGroupDef()) {
@@ -122,7 +184,13 @@ public class MetaDataWithIncludes {
         return result;
     }
 
-    public ODMcomplexTypeDefinitionItemDef getItemDef(String itemOID) {
+    /**
+     * Returns the item object for a given item OID.
+     *
+     * @param itemOID The given item OID.
+     * @return The item object.
+     */
+    public ODMcomplexTypeDefinitionItemDef getItemDef(final String itemOID) {
         ODMcomplexTypeDefinitionItemDef itemDef = searchItemDef(itemOID);
 
         int includeIndex = 0;
@@ -134,6 +202,13 @@ public class MetaDataWithIncludes {
         return itemDef;
     }
 
+    /**
+     * A helper method that searches the item object in the list of recursively included
+     * metadata objects, for a given item OID.
+     *
+     * @param itemOID The given item OID.
+     * @return The item object.
+     */
     private ODMcomplexTypeDefinitionItemDef searchItemDef(final String itemOID) {
         ODMcomplexTypeDefinitionItemDef result = null;
         for (ODMcomplexTypeDefinitionItemDef itemDef : metaDataVersion.getItemDef()) {
@@ -144,7 +219,14 @@ public class MetaDataWithIncludes {
         return result;
     }
 
-    public ODMcomplexTypeDefinitionCodeList getCodeList(String codeListOID) {
+
+    /**
+     * Returns the code list object for a given code list OID.
+     *
+     * @param codeListOID The given code list OID.
+     * @return The code list object.
+     */
+    public ODMcomplexTypeDefinitionCodeList getCodeList(final String codeListOID) {
         ODMcomplexTypeDefinitionCodeList codeList = searchCodeList(codeListOID);
 
         int includeIndex = 0;
@@ -156,6 +238,13 @@ public class MetaDataWithIncludes {
         return codeList;
     }
 
+    /**
+     * A helper method that searches the code list object in the list of recursively included
+     * metadata objects, for a given code list OID.
+     *
+     * @param codeListOID The given code list OID.
+     * @return The code list object.
+     */
     private ODMcomplexTypeDefinitionCodeList searchCodeList(final String codeListOID) {
         ODMcomplexTypeDefinitionCodeList result = null;
         for (ODMcomplexTypeDefinitionCodeList codeList : metaDataVersion.getCodeList()) {

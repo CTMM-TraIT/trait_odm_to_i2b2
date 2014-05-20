@@ -34,9 +34,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class FileExporter {
     /**
-     * The log for this class.
+     * The logger for this class.
      */
-    private static final Log log = LogFactory.getLog(FileExporter.class);
+    private static final Log logger = LogFactory.getLog(FileExporter.class);
 
     /**
      * The column identifier of the very first column, which contains the subject identifiers.
@@ -54,11 +54,6 @@ public class FileExporter {
     private final String studyName;
 
     /**
-     * The name of the concept map file.
-     */
-    private String conceptMapFileName;
-
-    /**
      * Whether the line with the concept map headers still has to be written to file.
      */
     private boolean writeConceptMapHeaders;
@@ -69,11 +64,6 @@ public class FileExporter {
     private BufferedWriter conceptMapWriter;
 
     /**
-     * The name of the columns file.
-     */
-    private String columnsFileName;
-
-    /**
      * The writer for writing the columns file.
      */
     private BufferedWriter columnsWriter;
@@ -82,11 +72,6 @@ public class FileExporter {
      * Is set to true right after the column number was increased.
      */
     private boolean increasedColumnNumber;
-
-    /**
-     * The name of the word map file.
-     */
-    private String wordMapFileName;
 
     /**
      * Whether the line with the word map headers still has to be written to file.
@@ -110,11 +95,6 @@ public class FileExporter {
     private String clinicalDataFileName;
 
     /**
-     * Whether the line with the clinical data headers still has to be written to file.
-     */
-    private boolean writeClinicalDataHeaders;
-
-    /**
      * The writer for exporting the clinical data file.
      */
     private BufferedWriter clinicalDataWriter;
@@ -133,12 +113,6 @@ public class FileExporter {
      * The patient IDs (SubjectKeys), which correspond to the rows in the clinical data.
      */
     private List<String> patientIds;
-
-    /**
-     * The patient number that clinical data info records are being processed for. All data for a patient is collected
-     * and written on one line.
-     */
-    private String currentPatientNumber;
 
     /**
      * The current column number during the processing of the study info.
@@ -169,20 +143,19 @@ public class FileExporter {
      */
     public FileExporter(final String exportFilePath, final String studyName) throws IOException {
         final String studyNameWithUnderscores = studyName.replace(' ', '_');
+        final String conceptMapFileName = studyNameWithUnderscores + "_concept_map.txt";
+        final String columnsFileName = studyNameWithUnderscores + "_columns.txt";
+        final String wordMapFileName = studyNameWithUnderscores + "_word_map.txt";
+        this.clinicalDataFileName = studyNameWithUnderscores + "_clinical_data.txt";
+        setConceptMapName(conceptMapFileName);
+        setColumnsName(columnsFileName);
+        setWordMapName(wordMapFileName);
+        setClinicalDataName(this.clinicalDataFileName);
         this.exportFilePath = exportFilePath;
         this.studyName = studyNameWithUnderscores;
-        this.conceptMapFileName = studyNameWithUnderscores + "_concept_map.txt";
-        this.columnsFileName = studyNameWithUnderscores + "_columns.txt";
-        this.wordMapFileName = studyNameWithUnderscores + "_word_map.txt";
-        this.clinicalDataFileName = studyNameWithUnderscores + "_clinical_data.txt";
-        setConceptMapName(this.conceptMapFileName);
-        setColumnsName(this.columnsFileName);
-        setWordMapName(this.wordMapFileName);
-        setClinicalDataName(this.clinicalDataFileName);
         this.writeConceptMapHeaders = true;
         this.writeWordMapHeaders = true;
         this.valueCounter = 1;
-        this.writeClinicalDataHeaders = true;
         this.increasedColumnNumber = false;
         this.currentColumnNumber = 1;
         this.currentColumnId = null;
@@ -203,9 +176,9 @@ public class FileExporter {
     private void setColumnsName(final String columnsFileName) {
         try {
             columnsWriter = new BufferedWriter(new FileWriter(exportFilePath + columnsFileName));
-            log.info("Writing columns to file " + exportFilePath + columnsFileName);
+            logger.info("Writing columns to file " + exportFilePath + columnsFileName);
         } catch (final IOException e) {
-            log.error("Error while setting the columns filename.", e);
+            logger.error("Error while setting the columns filename.", e);
         }
     }
 
@@ -217,9 +190,9 @@ public class FileExporter {
     private void setWordMapName(final String wordMapFileName) {
         try {
             wordMapWriter = new BufferedWriter(new FileWriter(exportFilePath + wordMapFileName));
-            log.info("Writing word mappings to file " + exportFilePath + wordMapFileName);
+            logger.info("Writing word mappings to file " + exportFilePath + wordMapFileName);
         } catch (final IOException e) {
-            log.error("Error while setting the wordmap filename.", e);
+            logger.error("Error while setting the wordmap filename.", e);
         }
     }
 
@@ -230,10 +203,10 @@ public class FileExporter {
      */
     private void setConceptMapName(final String conceptMapFileName) {
         try {
-            log.info("Writing concept map to file " + exportFilePath + conceptMapFileName);
+            logger.info("Writing concept map to file " + exportFilePath + conceptMapFileName);
             conceptMapWriter = new BufferedWriter(new FileWriter(exportFilePath + conceptMapFileName));
         } catch (final IOException e) {
-            log.error("Error while setting the concept map filename to " + exportFilePath + conceptMapFileName + ".", e);
+            logger.error("Error while setting the concept map filename to " + exportFilePath + conceptMapFileName + ".", e);
         }
     }
 
@@ -245,9 +218,9 @@ public class FileExporter {
     private void setClinicalDataName(final String clinicalDataFileName) {
         try {
             clinicalDataWriter = new BufferedWriter(new FileWriter(exportFilePath + clinicalDataFileName));
-            log.info("Writing clinical data to file " + exportFilePath + clinicalDataFileName);
+            logger.info("Writing clinical data to file " + exportFilePath + clinicalDataFileName);
         } catch (final IOException e) {
-            log.error("Error while setting the clinical data filename.", e);
+            logger.error("Error while setting the clinical data filename.", e);
         }
     }
 
@@ -282,7 +255,6 @@ public class FileExporter {
     /**
      * Write the columns file: first the clinical data file name, then the path as specified in the second column of the
      * user's input concept map without the last node, then the column number and then the last node of the path.
-     * todo: update comment above (user's input concept map: in manual mode; empty columns at the end)
      *
      * @param namePath The full path of names, without the last node.
      *                 This is used as column identifier in tranSMART.
@@ -376,15 +348,12 @@ public class FileExporter {
          */
         Map<String, String> patientData = new HashMap<>();
 
-        currentPatientNumber = patientNum;
-
-        if (clinicalDataMap.containsKey(currentPatientNumber)) {
-            patientData = clinicalDataMap.get(currentPatientNumber);
+        if (clinicalDataMap.containsKey(patientNum)) {
+            patientData = clinicalDataMap.get(patientNum);
         } else {
-            patientIds.add(currentPatientNumber);
-            //TODO: problem when currentPatientNumber is longer than 20:
-            patientData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, currentPatientNumber);
-            clinicalDataMap.put(currentPatientNumber, patientData);
+            patientIds.add(patientNum);
+            patientData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, patientNum);
+            clinicalDataMap.put(patientNum, patientData);
         }
 
         if (wordMap.get(columnId + dataValue) != null) {
@@ -394,8 +363,8 @@ public class FileExporter {
             patientData.put(columnId, dataValue);
         }
 
-        log.debug("Adding patient data for " + currentPatientNumber);
-        clinicalDataMap.put(currentPatientNumber, patientData);
+        logger.debug("Adding patient data for " + patientNum);
+        clinicalDataMap.put(patientNum, patientData);
     }
 
     /**
@@ -449,15 +418,15 @@ public class FileExporter {
     @SuppressWarnings("UnusedDeclaration")
     public void writeExportDataObject(final Object dataObject) {
         final String className = dataObject.getClass().getName();
-        log.info("[I2B2ODMStudyHandler] " + className.substring(className.lastIndexOf('.') + 1) + ":");
+        logger.info("[I2B2ODMStudyHandler] " + className.substring(className.lastIndexOf('.') + 1) + ":");
         try {
             for (Field field : dataObject.getClass().getDeclaredFields()) {
                 field.setAccessible(true);
-                log.info("- " + field.getName() + ": " + field.get(dataObject));
+                logger.info("- " + field.getName() + ": " + field.get(dataObject));
             }
         } catch (final IllegalAccessException e) {
             e.printStackTrace();
         }
-        log.info("");
+        logger.info("");
     }
 }

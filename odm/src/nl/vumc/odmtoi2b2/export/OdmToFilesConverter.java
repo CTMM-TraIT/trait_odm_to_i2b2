@@ -8,7 +8,6 @@ package nl.vumc.odmtoi2b2.export;
 import com.recomdata.i2b2.util.ODMUtil;
 import com.recomdata.odm.MetaDataWithIncludes;
 
-import javax.xml.bind.JAXBException;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -17,9 +16,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.bind.JAXBException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.cdisk.odm.jaxb.*;
+import org.cdisk.odm.jaxb.ODM;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionClinicalData;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeList;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeListItem;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionDescription;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionFormData;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionFormDef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionFormRef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionInclude;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemData;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemDef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemGroupData;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemGroupDef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemGroupRef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionItemRef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionMetaDataVersion;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudy;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventData;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventDef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventRef;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionSubjectData;
+import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionTranslatedText;
 import org.jsoup.Jsoup;
 
 /**
@@ -52,35 +74,35 @@ import org.jsoup.Jsoup;
 public class OdmToFilesConverter {
 
     /**
-     * The log for this class.
+     * The logger for this class.
      */
-    private static final Log log = LogFactory.getLog(OdmToFilesConverter.class);
+    private static final Log logger = LogFactory.getLog(OdmToFilesConverter.class);
+
+    /**
+     * The language variant of the label that is retrieved. en = english.
+     */
+    private static final String LANGUAGE = "en";
+
+    /**
+     * The separator that tranSMART expects to separate the names in the namepath.
+     */
+    private static final String PLUS = "+";
+
+    /**
+     * A separator to separate OIDs in the OIDPath.
+     */
+    private static final String SEP = "\\";
+
+    /**
+     * The name for the node in tranSMART under which different studies will be arranged as sites.
+     */
+    private static final String STUDYSITE = "Study-site";
 
     /**
      * Is set to true when different studies that are written to the same files,
      * need to be modelled as a separate Study-site column.
      */
-    Boolean modelStudiesAsColumn;
-
-    /**
-     * The language variant of the label that is retrieved. en = english.
-     */
-    private String LANGUAGE = "en";
-
-    /**
-     * The separator that tranSMART expects to separate the names in the namepath.
-     */
-    private String PLUS = "+";
-
-    /**
-     * A separator to separate OIDs in the OIDPath.
-     */
-    private String SEP = "\\";
-
-    /**
-     * The name for the node in tranSMART under which different studies will be arranged as sites.
-     */
-    private String STUDYSITE = "Study-site";
+    private boolean modelStudiesAsColumn;
 
     /**
      * The odm object with all the content from the ODM xml file.
@@ -156,7 +178,7 @@ public class OdmToFilesConverter {
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
             final String studyName = study.getGlobalVariables().getStudyName().getValue();
             if (fileExporters.containsKey(studyName)) {
-                log.debug("Closing file exporter for study " + studyName);
+                logger.debug("Closing file exporter for study " + studyName);
                 fileExporters.get(studyName).close();
             }
         }
@@ -252,7 +274,7 @@ public class OdmToFilesConverter {
         studies.put(studyName, definingStudyName);
 
         if (!fileExporters.containsKey(definingStudyName)) {
-            log.debug("Creating file exporter for study " + definingStudyName);
+            logger.debug("Creating file exporter for study " + definingStudyName);
             final FileExporter fileExporter = new FileExporter(exportFilePath + new File(File.separator), definingStudyName);
             fileExporters.put(definingStudyName, fileExporter);
         }
@@ -391,7 +413,7 @@ public class OdmToFilesConverter {
                 + formDef.getOID() + SEP
                 + itemDef.getOID() + SEP;
 
-        log.trace("Write concept map and columns; name path: " + namePath + "; preferred item name: "
+        logger.trace("Write concept map and columns; name path: " + namePath + "; preferred item name: "
                 + preferredItemName + "; OID path: " + oidPath);
         fileExporters.get(studyName).writeExportConceptMap(namePath, preferredItemName);
         fileExporters.get(studyName).writeExportColumns(namePath, preferredItemName, oidPath);
@@ -424,8 +446,8 @@ public class OdmToFilesConverter {
         String preferredItemName =  Jsoup.parse(preferredItemNameWithHtml).text();
         for (String fullNamePath : columnFullNameList) {
             if (fullNamePath.equals(namePath + PLUS + preferredItemName)) {
-                log.warn("\"" + fullNamePath + "\" was found more than once. "
-                              + itemName + " is now taken as preferred name.");
+                logger.warn("\"" + fullNamePath + "\" was found more than once. "
+                        + itemName + " is now taken as preferred name.");
                 preferredItemName = itemName;
             }
         }
@@ -506,7 +528,7 @@ public class OdmToFilesConverter {
                 if (study != null) {
                     saveClinicalData(study, clinicalData);
                 } else {
-                    log.error("ODM does not contain study metadata for study OID " + studyOID);
+                    logger.error("ODM does not contain study metadata for study OID " + studyOID);
                 }
             }
         }
@@ -521,7 +543,7 @@ public class OdmToFilesConverter {
     private void saveClinicalData(final ODMcomplexTypeDefinitionStudy study,
                                   final ODMcomplexTypeDefinitionClinicalData clinicalData) {
         final String studyOID = clinicalData.getStudyOID();
-        log.info("Write Clinical data for study OID " + studyOID + " to clinical data file...");
+        logger.info("Write Clinical data for study OID " + studyOID + " to clinical data file...");
 
         for (ODMcomplexTypeDefinitionSubjectData subjectData : clinicalData.getSubjectData()) {
             if (subjectData.getStudyEventData() != null) {
@@ -660,7 +682,7 @@ public class OdmToFilesConverter {
             final ODMcomplexTypeDefinitionCodeListItem codeListItem = ODMUtil.getCodeListItem(codeList, itemValue);
 
             if (codeListItem == null) {
-                log.error("Code list item for coded value: " + itemValue + " not found in code list: " + codeList.getOID());
+                logger.error("Code list item for coded value: " + itemValue + " not found in code list: " + codeList.getOID());
                 return;
             } else {
                 wordValue = ODMUtil.getTranslatedValue(codeListItem, LANGUAGE);

@@ -4,6 +4,6 @@
  */
 
 /**
- * File export functionality for the ODM-to-o2b2 tool.
+ * File export functionality for the ODM-to-i2b2 tool.
  */
 package nl.vumc.odmtoi2b2.export;
