@@ -46,7 +46,6 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * @param exportFilePath the path of the export file.
 	 * @throws Exception
 	 */
-	@SuppressWarnings("UnusedParameters")
     public void loadODMFile2I2B2(String odmXmlPath, String exportFilePath) throws Exception {
 		File xmlFile = new File(odmXmlPath);
 
@@ -63,7 +62,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 			throw new Exception("No study definitions were found in ODM file.");
 		}
 
-		 // parse ODM XML and save as i2b2 metadata and demodata records
+		// parse ODM XML and save as i2b2 metadata and demodata records
         if (EXPORT_TO_DATABASE) {
             I2B2ODMStudyHandler odmHandler = new I2B2ODMStudyHandler(odm);
             odmHandler.processODM();

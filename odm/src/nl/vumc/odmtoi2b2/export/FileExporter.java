@@ -39,6 +39,16 @@ public class FileExporter {
     private static final Log logger = LogFactory.getLog(FileExporter.class);
 
     /**
+     * A column header in the columns file and the wordmap file.
+     */
+    private static final String COLUMN_NUMBER = "Column Number";
+
+    /**
+     * A column header in the columns file and the wordmap file.
+     */
+    private static final String FILENAME = "Filename";
+
+    /**
      * The column identifier of the very first column, which contains the subject identifiers.
      */
     private static final String FIRST_COLUMN_ID_WITH_SUBJECT_IDS = "firstColumnIdWithSubjectIds";
@@ -211,9 +221,9 @@ public class FileExporter {
             throws IOException {
         if (currentColumnNumber == 1) {
             final List<String> rowAsList = new ArrayList<>();
-            rowAsList.add("Filename");
+            rowAsList.add(FILENAME);
             rowAsList.add("Category Code");
-            rowAsList.add("Column Number");
+            rowAsList.add(COLUMN_NUMBER);
             rowAsList.add("Data Label");
             rowAsList.add("Data Label Source");
             rowAsList.add("Control Vocab Cd");
@@ -254,8 +264,8 @@ public class FileExporter {
     public void writeExportWordMap(final String wordValue) throws IOException {
         if (writeWordMapHeaders) {
             final List<String> rowAsList = new ArrayList<>();
-            rowAsList.add("Filename");
-            rowAsList.add("Column Number");
+            rowAsList.add(FILENAME);
+            rowAsList.add(COLUMN_NUMBER);
             rowAsList.add("Original Data Value");
             rowAsList.add("New Data Values");
             writeCSVData(wordMapWriter, rowAsList);

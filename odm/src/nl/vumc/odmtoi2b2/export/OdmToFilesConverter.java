@@ -488,7 +488,6 @@ public class OdmToFilesConverter {
 
     }
 
-
     /**
      * This method returns a translated value according to a given language.
      *

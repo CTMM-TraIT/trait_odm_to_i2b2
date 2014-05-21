@@ -4,6 +4,8 @@
  */
 
 /**
- * File export functionality for the ODM-to-i2b2 tool.
+ * File export functionality for the ODM-to-i2b2 tool. The ODM/XML file is converted in three tab-separated
+ * files: the columns file, the wordmap file (these two contain the metadata) and the file with the actual
+ * clinical data. These files can be loaded in the i2b2 database through, for instance, R-scripts.
  */
 package nl.vumc.odmtoi2b2.export;
