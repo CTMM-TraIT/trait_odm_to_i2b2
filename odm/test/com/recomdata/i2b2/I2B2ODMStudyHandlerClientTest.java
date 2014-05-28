@@ -1,12 +1,14 @@
 /**
  * Copyright(c)  2011-2012 Recombinant Data Corp., All rights Reserved
- * This is a JUnit test class to test parsing and saving ODM meta and clinical data intp i2b2 
+ * This is a JUnit test class to test parsing and saving ODM meta and clinical data into i2b2
  * testing class I2B2ODMStudyHandlerClient.
  * @author: Alex Wu
  * @date: November 11, 2011
  */
 
 package com.recomdata.i2b2;
+
+import java.nio.file.FileSystems;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
@@ -22,15 +24,12 @@ import org.junit.Test;
  * @author awu
  *
  */
-public class I2B2ODMStudyHandlerClientTest
-{
-
+public class I2B2ODMStudyHandlerClientTest {
 	/**
 	 * @throws java.lang.Exception
 	 */
 	@Before
-	public void setUp() throws Exception
-	{
+	public void setUp() throws Exception {
 		Logger rootLogger = Logger.getRootLogger();
 		if (!rootLogger.getAllAppenders().hasMoreElements()) {
 			rootLogger.setLevel(Level.WARN);
@@ -43,15 +42,21 @@ public class I2B2ODMStudyHandlerClientTest
 	 * Test method for {@link com.recomdata.i2b2.I2B2ODMStudyHandlerCMLClient}.
 	 */
 	@Test
-	public void testLoadODMFile2I2B2() throws Exception
-	{
+	public void testLoadODMFile2I2B2() throws Exception {
 		System.out.println("JUnit test for export ODM to i2b2 start...");
 		Logger.getRootLogger().info("JUnit test for export ODM to i2b2 start...");
 		long start = System.currentTimeMillis();
 
-		String odmXmlPath = System.getProperty("odmpath");
+        String odmProperty = System.getProperty("odmpath");
+        String odmXmlPath = odmProperty != null
+                            ? odmProperty
+                            : FileSystems.getDefault().getPath("examples", "CDISC_ODM_example_3.xml").toString();
 		Assert.assertNotNull(odmXmlPath);
-		String exportFilePath = System.getProperty("exportpath");
+
+        final String exportProperty = System.getProperty("exportpath");
+        String exportFilePath = exportProperty != null
+                                ? exportProperty
+                                : FileSystems.getDefault().getPath("output").toString();
 		Assert.assertNotNull(exportFilePath);
 
         I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();

@@ -24,10 +24,10 @@
         <!-- Dependency versions. -->
         <blend4j.version>0.1-alpha-7</blend4j.version>
         <guava.version>15.0</guava.version>
-        <httpclient.version>4.3.2</httpclient.version>
+        <jsoup.version>1.7.3</jsoup.version>
         <junit.version>4.11</junit.version>
         <mockito.version>1.9.5</mockito.version>
-        <powermock.version>1.5.3</powermock.version>
+        <opencsv.version>2.3</opencsv.version>
 
         <!-- todo: check for newer versions. -->
         <ch.qos.logback.version>1.0.13</ch.qos.logback.version>
@@ -107,11 +107,11 @@
             <version>${guava.version}</version>
         </dependency>
 
-        <!-- Dependency for HttpClient. -->
+        <!-- Dependency for the jsoup HTML parser. -->
         <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpclient</artifactId>
-            <version>${httpclient.version}</version>
+            <groupId>org.jsoup</groupId>
+            <artifactId>jsoup</artifactId>
+            <version>${jsoup.version}</version>
         </dependency>
 
         <!-- Dependency for JUnit. -->
@@ -130,20 +130,6 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Dependencies for PowerMock. -->
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-module-junit4</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.powermock</groupId>
-            <artifactId>powermock-api-mockito</artifactId>
-            <version>${powermock.version}</version>
-            <scope>test</scope>
-        </dependency>
-
         <!-- Logging framework. -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -158,8 +144,8 @@
             <scope>runtime</scope>
         </dependency>
         <!--
-                Drop commons-logging (from spring, among others) in favor of slf4j,
-                see http://slf4j.org/faq.html#excludingJCL.
+            Drop commons-logging (from spring, among others) in favor of slf4j,
+            see http://slf4j.org/faq.html#excludingJCL.
         -->
         <!--<dependency>-->
             <!--<groupId>commons-logging</groupId>-->
@@ -172,6 +158,12 @@
             <artifactId>jcl-over-slf4j</artifactId>
             <version>${org.slf4j.version}</version>
             <scope>runtime</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>net.sf.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>${opencsv.version}</version>
         </dependency>
 
     </dependencies>
