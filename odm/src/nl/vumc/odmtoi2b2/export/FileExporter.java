@@ -154,7 +154,7 @@ public class FileExporter {
         this.currentColumnNumber = 1;
         this.currentColumnId = null;
         this.columnHeaders = new ArrayList<>();
-        columnHeaders.add(studyName + "_SUBJ_ID");
+        columnHeaders.add("SUBJ_ID");
         this.columnIds = new ArrayList<>();
         columnIds.add(FIRST_COLUMN_ID_WITH_SUBJECT_IDS);
         this.patientIds = new ArrayList<>();
@@ -249,7 +249,7 @@ public class FileExporter {
         rowAsList.add("");
         writeCSVData(columnsWriter, rowAsList);
         currentColumnId = oidPath;
-        columnHeaders.add(studyName + "_" + preferredItemName);
+        columnHeaders.add(preferredItemName);
         columnIds.add(oidPath);
     }
 
@@ -332,19 +332,22 @@ public class FileExporter {
             final List<String> rowAsList = new ArrayList<>();
             final Map<String, String> patientData = clinicalDataMap.get(patientId);
             for (final String columnId : columnIds) {
-                rowAsList.add(patientData.get(columnId));
+                rowAsList.add(patientData.get(columnId) != null ? patientData.get(columnId) : "");
             }
             writeCSVData(clinicalDataWriter, rowAsList);
         }
     }
 
     /**
-     * Write one line of tab separated data to the correct file.
+     * Write one line of tab separated data to the correct file. Replaces double quotes by single quotes first.
      * @param writer The correct file.
      * @param rowAsList The line as a list of items that will be separated by tabs.
      * @throws IOException An input-output exception.
      */
     private static void writeCSVData(final BufferedWriter writer, final List<String> rowAsList) throws IOException {
+        for (int i=0; i < rowAsList.size(); i++) {
+            rowAsList.set(i, rowAsList.get(i).replaceAll("\"","'"));
+        }
         final CSVWriter csvWriter = new CSVWriter(writer, '\t', CSVWriter.NO_QUOTE_CHARACTER);
         final String[] rowAsArray = rowAsList.toArray(new String[rowAsList.size()]);
         csvWriter.writeNext(rowAsArray);
