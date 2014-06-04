@@ -9,6 +9,9 @@ package com.recomdata.i2b2;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.Properties;
 
 import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 
@@ -79,7 +82,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * @param args command-line arguments
 	 */
 	public static void main(String[] args) {
-		try {
+        try {
             PropertyConfigurator.configure(args[0]);
 
 			if (args.length < 3) {

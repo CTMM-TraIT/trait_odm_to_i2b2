@@ -8,13 +8,11 @@ package nl.vumc.odmtoi2b2.export;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -52,6 +50,11 @@ public class FileExporter {
      * The column identifier of the very first column, which contains the subject identifiers.
      */
     private static final String FIRST_COLUMN_ID_WITH_SUBJECT_IDS = "firstColumnIdWithSubjectIds";
+
+    /**
+     * todo: put this in properties file. Whether all double quotes have to be replaced by single quotes.
+     */
+    private static boolean replaceAllDoubleQuotes = true;
 
     /**
      * The directory where the export files will be written to.
@@ -135,19 +138,27 @@ public class FileExporter {
     private Map<String, Map<String, String>> clinicalDataMap;
 
     /**
+     * todo: put this in properties file. The cut-off length of string in the clinical data file.
+     */
+    private int maxClinicalDataEntry;
+
+    /**
      * Construct a file exporter.
      *
      * @param exportFilePath the directory for the export files.
      * @param studyName      the name of the study.
+     * @param configuration  todo
      * @throws IOException when creating the file fails.
      */
-    public FileExporter(final String exportFilePath, final String studyName) throws IOException {
+    public FileExporter(final String exportFilePath, final String studyName, final Configuration configuration)
+            throws IOException {
         final String studyNameWithUnderscores = studyName.replace(' ', '_');
         final String columnsFileName = studyNameWithUnderscores + "_columns.txt";
         final String wordMapFileName = studyNameWithUnderscores + "_word_map.txt";
         this.clinicalDataFileName = studyNameWithUnderscores + "_clinical_data.txt";
         this.exportFilePath = exportFilePath;
         this.studyName = studyNameWithUnderscores;
+        this.maxClinicalDataEntry = configuration.getMaxClinicalDataEntry();
         this.writeWordMapHeaders = true;
         this.valueCounter = 1;
         this.increasedColumnNumber = false;
@@ -332,7 +343,19 @@ public class FileExporter {
             final List<String> rowAsList = new ArrayList<>();
             final Map<String, String> patientData = clinicalDataMap.get(patientId);
             for (final String columnId : columnIds) {
-                rowAsList.add(patientData.get(columnId) != null ? patientData.get(columnId) : "");
+                String rawDataEntry = patientData.get(columnId);
+                String dataEntry;
+                if (rawDataEntry == null) {
+                    dataEntry = "";
+                } else if (rawDataEntry.length() > maxClinicalDataEntry) {
+                    dataEntry = rawDataEntry.substring(0, maxClinicalDataEntry - 4) + "...";
+                    logger.warn("Data entry " + dataEntry.substring(0, 15) + " of " + patientId
+                            + " and " + columnId + " was cut off at "
+                            + rawDataEntry.substring(maxClinicalDataEntry - 20, maxClinicalDataEntry - 4));
+                } else {
+                    dataEntry = rawDataEntry;
+                }
+                rowAsList.add(dataEntry);
             }
             writeCSVData(clinicalDataWriter, rowAsList);
         }
@@ -345,8 +368,10 @@ public class FileExporter {
      * @throws IOException An input-output exception.
      */
     private static void writeCSVData(final BufferedWriter writer, final List<String> rowAsList) throws IOException {
-        for (int i=0; i < rowAsList.size(); i++) {
-            rowAsList.set(i, rowAsList.get(i).replaceAll("\"","'"));
+        if (replaceAllDoubleQuotes) {
+            for (int i=0; i < rowAsList.size(); i++) {
+                rowAsList.set(i, rowAsList.get(i).replaceAll("\"","'"));
+            }
         }
         final CSVWriter csvWriter = new CSVWriter(writer, '\t', CSVWriter.NO_QUOTE_CHARACTER);
         final String[] rowAsArray = rowAsList.toArray(new String[rowAsList.size()]);

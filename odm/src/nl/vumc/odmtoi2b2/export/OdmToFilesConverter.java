@@ -165,7 +165,7 @@ public class OdmToFilesConverter {
      */
     public void processODM(final ODM odm, final String exportFilePath) throws IOException, JAXBException {
         this.odm = odm;
-        this.exportFilePath = exportFilePath;
+        this.exportFilePath = exportFilePath + File.separator;
 
         processODMStudy();
         processODMClinicalData();
@@ -275,7 +275,8 @@ public class OdmToFilesConverter {
 
         if (!fileExporters.containsKey(definingStudyName)) {
             logger.debug("Creating file exporter for study " + definingStudyName);
-            final FileExporter fileExporter = new FileExporter(exportFilePath + File.separator, definingStudyName);
+            final Configuration configuration = new Configuration("ODM-to-i2b2.properties");  // todo: use constant
+            final FileExporter fileExporter = new FileExporter(exportFilePath, definingStudyName, configuration);
             fileExporters.put(definingStudyName, fileExporter);
         }
 
