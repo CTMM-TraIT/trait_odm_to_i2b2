@@ -52,9 +52,9 @@ public class FileExporter {
     private static final String FIRST_COLUMN_ID_WITH_SUBJECT_IDS = "firstColumnIdWithSubjectIds";
 
     /**
-     * todo: put this in properties file. Whether all double quotes have to be replaced by single quotes.
+     * The regex that specifies all the symbols that should not appear in the output file.
      */
-    private static boolean replaceAllDoubleQuotes = true;
+    private String forbiddenSymbolRegex;
 
     /**
      * The directory where the export files will be written to.
@@ -159,6 +159,7 @@ public class FileExporter {
         this.exportFilePath = exportFilePath;
         this.studyName = studyNameWithUnderscores;
         this.maxClinicalDataEntry = configuration.getMaxClinicalDataEntry();
+        this.forbiddenSymbolRegex = configuration.getForbiddenSymbolRegex();
         this.writeWordMapHeaders = true;
         this.valueCounter = 1;
         this.increasedColumnNumber = false;
@@ -367,10 +368,10 @@ public class FileExporter {
      * @param rowAsList The line as a list of items that will be separated by tabs.
      * @throws IOException An input-output exception.
      */
-    private static void writeCSVData(final BufferedWriter writer, final List<String> rowAsList) throws IOException {
-        if (replaceAllDoubleQuotes) {
+    private void writeCSVData(final BufferedWriter writer, final List<String> rowAsList) throws IOException {
+        if (forbiddenSymbolRegex != null && !forbiddenSymbolRegex.trim().equals("")) {
             for (int i=0; i < rowAsList.size(); i++) {
-                rowAsList.set(i, rowAsList.get(i).replaceAll("\"","'"));
+                rowAsList.set(i, rowAsList.get(i).replaceAll(forbiddenSymbolRegex,""));
             }
         }
         final CSVWriter csvWriter = new CSVWriter(writer, '\t', CSVWriter.NO_QUOTE_CHARACTER);

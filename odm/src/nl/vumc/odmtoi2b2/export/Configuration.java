@@ -17,14 +17,17 @@ import java.util.Properties;
  */
 public class Configuration {
     private int maxClinicalDataEntry;
+    private String forbiddenSymbolRegex;
 
     public Configuration(final String propertiesFilePath) {
         try {
             final Properties properties = new Properties();
             properties.load(new FileReader(propertiesFilePath));
 
-            final String minutesString = properties.getProperty("max-clinical-data-entry");
-            this.maxClinicalDataEntry = Integer.parseInt(minutesString);
+            final String maxClinicalDataEntryAsString = properties.getProperty("max-clinical-data-entry");
+            this.maxClinicalDataEntry = Integer.parseInt(maxClinicalDataEntryAsString);
+            this.forbiddenSymbolRegex = properties.getProperty("forbidden-symbols-regex");
+
         } catch (final IOException e) {
             // todo: logger.
             e.printStackTrace();
@@ -33,5 +36,9 @@ public class Configuration {
 
     public int getMaxClinicalDataEntry() {
         return maxClinicalDataEntry;
+    }
+
+    public String getForbiddenSymbolRegex() {
+        return forbiddenSymbolRegex;
     }
 }
