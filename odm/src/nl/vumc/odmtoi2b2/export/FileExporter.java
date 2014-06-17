@@ -8,7 +8,6 @@ package nl.vumc.odmtoi2b2.export;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import java.io.BufferedWriter;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -60,11 +59,6 @@ public class FileExporter {
      * The directory where the export files will be written to.
      */
     private final String exportFilePath;
-
-    /**
-     * The name of the study.
-     */
-    private final String studyName;
 
     /**
      * The writer for writing the columns file.
@@ -138,7 +132,7 @@ public class FileExporter {
     private Map<String, Map<String, String>> clinicalDataMap;
 
     /**
-     * todo: put this in properties file. The cut-off length of string in the clinical data file.
+     * The cut-off length of the clinical data entry strings in the clinical data file.
      */
     private int maxClinicalDataEntry;
 
@@ -157,7 +151,6 @@ public class FileExporter {
         final String wordMapFileName = studyNameWithUnderscores + "_word_map.txt";
         this.clinicalDataFileName = studyNameWithUnderscores + "_clinical_data.txt";
         this.exportFilePath = exportFilePath;
-        this.studyName = studyNameWithUnderscores;
         this.maxClinicalDataEntry = configuration.getMaxClinicalDataEntry();
         this.forbiddenSymbolRegex = configuration.getForbiddenSymbolRegex();
         this.writeWordMapHeaders = true;
