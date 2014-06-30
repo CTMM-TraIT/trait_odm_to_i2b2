@@ -56,6 +56,12 @@ public class FileExporter {
     private String forbiddenSymbolRegex;
 
     /**
+     * The boolean that is true when precautions have to be taken to avoid bugs caused by
+     * special symbols in tranSMART.
+     */
+    private boolean avoidTransmartSymbolBugs;
+
+    /**
      * The directory where the export files will be written to.
      */
     private final String exportFilePath;
@@ -153,6 +159,7 @@ public class FileExporter {
         this.exportFilePath = exportFilePath;
         this.maxClinicalDataEntry = configuration.getMaxClinicalDataEntry();
         this.forbiddenSymbolRegex = configuration.getForbiddenSymbolRegex();
+        this.avoidTransmartSymbolBugs = configuration.getAvoidTransmartSymbolBugs();
         this.writeWordMapHeaders = true;
         this.valueCounter = 1;
         this.increasedColumnNumber = false;
@@ -365,6 +372,15 @@ public class FileExporter {
         if (forbiddenSymbolRegex != null && !forbiddenSymbolRegex.trim().equals("")) {
             for (int i=0; i < rowAsList.size(); i++) {
                 rowAsList.set(i, rowAsList.get(i).replaceAll(forbiddenSymbolRegex,""));
+            }
+        }
+        if (avoidTransmartSymbolBugs) {
+            for (int i=0; i < rowAsList.size(); i++) {
+                rowAsList.set(i, rowAsList.get(i).replaceAll("`","'"));
+                rowAsList.set(i, rowAsList.get(i).replaceAll("\\\\","/"));
+                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
+                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
+                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
             }
         }
         final CSVWriter csvWriter = new CSVWriter(writer, '\t', CSVWriter.NO_QUOTE_CHARACTER);

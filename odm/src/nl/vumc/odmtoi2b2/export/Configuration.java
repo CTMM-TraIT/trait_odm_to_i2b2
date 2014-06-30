@@ -18,6 +18,7 @@ import java.util.Properties;
 public class Configuration {
     private int maxClinicalDataEntry;
     private String forbiddenSymbolRegex;
+    private boolean avoidTransmartSymbolBugs;
 
     public Configuration(final String propertiesFilePath) {
         try {
@@ -27,6 +28,8 @@ public class Configuration {
             final String maxClinicalDataEntryAsString = properties.getProperty("max-clinical-data-entry");
             this.maxClinicalDataEntry = Integer.parseInt(maxClinicalDataEntryAsString);
             this.forbiddenSymbolRegex = properties.getProperty("forbidden-symbols-regex");
+            final String avoidTransmartSymbolBugsAsString = properties.getProperty("avoid-transmart-symbol-bugs");
+            this.avoidTransmartSymbolBugs = Boolean.parseBoolean(avoidTransmartSymbolBugsAsString);
 
         } catch (final IOException e) {
             // todo: logger.
@@ -41,4 +44,9 @@ public class Configuration {
     public String getForbiddenSymbolRegex() {
         return forbiddenSymbolRegex;
     }
+
+    public boolean getAvoidTransmartSymbolBugs() {
+        return avoidTransmartSymbolBugs;
+    }
+
 }
