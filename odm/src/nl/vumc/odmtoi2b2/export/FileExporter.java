@@ -51,6 +51,23 @@ public class FileExporter {
     private static final String FIRST_COLUMN_ID_WITH_SUBJECT_IDS = "firstColumnIdWithSubjectIds";
 
     /**
+     * The separator that tranSMART expects to separate the concept names in the column namepath.
+     */
+    private static final String SEPARATOR = "+";
+
+    /**
+     * The separator that tranSMART expects to separate the concept names in the column namepath,
+     * like it is called in a regular expression.  Remove the "\\"
+     * in case a separator is chosen that does not require to be preceded with \ in a regular expression.
+     */
+    private static final String SEPARATOR_IN_REGEX = "\\" + SEPARATOR;
+
+    /**
+     * The string by which the separator has to be replaced in case it occurs in the middle of a concept.
+     */
+    private static final String SEPARATOR_ESCAPER = " and ";
+
+    /**
      * The regex that specifies all the symbols that should not appear in the output file.
      */
     private String forbiddenSymbolRegex;
@@ -223,13 +240,17 @@ public class FileExporter {
      * Write the columns file: first the clinical data file name, then the path as specified in the second column of the
      * user's input concept map without the last node, then the column number and then the last node of the path.
      *
-     * @param namePath The full path of names, without the last node.
-     *                 This is used as column identifier in tranSMART.
-     * @param preferredItemName The name of the last node in the concept tree.
-     * @param oidPath The full path of OID's, which provides a unique identifier for the columns.
-     * @throws IOException An input-output exception.
+     *
+     * @param studyEventName
+     * @param formName
+     *@param preferredItemName The name of the last node in the concept tree.
+     * @param oidPath The full path of OID's, which provides a unique identifier for the columns.   @throws IOException An input-output exception.
      */
-    public void writeExportColumns(final String namePath, final String preferredItemName, final String oidPath)
+    public void writeExportColumns(String studyEventName,
+                                   String formName,
+                                   String itemGroupName,
+                                   final String preferredItemName,
+                                   final String oidPath)
             throws IOException {
         if (currentColumnNumber == 1) {
             final List<String> rowAsList = new ArrayList<>();
@@ -250,6 +271,26 @@ public class FileExporter {
             rowAsList2.add("");
             writeCSVData(columnsWriter, rowAsList2);
         }
+
+        if (avoidTransmartSymbolBugs) {
+            studyEventName = studyEventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_ESCAPER);
+            formName       =       formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_ESCAPER);
+            itemGroupName  =  itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_ESCAPER);
+        }
+
+        String namePath = studyEventName + SEPARATOR + formName + SEPARATOR + itemGroupName;
+
+        /**
+         * Avoid that blank nodes are created by removing overabundant SEPARATOR symbols.
+         */
+        namePath = namePath.replaceAll(SEPARATOR_IN_REGEX + SEPARATOR_IN_REGEX, SEPARATOR);
+        if (namePath.substring(0,1).equals(SEPARATOR)) {
+            namePath = namePath.substring(1);
+        }
+        if (namePath.length() > 0 && namePath.substring(namePath.length()-1).equals(SEPARATOR)) {
+            namePath = namePath.substring(0,namePath.length()-1);
+        }
+
         currentColumnNumber++;
         increasedColumnNumber = true;
         final List<String> rowAsList = new ArrayList<>();

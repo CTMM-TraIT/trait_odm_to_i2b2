@@ -84,7 +84,7 @@ public class OdmToFilesConverter {
     private static final String LANGUAGE = "en";
 
     /**
-     * The separator that tranSMART expects to separate the names in the namepath.
+     * A separator to construct the namepath.
      */
     private static final String PLUS = "+";
 
@@ -223,7 +223,7 @@ public class OdmToFilesConverter {
             final String definingStudyName = studies.get(evaluatedStudyName);
             if (!evaluatedStudyName.equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
                 final String oidPath = definingStudyName + SEP + STUDYSITE;
-                fileExporters.get(definingStudyName).writeExportColumns("", STUDYSITE, oidPath);
+                fileExporters.get(definingStudyName).writeExportColumns("", "", "", STUDYSITE, oidPath);
                 for (String studyName : studies.keySet()) {
                     if (studies.get(studyName).equals(definingStudyName)) {
                         fileExporters.get(definingStudyName).writeExportWordMap(studyName);
@@ -414,9 +414,12 @@ public class OdmToFilesConverter {
                 + formDef.getOID() + SEP
                 + itemDef.getOID() + SEP;
 
-        logger.trace("Write concept map and columns; name path: " + namePath + "; preferred item name: "
-                + preferredItemName + "; OID path: " + oidPath);
-        fileExporters.get(studyName).writeExportColumns(namePath, preferredItemName, oidPath);
+        logger.trace("Write columns; study event name: " + studyEventName
+                + "; form name: " + formName
+                + "; item group name: " + itemGroupName
+                + "; preferred item name: " + preferredItemName
+                + "; OID path: " + oidPath);
+        fileExporters.get(studyName).writeExportColumns(studyEventName, formName, itemGroupName, preferredItemName, oidPath);
 
         if (itemDef.getCodeListRef() != null) {
             final ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(definingStudy,
