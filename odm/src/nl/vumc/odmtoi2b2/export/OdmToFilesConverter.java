@@ -569,7 +569,7 @@ public class OdmToFilesConverter {
         final String definingStudyName = definingStudy.getGlobalVariables().getStudyName().getValue();
         final String oidPath = definingStudyName + SEP + STUDYSITE;
         final String studyName = study.getGlobalVariables().getStudyName().getValue();
-        final String patientNum = subjectData.getSubjectKey();
+        final String patientId = subjectData.getSubjectKey();
 
         for (ODMcomplexTypeDefinitionStudyEventData eventData : subjectData.getStudyEventData()) {
             if (eventData.getFormData() != null) {
@@ -577,7 +577,8 @@ public class OdmToFilesConverter {
             }
         }
         if (modelStudiesAsColumn) {
-            fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, studyName, patientNum);
+            fileExporters.get(definingStudyName).writeExportClinicalDataInfo
+                    (oidPath, studyName, patientId, null, null, null, null);
         }
     }
 
@@ -662,7 +663,7 @@ public class OdmToFilesConverter {
                               final ODMcomplexTypeDefinitionSubjectData subjectData,
                               final ODMcomplexTypeDefinitionStudyEventData eventData,
                               final ODMcomplexTypeDefinitionFormData formData,
-                              @SuppressWarnings("UnusedParameters") final ODMcomplexTypeDefinitionItemGroupData itemGroupData,
+                              final ODMcomplexTypeDefinitionItemGroupData itemGroupData,
                               final ODMcomplexTypeDefinitionItemData itemData) {
         final ODMcomplexTypeDefinitionStudy definingStudy = metaDataMap.get(getMetaDataKey(study)).getDefiningStudy(odm);
         final String definingStudyName = definingStudy.getGlobalVariables().getStudyName().getValue();
@@ -675,7 +676,11 @@ public class OdmToFilesConverter {
         final ODMcomplexTypeDefinitionItemDef itemDef = getMetaData(study).getItemDef(itemData.getItemOID());
         final String wordValue;
         final BigDecimal bigDecimal;
-        final String patientNum = subjectData.getSubjectKey();
+        final String patientId = subjectData.getSubjectKey();
+        final String eventId = eventData.getStudyEventOID();
+        final String eventRepeatKey = eventData.getStudyEventRepeatKey();
+        final String itemGroupId = itemGroupData.getItemGroupOID();
+        final String itemGroupRepeatKey = itemGroupData.getItemGroupRepeatKey();
 
         if (itemDef.getCodeListRef() != null) {
             bigDecimal = null;
@@ -698,6 +703,7 @@ public class OdmToFilesConverter {
         }
 
         final String finalValue = (bigDecimal != null) ? bigDecimal.toString() : wordValue;
-        fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, finalValue, patientNum);
+        fileExporters.get(definingStudyName).writeExportClinicalDataInfo
+                (oidPath, finalValue, patientId, eventId, eventRepeatKey, itemGroupId, itemGroupRepeatKey);
     }
 }

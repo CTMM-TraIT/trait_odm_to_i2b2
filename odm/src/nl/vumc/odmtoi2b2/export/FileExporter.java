@@ -341,42 +341,60 @@ public class FileExporter {
     }
 
     /**
-     * Write the clinical data to a tab-delimited text file.
+     * Write the clinical data to a clinical data map, which is kept in the memory until the moment
+     * that everything can be written out to a file in once.
      *
      * @param columnId The full path of OID's, which identifies a column.
      * @param dataValue The value, which might not yet be converted to a number.
-     * @param patientNum The identifier of the patient (aka subject).
+     * @param patientId The identifier of the patient.
+     * @param eventId
+     * @param eventRepeatKey
+     * @param itemGroupId
+     * @param itemGroupRepeatKey
      */
     public void writeExportClinicalDataInfo(final String columnId,
                                             final String dataValue,
-                                            final String patientNum) {
+                                            final String patientId,
+                                            final String eventId,
+                                            final String eventRepeatKey,
+                                            final String itemGroupId,
+                                            final String itemGroupRepeatKey) {
+
+        addPatientData();
 
         /**
-         * Mapping of column ID to values for the current patient.
+         * Mapping of column ID to values for the current subject.
          */
-        Map<String, String> patientData = new HashMap<>();
+        Map<String, String> subjectData = new HashMap<>();
 
-        if (clinicalDataMap.containsKey(patientNum)) {
-            patientData = clinicalDataMap.get(patientNum);
+        if (clinicalDataMap.containsKey(patientId)) {
+            subjectData = clinicalDataMap.get(patientId);
         } else {
-            patientIds.add(patientNum);
-            patientData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, patientNum);
-            clinicalDataMap.put(patientNum, patientData);
+            patientIds.add(patientId);
+            subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, patientId);
+            clinicalDataMap.put(patientId, subjectData);
         }
 
         if (wordMap.get(columnId + dataValue) != null) {
             //fills clinical data with words from wordmap
-            patientData.put(columnId, wordMap.get(columnId + dataValue));
+            subjectData.put(columnId, wordMap.get(columnId + dataValue));
         } else {
-            patientData.put(columnId, dataValue);
+            subjectData.put(columnId, dataValue);
         }
 
-        logger.debug("Adding patient data for " + patientNum);
-        clinicalDataMap.put(patientNum, patientData);
+        logger.debug("Adding subject data for " + patientId);
+        clinicalDataMap.put(patientId, subjectData);
+//        clinicalDataMap.put(eventSubjectId, subjectData);
+//        clinicalDataMap.put(itemGroupSubjectId, subjectData);
+    }
+
+    private void addPatientData() {
+
+
     }
 
     /**
-     * Write the clinical data, which was kept in the memory, to the clinical data file.
+     * Write the clinical data, which was kept in the memory, to the tab-delimited clinical data file.
      * @throws IOException An input-output exception.
      */
     public void writePatientData() throws IOException {
