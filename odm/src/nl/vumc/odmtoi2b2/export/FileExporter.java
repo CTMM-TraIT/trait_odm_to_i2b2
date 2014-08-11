@@ -51,6 +51,33 @@ public class FileExporter {
     private static final String FIRST_COLUMN_ID_WITH_SUBJECT_IDS = "firstColumnIdWithSubjectIds";
 
     /**
+     * The column identifier of the second column, which contains the type (patient, event, or item group).
+     */
+    private static final String SECOND_COLUMN_ID_WITH_TYPE = "secondColumnIdWithType";
+
+    /**
+     * The column identifier of the third column, which contains the associated-patient IDs.
+     */
+    private static final String THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS = "thirdColumnIdWithAssocPatientIds";
+
+    /**
+     * The column identifier of the fourth column, which contains the associated-event IDs.
+     */
+    private static final String FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS = "fourthColumnIdWithAssocEventIds";
+
+    /**
+     * The column identifier of the fifth column, which contains the event repeat key (nr in the
+     * series of repeated events).
+     */
+    private static final String FIFTH_COLUMN_ID_WITH_EVENT_NR = "fifthColumnIdWithEventNr";
+
+    /**
+     * The column identifier of the sixth column, which contains the item group repeat key (nr in the
+     * series of repeated item groups).
+     */
+    private static final String SIXTH_COLUMN_ID_WITH_IG_NR = "sixthColumnIdWithIgNr";
+
+    /**
      * The separator that tranSMART expects to separate the concept names in the column namepath.
      */
     private static final String SEPARATOR = "+";
@@ -130,9 +157,21 @@ public class FileExporter {
     private List<String> columnIds;
 
     /**
-     * The patient IDs (SubjectKeys), which correspond to the rows in the clinical data.
+     * The subject IDs (either patient id, event id, or IG id), which correspond to the rows in the clinical data.
      */
-    private List<String> patientIds;
+    private List<String> subjectIds;
+
+    /**
+     * The IDs of a repeating event, which are turned into an integer (the place in the list)
+     * and then made part of the ID of a repeated event of this repeating event (the eventSubjectId).
+     */
+    private List<String> repeatingEventIds;
+
+    /**
+     * The IDs of a repeating item group, which are turned into an integer (the place in the list)
+     * and then made part of the ID of a repeated item group of this repeating item group (the itemGroupSubjectId).
+     */
+    private List<String> repeatingItemGroupIds;
 
     /**
      * The current column number during the processing of the study info.
@@ -184,9 +223,21 @@ public class FileExporter {
         this.currentColumnId = null;
         this.columnHeaders = new ArrayList<>();
         columnHeaders.add("SUBJ_ID");
+        columnHeaders.add("TYPE");
+        columnHeaders.add("ASSOC_PATIENT_ID");
+        columnHeaders.add("ASSOC_EVENT_ID");
+        columnHeaders.add("event number");
+        columnHeaders.add("repeat number");
         this.columnIds = new ArrayList<>();
         columnIds.add(FIRST_COLUMN_ID_WITH_SUBJECT_IDS);
-        this.patientIds = new ArrayList<>();
+        columnIds.add(SECOND_COLUMN_ID_WITH_TYPE);
+        columnIds.add(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
+        columnIds.add(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
+        columnIds.add(FIFTH_COLUMN_ID_WITH_EVENT_NR);
+        columnIds.add(SIXTH_COLUMN_ID_WITH_IG_NR);
+        this.subjectIds = new ArrayList<>();
+        this.repeatingEventIds = new ArrayList<>();
+        this.repeatingItemGroupIds = new ArrayList<>();
         this.wordMap = new HashMap<>();
         this.clinicalDataMap = new HashMap<>();
         setColumnsName(columnsFileName);
@@ -270,7 +321,56 @@ public class FileExporter {
             rowAsList2.add("");
             rowAsList2.add("");
             writeCSVData(columnsWriter, rowAsList2);
+            // This first data line is required by tranSMART.
+            final List<String> rowAsList3 = new ArrayList<>();
+            rowAsList3.add(clinicalDataFileName);
+            rowAsList3.add("Subset selection type");
+            rowAsList3.add("2");
+            rowAsList3.add("type (patient, event or repeat)");
+            rowAsList3.add("");
+            rowAsList3.add("");
+            writeCSVData(columnsWriter, rowAsList3);
+            // This first data line is required by tranSMART.
+            final List<String> rowAsList4 = new ArrayList<>();
+            rowAsList4.add(clinicalDataFileName);
+            rowAsList4.add("Subset selection type");
+            rowAsList4.add("3");
+            rowAsList4.add("associated patient id");
+            rowAsList4.add("");
+            rowAsList4.add("");
+            writeCSVData(columnsWriter, rowAsList4);
+            // This first data line is required by tranSMART.
+            final List<String> rowAsList5 = new ArrayList<>();
+            rowAsList5.add(clinicalDataFileName);
+            rowAsList5.add("Subset selection type");
+            rowAsList5.add("4");
+            rowAsList5.add("associated event id");
+            rowAsList5.add("");
+            rowAsList5.add("");
+            writeCSVData(columnsWriter, rowAsList5);
+            // This first data line is required by tranSMART.
+            final List<String> rowAsList6 = new ArrayList<>();
+            rowAsList6.add(clinicalDataFileName);
+            rowAsList6.add("Subset selection type");
+            rowAsList6.add("5");
+            rowAsList6.add("event number");
+            rowAsList6.add("");
+            rowAsList6.add("");
+            writeCSVData(columnsWriter, rowAsList6);
+            // This first data line is required by tranSMART.
+            final List<String> rowAsList7 = new ArrayList<>();
+            rowAsList7.add(clinicalDataFileName);
+            rowAsList7.add("Subset selection type");
+            rowAsList7.add("6");
+            rowAsList7.add("repeat number");
+            rowAsList7.add("");
+            rowAsList7.add("");
+            writeCSVData(columnsWriter, rowAsList7);
+
+            currentColumnNumber += 5;
         }
+
+
 
         if (avoidTransmartSymbolBugs) {
             studyEventName = studyEventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_ESCAPER);
@@ -360,8 +460,18 @@ public class FileExporter {
                                             final String itemGroupId,
                                             final String itemGroupRepeatKey) {
 
-        addPatientData();
+        if (eventRepeatKey == null && itemGroupRepeatKey == null) {
+            addPatientData(columnId, dataValue, patientId);
+        } else if (eventRepeatKey != null && itemGroupRepeatKey == null) {
+            addEventData(columnId, dataValue, patientId, eventId, eventRepeatKey);
+        } else if (eventRepeatKey == null) {
+            addItemGroupData(columnId, dataValue, patientId, eventId, itemGroupId, itemGroupRepeatKey);
+        } else {
+            addEventAndItemGroupData(columnId, dataValue, patientId, eventId, eventRepeatKey, itemGroupId, itemGroupRepeatKey);
+        }
+    }
 
+    private void addPatientData(String columnId, String dataValue, String patientId) {
         /**
          * Mapping of column ID to values for the current subject.
          */
@@ -370,27 +480,139 @@ public class FileExporter {
         if (clinicalDataMap.containsKey(patientId)) {
             subjectData = clinicalDataMap.get(patientId);
         } else {
-            patientIds.add(patientId);
+            subjectIds.add(patientId);
             subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, patientId);
+            subjectData.put(SECOND_COLUMN_ID_WITH_TYPE, "patient");
             clinicalDataMap.put(patientId, subjectData);
         }
 
+        subjectData = addWordOrNumber(columnId, dataValue, subjectData);
+
+        logger.debug("Adding subject data for " + patientId);
+        clinicalDataMap.put(patientId, subjectData);
+    }
+
+    private void addEventData(String columnId, String dataValue, String patientId, String eventId, String eventRepeatKey) {
+        /**
+         * Mapping of column ID to values for the current subject.
+         */
+        Map<String, String> subjectData = new HashMap<>();
+
+        if (!repeatingEventIds.contains(eventId)) {
+            repeatingEventIds.add(eventId);
+        }
+
+        String eventSubjectId = patientId + "_E" + repeatingEventIds.indexOf(eventId) + "_R" + eventRepeatKey;
+
+        if (clinicalDataMap.containsKey(eventSubjectId)) {
+            subjectData = clinicalDataMap.get(eventSubjectId);
+        } else {
+            subjectIds.add(eventSubjectId);
+            subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, eventSubjectId);
+            subjectData.put(SECOND_COLUMN_ID_WITH_TYPE, "event");
+            subjectData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
+            subjectData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
+            clinicalDataMap.put(eventSubjectId, subjectData);
+        }
+
+        subjectData = addWordOrNumber(columnId, dataValue, subjectData);
+
+        logger.debug("Adding subject data for " + eventSubjectId);
+        clinicalDataMap.put(eventSubjectId, subjectData);
+    }
+
+    private void addItemGroupData(String columnId,
+                                  String dataValue,
+                                  String patientId,
+                                  String eventId,
+                                  String itemGroupId,
+                                  String itemGroupRepeatKey) {
+        /**
+         * Mapping of column ID to values for the current subject.
+         */
+        Map<String, String> subjectData = new HashMap<>();
+
+        if (!repeatingEventIds.contains(eventId)) {
+            repeatingEventIds.add(eventId);
+        }
+
+        if (!repeatingItemGroupIds.contains(itemGroupId)) {
+            repeatingItemGroupIds.add(itemGroupId);
+        }
+
+        String itemGroupSubjectId = patientId +
+                "_E"  + repeatingEventIds.indexOf(eventId) +
+                "_IG" + repeatingItemGroupIds.indexOf(itemGroupId) + "_R" + itemGroupRepeatKey;
+
+        if (clinicalDataMap.containsKey(itemGroupSubjectId)) {
+            subjectData = clinicalDataMap.get(itemGroupSubjectId);
+        } else {
+            subjectIds.add(itemGroupSubjectId);
+            subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, itemGroupSubjectId);
+            subjectData.put(SECOND_COLUMN_ID_WITH_TYPE, "repeat");
+            subjectData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
+            subjectData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
+            clinicalDataMap.put(itemGroupSubjectId, subjectData);
+        }
+
+        subjectData = addWordOrNumber(columnId, dataValue, subjectData);
+
+        logger.debug("Adding subject data for " + itemGroupSubjectId);
+        clinicalDataMap.put(itemGroupSubjectId, subjectData);
+    }
+
+    private void addEventAndItemGroupData(String columnId,
+                                          String dataValue,
+                                          String patientId,
+                                          String eventId,
+                                          String eventRepeatKey,
+                                          String itemGroupId,
+                                          String itemGroupRepeatKey) {
+        /**
+         * Mapping of column ID to values for the current subject.
+         */
+        Map<String, String> subjectData = new HashMap<>();
+
+        if (!repeatingEventIds.contains(eventId)) {
+            repeatingEventIds.add(eventId);
+        }
+
+        if (!repeatingItemGroupIds.contains(itemGroupId)) {
+            repeatingItemGroupIds.add(itemGroupId);
+        }
+
+        String eventSubjectId = patientId + "_E" + repeatingEventIds.indexOf(eventId) + "_R" + eventRepeatKey;
+        String itemGroupSubjectId = patientId +
+                                    "_E"  + repeatingEventIds.indexOf(eventId) + "_R" + eventRepeatKey +
+                                    "_IG" + repeatingItemGroupIds.indexOf(itemGroupId) + "_R" + itemGroupRepeatKey;
+
+        if (clinicalDataMap.containsKey(itemGroupSubjectId)) {
+            subjectData = clinicalDataMap.get(itemGroupSubjectId);
+        } else {
+            subjectIds.add(itemGroupSubjectId);
+            subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, itemGroupSubjectId);
+            subjectData.put(SECOND_COLUMN_ID_WITH_TYPE, "repeat");
+            subjectData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
+            subjectData.put(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS, eventSubjectId);
+            subjectData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
+            subjectData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
+            clinicalDataMap.put(itemGroupSubjectId, subjectData);
+        }
+
+        subjectData = addWordOrNumber(columnId, dataValue, subjectData);
+
+        logger.debug("Adding subject data for " + itemGroupSubjectId);
+        clinicalDataMap.put(itemGroupSubjectId, subjectData);
+    }
+
+    private Map<String,String> addWordOrNumber(String columnId, String dataValue, Map<String, String> subjectData) {
         if (wordMap.get(columnId + dataValue) != null) {
             //fills clinical data with words from wordmap
             subjectData.put(columnId, wordMap.get(columnId + dataValue));
         } else {
             subjectData.put(columnId, dataValue);
         }
-
-        logger.debug("Adding subject data for " + patientId);
-        clinicalDataMap.put(patientId, subjectData);
-//        clinicalDataMap.put(eventSubjectId, subjectData);
-//        clinicalDataMap.put(itemGroupSubjectId, subjectData);
-    }
-
-    private void addPatientData() {
-
-
+        return subjectData;
     }
 
     /**
@@ -399,9 +621,9 @@ public class FileExporter {
      */
     public void writePatientData() throws IOException {
         writeCSVData(clinicalDataWriter, columnHeaders);
-        for (final String patientId : patientIds) {
+        for (final String subjectId : subjectIds) {
             final List<String> rowAsList = new ArrayList<>();
-            final Map<String, String> patientData = clinicalDataMap.get(patientId);
+            final Map<String, String> patientData = clinicalDataMap.get(subjectId);
             for (final String columnId : columnIds) {
                 String rawDataEntry = patientData.get(columnId);
                 String dataEntry;
@@ -409,7 +631,7 @@ public class FileExporter {
                     dataEntry = "";
                 } else if (rawDataEntry.length() > maxClinicalDataEntry) {
                     dataEntry = rawDataEntry.substring(0, maxClinicalDataEntry - 4) + "...";
-                    logger.warn("Data entry " + dataEntry.substring(0, 15) + " of " + patientId
+                    logger.warn("Data entry " + dataEntry.substring(0, 15) + " of " + subjectId
                             + " and " + columnId + " was cut off at "
                             + rawDataEntry.substring(maxClinicalDataEntry - 20, maxClinicalDataEntry - 4));
                 } else {
