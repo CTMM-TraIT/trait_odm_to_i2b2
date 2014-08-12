@@ -615,11 +615,18 @@ public class FileExporter {
         return subjectData;
     }
 
+    private void completeClinicalData() {
+        for (final String subjectId1 : subjectIds) {
+            Map<String, String> subjectData1 = clinicalDataMap.get(subjectId1);
+        }
+
+    }
+
     /**
      * Write the clinical data, which was kept in the memory, to the tab-delimited clinical data file.
      * @throws IOException An input-output exception.
      */
-    public void writePatientData() throws IOException {
+    public void writeSubjectData() throws IOException {
         writeCSVData(clinicalDataWriter, columnHeaders);
         for (final String subjectId : subjectIds) {
             final List<String> rowAsList = new ArrayList<>();
@@ -674,7 +681,8 @@ public class FileExporter {
      */
     public void close() {
         try {
-            writePatientData();
+            completeClinicalData();
+            writeSubjectData();
             columnsWriter.close();
             wordMapWriter.close();
             clinicalDataWriter.close();
