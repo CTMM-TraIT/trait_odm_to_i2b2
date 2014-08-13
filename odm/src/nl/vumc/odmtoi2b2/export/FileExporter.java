@@ -294,8 +294,9 @@ public class FileExporter {
      *
      * @param studyEventName
      * @param formName
-     *@param preferredItemName The name of the last node in the concept tree.
-     * @param oidPath The full path of OID's, which provides a unique identifier for the columns.   @throws IOException An input-output exception.
+     * @param preferredItemName The name of the last node in the concept tree.
+     * @param oidPath The full path of OID's, which provides a unique identifier for the columns.
+     * @throws IOException An input-output exception.
      */
     public void writeExportColumns(String studyEventName,
                                    String formName,
@@ -467,7 +468,8 @@ public class FileExporter {
         } else if (eventRepeatKey == null) {
             addItemGroupData(columnId, dataValue, patientId, eventId, itemGroupId, itemGroupRepeatKey);
         } else {
-            addEventAndItemGroupData(columnId, dataValue, patientId, eventId, eventRepeatKey, itemGroupId, itemGroupRepeatKey);
+            addEventAndItemGroupData(columnId, dataValue, patientId, eventId,
+                                     eventRepeatKey, itemGroupId, itemGroupRepeatKey);
         }
     }
 
@@ -492,7 +494,11 @@ public class FileExporter {
         clinicalDataMap.put(patientId, subjectData);
     }
 
-    private void addEventData(String columnId, String dataValue, String patientId, String eventId, String eventRepeatKey) {
+    private void addEventData(String columnId,
+                              String dataValue,
+                              String patientId,
+                              String eventId,
+                              String eventRepeatKey) {
         /**
          * Mapping of column ID to values for the current subject.
          */
@@ -616,9 +622,74 @@ public class FileExporter {
     }
 
     private void completeClinicalData() {
-        for (final String subjectId1 : subjectIds) {
-            Map<String, String> subjectData1 = clinicalDataMap.get(subjectId1);
+        List<String> newlyFoundSubjectIds = new ArrayList<>();
+        for (final String subject1Id : subjectIds) {
+            Map<String, String> subject1Data = clinicalDataMap.get(subject1Id);
+            String subject1Type = subject1Data.get(SECOND_COLUMN_ID_WITH_TYPE);
+            if (subject1Type.equals("patient")) {
+                copyClinicalData(subject1Id, subject1Data, THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
+            } else if (subject1Type.equals("event")) {
+                copyClinicalData(subject1Id, subject1Data, FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
+                newlyFoundSubjectIds = findNewSubjects(subject1Data,
+                                                       newlyFoundSubjectIds,
+                                                       THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
+                                                       "patient");
+            } else if (subject1Type.equals("repeat")) {
+                newlyFoundSubjectIds = findNewSubjects(subject1Data,
+                                                       newlyFoundSubjectIds,
+                                                       THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
+                                                       "patient");
+                if (subject1Data.get(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS) != null) {
+                    newlyFoundSubjectIds = findNewSubjects(subject1Data,
+                                                           newlyFoundSubjectIds,
+                                                           FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS,
+                                                           "event");
+                }
+            } else {
+                logger.error("Unexpected: the type of subject " + subject1Id + " is " + subject1Type);
+            }
         }
+        subjectIds.addAll(newlyFoundSubjectIds);
+    }
+
+    private List<String> findNewSubjects(Map<String, String> subject1Data,
+                                         List<String> newlyFoundSubjectIds,
+                                         String associationColumnId,
+                                         String associationType) {
+        String associatedSubjectId = subject1Data.get(associationColumnId);
+        if (!subjectIds.contains(associatedSubjectId) &&
+            !newlyFoundSubjectIds.contains(associatedSubjectId)) {
+            Map<String, String> newlyFoundSubjectData = new HashMap<>();
+            newlyFoundSubjectIds.add(associatedSubjectId);
+            newlyFoundSubjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, associatedSubjectId);
+            newlyFoundSubjectData.put(SECOND_COLUMN_ID_WITH_TYPE, associationType);
+            clinicalDataMap.put(associatedSubjectId, newlyFoundSubjectData);
+            logger.debug("Found " + associationType + " " + associatedSubjectId + " from " +
+                    subject1Data.get(SECOND_COLUMN_ID_WITH_TYPE) + " " +
+                    subject1Data.get(FIRST_COLUMN_ID_WITH_SUBJECT_IDS));
+        }
+        return newlyFoundSubjectIds;
+    }
+
+    private void copyClinicalData(String subject1Id,
+                                  Map<String, String> subject1Data,
+                                  String associationType) {
+        for (final String subject2Id : subjectIds) {
+            Map<String, String> subject2Data = clinicalDataMap.get(subject2Id);
+            if (subject2Data.get(associationType) != null && subject2Data.get(associationType).equals(subject1Id)) {
+                for (final String columnId : columnIds) {
+                    if (!columnId.equals(FIRST_COLUMN_ID_WITH_SUBJECT_IDS) &&
+                        !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE )) {
+                        if (subject1Data.get(columnId) != null) {
+                            subject2Data.put(columnId, subject1Data.get(columnId));
+                        }
+                    }
+                }
+                clinicalDataMap.put(subject2Id, subject2Data);
+            }
+        }
+
+
 
     }
 
