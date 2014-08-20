@@ -508,7 +508,8 @@ public class FileExporter {
             repeatingEventIds.add(eventId);
         }
 
-        String eventSubjectId = patientId + "_E" + repeatingEventIds.indexOf(eventId) + "_R" + eventRepeatKey;
+        int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
+        String eventSubjectId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
 
         if (clinicalDataMap.containsKey(eventSubjectId)) {
             subjectData = clinicalDataMap.get(eventSubjectId);
@@ -546,9 +547,12 @@ public class FileExporter {
             repeatingItemGroupIds.add(itemGroupId);
         }
 
+        int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
+        int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
         String itemGroupSubjectId = patientId +
-                "_E"  + repeatingEventIds.indexOf(eventId) +
-                "_IG" + repeatingItemGroupIds.indexOf(itemGroupId) + "_R" + itemGroupRepeatKey;
+                "_E"  + repeatingEventIndex +
+                "_IG" + repeatingItemGroupIndex +
+                "_R"  + itemGroupRepeatKey;
 
         if (clinicalDataMap.containsKey(itemGroupSubjectId)) {
             subjectData = clinicalDataMap.get(itemGroupSubjectId);
@@ -587,10 +591,12 @@ public class FileExporter {
             repeatingItemGroupIds.add(itemGroupId);
         }
 
-        String eventSubjectId = patientId + "_E" + repeatingEventIds.indexOf(eventId) + "_R" + eventRepeatKey;
+        int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
+        int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
+        String eventSubjectId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
         String itemGroupSubjectId = patientId +
-                                    "_E"  + repeatingEventIds.indexOf(eventId) + "_R" + eventRepeatKey +
-                                    "_IG" + repeatingItemGroupIds.indexOf(itemGroupId) + "_R" + itemGroupRepeatKey;
+                                    "_E"  + repeatingEventIndex + "_R" + eventRepeatKey +
+                                    "_IG" + repeatingItemGroupIndex + "_R" + itemGroupRepeatKey;
 
         if (clinicalDataMap.containsKey(itemGroupSubjectId)) {
             subjectData = clinicalDataMap.get(itemGroupSubjectId);
