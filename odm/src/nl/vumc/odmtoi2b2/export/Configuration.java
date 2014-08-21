@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 /**
- * todo
+ * todo: add Javadocs.
  */
 public class Configuration {
     private int maxClinicalDataEntry;
