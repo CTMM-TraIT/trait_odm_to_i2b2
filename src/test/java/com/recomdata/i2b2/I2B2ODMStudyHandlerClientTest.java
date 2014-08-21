@@ -76,7 +76,8 @@ public class I2B2ODMStudyHandlerClientTest {
     //Assert.assertTrue(new File(exportFilePath).exists());
 
     I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
-    client.loadODMFile2I2B2(new File(odmXmlPath).getAbsolutePath(), new File(exportFilePath).getAbsolutePath() + "\\",
+    client.loadODMFile2I2B2(new File(odmXmlPath).getAbsolutePath(),
+                            new File(exportFilePath).getAbsolutePath() + File.separator,
                             new File(PROPERTIES_DIRECTORY + "ODM-to-i2b2.properties").getAbsolutePath());
 
     final long end = System.currentTimeMillis();
