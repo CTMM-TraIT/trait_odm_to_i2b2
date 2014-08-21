@@ -5,6 +5,7 @@
     Licensed under the Apache License version 2.0 (see http://opensource.org/licenses/Apache-2.0).
 
     Description: Maven configuration for the ODM to i2b2 tool.
+    Author: Ward Blonde (w.blonde@vumc.nl).
 -->
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12,6 +13,7 @@
 
     <modelVersion>4.0.0</modelVersion>
 
+    <!-- General project settings. -->
     <name>ODM to i2b2</name>
     <description>ODM to i2b2 tool for converting ODM data to i2b2 format in a database or files</description>
     <url>https://github.com/CTMM-TraIT/trait_odm_to_i2b2</url>
@@ -22,7 +24,6 @@
 
     <properties>
         <!-- Dependency versions. -->
-        <blend4j.version>0.1-alpha-7</blend4j.version>
         <guava.version>15.0</guava.version>
         <jsoup.version>1.7.3</jsoup.version>
         <junit.version>4.11</junit.version>
@@ -40,11 +41,23 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Plugin versions. -->
+        <build-helper-maven-plugin.version>1.9</build-helper-maven-plugin.version>
         <maven-checkstyle-plugin.version>2.11</maven-checkstyle-plugin.version>
         <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
         <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
         <maven-jxr-plugin.version>2.4</maven-jxr-plugin.version>
     </properties>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>central</id>
+            <name>Maven Plugin Repository</name>
+            <url>http://repo1.maven.org/maven2</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </pluginRepository>
+    </pluginRepositories>
 
     <dependencies>
 
@@ -73,7 +86,7 @@
         <!--</dependency>-->
 
         <dependency>
-            <groupId>jdom</groupId>
+            <groupId>org.jdom</groupId>
             <artifactId>jdom</artifactId>
             <version>1.1</version>
         </dependency>
@@ -161,11 +174,12 @@
     <dependencyManagement/>
 
     <build>
-        <sourceDirectory>src/java</sourceDirectory>
-        <testSourceDirectory>test/java</testSourceDirectory>
+
+        <testSourceDirectory>src/test/java</testSourceDirectory>
         <directory>target</directory>
 
         <plugins>
+
             <!-- Specify Java 7 for sources and targets (.class files). -->
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -173,11 +187,24 @@
                 <configuration>
                     <source>${java-version}</source>
                     <target>${java-version}</target>
-                    <includes>
-                        <include>src/java</include>
-                        <include>gensrc</include>
-                    </includes>
                 </configuration>
+            </plugin>
+            
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>${build-helper-maven-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals><goal>add-source</goal></goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/java-generated</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
 
             <!-- Use maven-jar-plugin to create executable jar with the "mvn package" command. -->
