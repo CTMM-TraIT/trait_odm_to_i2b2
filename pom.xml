@@ -223,32 +223,33 @@
                 <!--</configuration>-->
             <!--</plugin>-->
 
-            <!-- Run Checkstyle in the verify phase. -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>${maven-checkstyle-plugin.version}</version>
-                <inherited>true</inherited>
-                <executions>
-                    <execution>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>checkstyle</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <configLocation>checkstyle.xml</configLocation>
-                    <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
-                    <!--
-                        Workaround for resolving the suppressions file in a maven build: always check two
-                        module levels above the current project. IDE builds should provide the config_loc
-                        property, hence this setting will not influence the builds triggered in IDEs.
-                    -->
-                    <!--<propertyExpansion>config_loc=${project.parent.parent.basedir}/</propertyExpansion>-->
-                    <failsOnError>true</failsOnError>
-                </configuration>
-            </plugin>
+            <!-- Disabled Checkstyle for now. -->
+            <!--&lt;!&ndash; Run Checkstyle in the verify phase. &ndash;&gt;-->
+            <!--<plugin>-->
+                <!--<groupId>org.apache.maven.plugins</groupId>-->
+                <!--<artifactId>maven-checkstyle-plugin</artifactId>-->
+                <!--<version>${maven-checkstyle-plugin.version}</version>-->
+                <!--<inherited>true</inherited>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<phase>verify</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>checkstyle</goal>-->
+                        <!--</goals>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+                <!--<configuration>-->
+                    <!--<configLocation>checkstyle.xml</configLocation>-->
+                    <!--<suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>-->
+                    <!--&lt;!&ndash;-->
+                        <!--Workaround for resolving the suppressions file in a maven build: always check two-->
+                        <!--module levels above the current project. IDE builds should provide the config_loc-->
+                        <!--property, hence this setting will not influence the builds triggered in IDEs.-->
+                    <!--&ndash;&gt;-->
+                    <!--&lt;!&ndash;<propertyExpansion>config_loc=${project.parent.parent.basedir}/</propertyExpansion>&ndash;&gt;-->
+                    <!--<failsOnError>true</failsOnError>-->
+                <!--</configuration>-->
+            <!--</plugin>-->
 
         </plugins>
     </build>
