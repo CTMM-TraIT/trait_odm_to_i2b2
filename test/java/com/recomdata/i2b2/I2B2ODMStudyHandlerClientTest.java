@@ -59,7 +59,7 @@ public class I2B2ODMStudyHandlerClientTest {
                                 : FileSystems.getDefault().getPath("output").toString();
 		Assert.assertNotNull(exportFilePath);
 
-        I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
+        final I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
 		
 		if (!odmXmlPath.equals("") && !exportFilePath.equals("")) {
 			client.loadODMFile2I2B2(odmXmlPath, exportFilePath);

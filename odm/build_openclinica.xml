@@ -11,7 +11,7 @@
 	<property name="scripts.dir" value="${basedir}/scripts" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="deploy.dir" value="../redcapui/lib" />
-	<property name="gensrc.dir" value="${basedir}/gensrc" />
+	<property name="gensrc.dir" value="/gensrc" />
 	<property name="classes.dir" value="${basedir}/classes" />
 	<property name="xsd.dir" value="${basedir}/xsd" />
 
@@ -34,7 +34,7 @@
 	</target>
 
 	<target name="gensrc">
-		<mkdir dir="${gensrc.dir}" />
+		<mkdir dir="/gensrc" />
 
 		<echo message="calling xjc generation tool: odm" />
 		<exec executable="xjc">
@@ -87,7 +87,7 @@
 	<target name="clean">
 		<delete failonerror="false">
 			<fileset dir="${classes.dir}" />
-			<fileset dir="${gensrc.dir}" />
+			<fileset dir="/gensrc" />
 			<fileset dir="${build.dir}" />
 		</delete>
 	</target>
