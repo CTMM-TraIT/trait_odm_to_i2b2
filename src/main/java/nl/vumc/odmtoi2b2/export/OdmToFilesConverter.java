@@ -160,14 +160,16 @@ public class OdmToFilesConverter {
      *            the unmarshaller. The unmarshaller uses automatically generated Java sources,
      *            generated from xsd files.
      * @param exportFilePath The path to the directory in which the export files will be written.
+     * @param propertiesFilePath the file path to the properties.
      * @throws IOException An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
-    public void processODM(final ODM odm, final String exportFilePath) throws IOException, JAXBException {
+    public void processODM(final ODM odm, final String exportFilePath, final String propertiesFilePath)
+        throws IOException, JAXBException {
         this.odm = odm;
         this.exportFilePath = exportFilePath + File.separator;
 
-        processODMStudy();
+        processODMStudy(propertiesFilePath);
         processODMClinicalData();
     }
 
@@ -187,16 +189,17 @@ public class OdmToFilesConverter {
     /**
      * Process the metadata by traversing all the studies in the ODM file.
      *
+     * @param propertiesFilePath the file path to the properties.
      * @throws IOException An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
-    private void processODMStudy() throws IOException, JAXBException {
+    private void processODMStudy(final String propertiesFilePath) throws IOException, JAXBException {
         // Need to traverse through the study metadata to:
         // 1) Lookup all metadata definition values and paths for each tree leaf.
         // 2) Pass the metadata to the corresponding file exporter.
 
         for (ODMcomplexTypeDefinitionStudy study : odm.getStudy()) {
-            saveStudy(study);
+            saveStudy(study, propertiesFilePath);
         }
         writeStudySites();
     }
@@ -243,10 +246,12 @@ public class OdmToFilesConverter {
      *
      * @param study the current ODM study
      *              definingStudy: the furthest study from which metadata is included with an include tag
+     * @param propertiesFilePath the file path to the properties.
      * @throws IOException An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
-    private void saveStudy(final ODMcomplexTypeDefinitionStudy study) throws IOException, JAXBException {
+    private void saveStudy(final ODMcomplexTypeDefinitionStudy study, final String propertiesFilePath)
+        throws IOException, JAXBException {
         final String studyName = study.getGlobalVariables().getStudyName().getValue();
         final String studyOID = study.getOID();
 
@@ -275,7 +280,7 @@ public class OdmToFilesConverter {
 
         if (!fileExporters.containsKey(definingStudyName)) {
             logger.debug("Creating file exporter for study " + definingStudyName);
-            final Configuration configuration = new Configuration("ODM-to-i2b2.properties");  // todo: use constant
+            final Configuration configuration = new Configuration(propertiesFilePath);
             final FileExporter fileExporter = new FileExporter(exportFilePath, definingStudyName, configuration);
             fileExporters.put(definingStudyName, fileExporter);
         }
