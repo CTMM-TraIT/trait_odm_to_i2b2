@@ -9,9 +9,6 @@ package com.recomdata.i2b2;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.Properties;
 
 import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 
@@ -47,9 +44,10 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * 
 	 * @param odmXmlPath the ODM file to process.
 	 * @param exportFilePath the path of the export file.
+	 * @param propertiesFilePath the file path to the properties.
 	 * @throws Exception
 	 */
-    public void loadODMFile2I2B2(String odmXmlPath, String exportFilePath) throws Exception {
+    public void loadODMFile2I2B2(String odmXmlPath, String exportFilePath, final String propertiesFilePath) throws Exception {
 		File xmlFile = new File(odmXmlPath);
 
 		if (!xmlFile.exists()) {
@@ -71,7 +69,7 @@ public class I2B2ODMStudyHandlerCMLClient {
             odmHandler.processODM();
         } else {
             OdmToFilesConverter odmHandler = new OdmToFilesConverter();
-            odmHandler.processODM(odm, exportFilePath);
+            odmHandler.processODM(odm, exportFilePath, propertiesFilePath);
             odmHandler.closeExportWriters();
         }
     }
@@ -104,7 +102,7 @@ public class I2B2ODMStudyHandlerCMLClient {
             log.info("Parsing ODM file ..." + odmFilePath);
 
 			I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
-			client.loadODMFile2I2B2(odmFilePath, exportFilePath);
+			client.loadODMFile2I2B2(odmFilePath, exportFilePath, "ODM-to-i2b2.properties");
 
 			if (EXPORT_TO_DATABASE) {
                 log.info("Releasing database connection.");
