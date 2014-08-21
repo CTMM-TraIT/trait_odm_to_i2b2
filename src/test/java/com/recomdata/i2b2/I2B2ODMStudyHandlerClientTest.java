@@ -16,6 +16,7 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PatternLayout;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -41,6 +42,7 @@ public class I2B2ODMStudyHandlerClientTest {
 	/**
 	 * Test method for {@link com.recomdata.i2b2.I2B2ODMStudyHandlerCMLClient}.
 	 */
+    @Ignore
 	@Test
 	public void testLoadODMFile2I2B2() throws Exception {
 		System.out.println("JUnit test for export ODM to i2b2 start...");
