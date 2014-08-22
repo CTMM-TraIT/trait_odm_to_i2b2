@@ -1,4 +1,5 @@
-/.idea/
-/odm-to-i2b2.iml
-/odm/
-/target/
+.idea/
+odm-to-i2b2.iml
+odm/
+src/test/resources/output/*.txt
+target/

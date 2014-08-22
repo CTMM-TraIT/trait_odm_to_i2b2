@@ -10,7 +10,7 @@
 	<property name="lib.dir" value="${basedir}/lib" />
 	<property name="scripts.dir" value="${basedir}/scripts" />
 	<property name="build.dir" value="${basedir}/build" />
-	<property name="deploy.dir" value="../redcapui/lib" />
+	<property name="deploy.dir" value="redcapui/lib" />
 	<property name="gensrc.dir" value="/gensrc" />
 	<property name="classes.dir" value="${basedir}/classes" />
 	<property name="xsd.dir" value="${basedir}/xsd" />
