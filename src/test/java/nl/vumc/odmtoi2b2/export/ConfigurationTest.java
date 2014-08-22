@@ -10,9 +10,7 @@ import org.junit.Test;
 import java.io.File;
 import java.nio.file.Paths;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * This class contains unit tests for the Configuration class.
@@ -20,33 +18,45 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
 public class ConfigurationTest {
-  /**
-   * The resources directory for the export package.
-   */
-  private static final String EXPORT_DIRECTORY = Paths.get(
-      "src", "test", "resources", "nl", "vumc", "odmtoi2b2", "export"
-  ) + File.separator;
+	/**
+	 * The resources directory for the export package.
+	 */
+	private static final String EXPORT_DIRECTORY = Paths.get(
+	  "src", "test", "resources", "nl", "vumc", "odmtoi2b2", "export"
+	) + File.separator;
 
-  /**
-   * Test the constructor and the getters with an empty configuration file.
-   */
-  @Test(expected = NumberFormatException.class)
-  public void testEmptyConfiguration() {
-    final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "empty-configuration.properties");
-    assertEquals(0, configuration.getMaxClinicalDataEntry());
-    assertEquals("", configuration.getForbiddenSymbolRegex());
-    assertFalse(configuration.getAvoidTransmartSymbolBugs());
-  }
+	/**
+	 * Test the constructor and the getters with an empty configuration file.
+	 */
+	@Test(expected = NumberFormatException.class)
+	public void testEmptyConfiguration() {
+	  final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "empty-configuration.properties");
+	  assertEquals(0, configuration.getMaxClinicalDataEntry());
+	  assertEquals("", configuration.getForbiddenSymbolRegex());
+	  assertFalse(configuration.getAvoidTransmartSymbolBugs());
+	}
 
-  /**
-   * Test the constructor and the getters with a filled configuration file.
-   */
-  @Test
-  public void testFilledConfiguration() {
-    final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-    // Nice opportunity to use the fifth perfect number (see https://en.wikipedia.org/wiki/Perfect_number)... ;-)
-    assertEquals(33550336, configuration.getMaxClinicalDataEntry());
-    assertEquals("\t", configuration.getForbiddenSymbolRegex());
-    assertTrue(configuration.getAvoidTransmartSymbolBugs());
-  }
+	/**
+	 * Test the constructor and the getters with a filled configuration file.
+	 */
+	@Test
+	public void testFilledConfiguration() {
+	  final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
+	  // Nice opportunity to use the fifth perfect number (see https://en.wikipedia.org/wiki/Perfect_number)... ;-)
+	  assertEquals(33550336, configuration.getMaxClinicalDataEntry());
+	  assertEquals("\t", configuration.getForbiddenSymbolRegex());
+	  assertTrue(configuration.getAvoidTransmartSymbolBugs());
+	}
+
+	/**
+	 * Test the constructor and the getters with a non existing configuration file. The constructor should not thrown an
+	 * exception and the ForbiddenSymbolRegex should be null.
+	 */
+	@Test
+	public void testNonExistingConfiguration() {
+	  final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "this-is-nonsense.properties");
+	  assertEquals(0, configuration.getMaxClinicalDataEntry());
+	  assertNull(configuration.getForbiddenSymbolRegex());
+	  assertFalse(configuration.getAvoidTransmartSymbolBugs());
+	}
 }
