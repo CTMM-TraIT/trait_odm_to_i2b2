@@ -6,17 +6,14 @@
 package nl.vumc.odmtoi2b2.export;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.*;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-
 
 /**
  * For each study, there is one FileExporter object. This class supports exporting ODM data to four files in i2b2
@@ -33,7 +30,7 @@ public class FileExporter {
     /**
      * The logger for this class.
      */
-    private static final Log logger = LogFactory.getLog(FileExporter.class);
+    private static final Logger logger = LoggerFactory.getLogger(FileExporter.class);
 
     /**
      * A column header in the columns file and the wordmap file.

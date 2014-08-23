@@ -12,10 +12,10 @@ import java.io.FileNotFoundException;
 
 import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.PropertyConfigurator;
 import org.cdisk.odm.jaxb.ODM;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.recomdata.config.Config;
 import com.recomdata.i2b2.dao.I2B2DBUtils;
@@ -35,9 +35,9 @@ public class I2B2ODMStudyHandlerCMLClient {
 	public static final boolean EXPORT_TO_DATABASE = false;
 
     /**
-     * The log for this class.
+     * The logger for this class.
      */
-    private static final Log log = LogFactory.getLog(I2B2ODMStudyHandlerCMLClient.class);
+    private static final Logger logger = LoggerFactory.getLogger(I2B2ODMStudyHandlerCMLClient.class);
 
     /**
 	 * method to process odm xml file and save data into i2b2
@@ -51,7 +51,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 		File xmlFile = new File(odmXmlPath);
 
 		if (!xmlFile.exists()) {
-            log.error("ODM file not found: " + odmXmlPath);
+            logger.error("ODM file not found: " + odmXmlPath);
 			throw new FileNotFoundException(xmlFile.getPath());
 		}
 
@@ -84,9 +84,9 @@ public class I2B2ODMStudyHandlerCMLClient {
             PropertyConfigurator.configure(args[0]);
 
 			if (args.length < 3) {
-				log.info("Please provide 1. the logging configuration (log4j.properties), "
-                         + "2. the ODM file (plus path) to process, and "
-                         + "3. the path of the export directory (without slash).");
+				logger.info("Please provide 1. the logging configuration (log4j.properties), "
+						    + "2. the ODM file (plus path) to process, and "
+						    + "3. the path of the export directory (without slash).");
 				return;
 			}
 
@@ -94,22 +94,22 @@ public class I2B2ODMStudyHandlerCMLClient {
             String exportFilePath = args[2];
 
 			if (EXPORT_TO_DATABASE) {
-                log.info("Initializing database connection...");
+                logger.info("Initializing database connection...");
 				Config config = Config.getConfig();
 				I2B2DBUtils.init(config);
 			}
 
-            log.info("Parsing ODM file ..." + odmFilePath);
+            logger.info("Parsing ODM file ..." + odmFilePath);
 
 			I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
 			client.loadODMFile2I2B2(odmFilePath, exportFilePath, "ODM-to-i2b2.properties");
 
 			if (EXPORT_TO_DATABASE) {
-                log.info("Releasing database connection.");
+                logger.info("Releasing database connection.");
 				I2B2DBUtils.shutdown();
 			}
 
-            log.info("Processing complete.");
+            logger.info("Processing complete.");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}

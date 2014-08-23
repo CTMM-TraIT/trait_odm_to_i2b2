@@ -16,8 +16,6 @@ import java.util.Date;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.cdisk.odm.jaxb.ODM;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionClinicalData;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeList;
@@ -47,6 +45,8 @@ import com.recomdata.i2b2.dao.StudyDao;
 import com.recomdata.i2b2.entity.I2B2ClinicalDataInfo;
 import com.recomdata.i2b2.entity.I2B2StudyInfo;
 import com.recomdata.i2b2.util.ODMUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Class parse ODM and save meta data and clinical data into i2b2
@@ -58,7 +58,7 @@ public class I2B2ODMStudyHandler implements IConstants {
     /**
      * The log for this class.
      */
-    private static final Log log = LogFactory.getLog(I2B2ODMStudyHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(I2B2ODMStudyHandler.class);
 
     // initialize ODM object
     private ODM odm = null;

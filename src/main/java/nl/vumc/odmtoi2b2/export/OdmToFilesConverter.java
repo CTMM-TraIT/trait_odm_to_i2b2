@@ -18,8 +18,6 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.cdisk.odm.jaxb.ODM;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionClinicalData;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeList;
@@ -43,6 +41,8 @@ import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventRef;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionSubjectData;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionTranslatedText;
 import org.jsoup.Jsoup;
+import org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
 
 /**
  * This class goes through the tree-structure of the odm object that was constructed by the
@@ -76,7 +76,7 @@ public class OdmToFilesConverter {
     /**
      * The logger for this class.
      */
-    private static final Log logger = LogFactory.getLog(OdmToFilesConverter.class);
+    private static final Logger logger = LoggerFactory.getLogger(OdmToFilesConverter.class);
 
     /**
      * The language variant of the label that is retrieved. en = english.
