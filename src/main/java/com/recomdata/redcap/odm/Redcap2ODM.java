@@ -12,8 +12,6 @@ import java.util.Map;
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.cdisk.odm.jaxb.CLDataType;
 import org.cdisk.odm.jaxb.DataType;
 import org.cdisk.odm.jaxb.EventType;
@@ -49,22 +47,23 @@ import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionSubjectData;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionTranslatedText;
 import org.cdisk.odm.jaxb.YesOrNo;
 import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonParseException;
 import org.codehaus.jackson.JsonParser;
 import org.codehaus.jackson.JsonToken;
 
 import com.recomdata.i2b2.util.ODMUtil;
 import com.recomdata.redcap.ws.GetRedcapService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Redcap2ODM {
     /**
-     * The log for this class.
+     * The logger for this class.
      */
-	private Log log = LogFactory.getLog(Redcap2ODM.class);
+	private Logger logger = LoggerFactory.getLogger(Redcap2ODM.class);
 
 	public ODM buildODM(String projectID, String projectName, String projectDescription,
 			String baseUrl, String metadataPath, String clinicalDataPath, String token)
-	throws JsonParseException, IOException, JAXBException, DatatypeConfigurationException {
+	throws IOException, JAXBException, DatatypeConfigurationException {
 		ODM odm = new ODM();
 		odm.setCreationDateTime(RedcapODMUtils.getXMLGregorianCalendar(Calendar.getInstance().getTime()));
 		odm.setFileOID("000-000-000");
@@ -76,7 +75,7 @@ public class Redcap2ODM {
 		JsonFactory factory = new JsonFactory();
 		JsonParser metadataParser = factory.createJsonParser(readServiceData(projectID, baseUrl + metadataPath, token));
 
-		ODMcomplexTypeDefinitionStudy odmStudy = null;
+		ODMcomplexTypeDefinitionStudy odmStudy;
 
 		try {
 			odmStudy = buildStudyMetadata(projectID, projectName, projectDescription, metadataParser);
@@ -84,7 +83,11 @@ public class Redcap2ODM {
 			metadataParser.close();
 		} catch (IOException e) {
 			if (metadataParser != null) {
-				try { metadataParser.close(); } catch (IOException f) {}
+				try {
+					metadataParser.close();
+				} catch (IOException f) {
+					logger.error("Exception while closing the metadata parser.", f);
+				}
 			}
 
 			throw e;
@@ -96,8 +99,10 @@ public class Redcap2ODM {
 			ODMcomplexTypeDefinitionClinicalData clinicalData = buildClinicalData(odmStudy, clinicalDataParser);
 			odm.getClinicalData().add(clinicalData);
 		} catch (IOException e) {
-			if (metadataParser != null) {
-				try { metadataParser.close(); } catch (IOException f) {}
+			try {
+				metadataParser.close();
+			} catch (IOException f) {
+				logger.error("Exception while closing the metadata parser.", f);
 			}
 
 			throw e;
@@ -108,7 +113,7 @@ public class Redcap2ODM {
 
 	private ODMcomplexTypeDefinitionStudy buildStudyMetadata(
 			String studyOID, String studyName, String studyDesc, JsonParser jp)
-	throws JsonParseException, IOException, JAXBException {
+	throws IOException, JAXBException {
 		ODMcomplexTypeDefinitionStudy odmStudy = new ODMcomplexTypeDefinitionStudy();
 		odmStudy.setOID(studyOID);
 
@@ -139,7 +144,7 @@ public class Redcap2ODM {
 		ODMcomplexTypeDefinitionStudyEventDef currentStudyEvent = null;
 		ODMcomplexTypeDefinitionFormDef currentForm = null;
 		ODMcomplexTypeDefinitionItemGroupDef currentItemGroup = null;
-		HashMap<String,String> codeListMap = new HashMap<String,String>();
+		HashMap<String,String> codeListMap = new HashMap<>();
 
 		MetadataField field = new MetadataField();
 		jp.nextValue(); // Start top level object
@@ -156,8 +161,8 @@ public class Redcap2ODM {
 				}
 			}
 
-			if (log.isDebugEnabled()) {
-				log.debug("Read " + field);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Read " + field);
 			}
 
 			field.processed = true;
@@ -262,8 +267,10 @@ public class Redcap2ODM {
 			ODMcomplexTypeDefinitionItemRef itemRef = new ODMcomplexTypeDefinitionItemRef();
 			itemRef.setItemOID(item.getOID());
 			itemRef.setMandatory(YesOrNo.NO); // True value is unknown
-			itemRef.setOrderNumber(BigInteger.valueOf(currentItemGroup.getItemRef().size() + 1));
-			currentItemGroup.getItemRef().add(itemRef);
+			if (currentItemGroup != null && currentItemGroup.getItemRef() != null) {
+				itemRef.setOrderNumber(BigInteger.valueOf(currentItemGroup.getItemRef().size() + 1));
+				currentItemGroup.getItemRef().add(itemRef);
+			}
 
 			if (field.enumeration != null && !field.type.equals("calc") && !field.type.equals("slider")) {
 				String codeListOID = codeListMap.get(field.enumeration);
@@ -278,10 +285,10 @@ public class Redcap2ODM {
 					codeList.setDataType(CLDataType.fromValue(getOdmDataType(field)));
 
 					String[] tokens = field.enumeration.split("\\\\n");
-					for (int i = 0; i < tokens.length; i++) {
-						int valueIndex = tokens[i].indexOf(',');
-						String codedValue = tokens[i].substring(0, valueIndex).trim();
-						String value = tokens[i].substring(valueIndex + 1).trim();
+					for (String token : tokens) {
+						int valueIndex = token.indexOf(',');
+						String codedValue = token.substring(0, valueIndex).trim();
+						String value = token.substring(valueIndex + 1).trim();
 						ODMcomplexTypeDefinitionCodeListItem codeListItem = new ODMcomplexTypeDefinitionCodeListItem();
 						codeListItem.setCodedValue(codedValue);
 						codeListItem.setDecode(new ODMcomplexTypeDefinitionDecode());
@@ -296,8 +303,8 @@ public class Redcap2ODM {
 
 					odmMetadataVersion.getCodeList().add(codeList);
 				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("Code list " + codeListOID + " already defined for enum " + field.enumeration);
+					if (logger.isDebugEnabled()) {
+						logger.debug("Code list " + codeListOID + " already defined for enum " + field.enumeration);
 					}
 				}
 
@@ -312,7 +319,7 @@ public class Redcap2ODM {
 
 	private ODMcomplexTypeDefinitionClinicalData buildClinicalData(
 			ODMcomplexTypeDefinitionStudy odmStudy, JsonParser jp)
-	throws JsonParseException, IOException, JAXBException {
+	throws IOException, JAXBException {
 		ODMcomplexTypeDefinitionClinicalData clinicalData = new ODMcomplexTypeDefinitionClinicalData();
 		clinicalData.setStudyOID(odmStudy.getOID());
 		clinicalData.setMetaDataVersionOID(odmStudy.getMetaDataVersion().get(0).getOID());
@@ -324,15 +331,15 @@ public class Redcap2ODM {
 
 		ClinicalDataField field = new ClinicalDataField();
 		jp.nextValue(); // Start top level object
-		jp.nextValue(); // projectdata fields
+		jp.nextValue(); // project data fields
 
 		while (jp.getCurrentToken() != JsonToken.END_ARRAY) { // iterate over records
 			if (!field.read(jp)) {
 				break;
 			}
 
-			if (log.isDebugEnabled()) {
-				log.debug("Read  " + field);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Read  " + field);
 			}
 
 			if (currentSubjectData == null || !currentSubjectData.getSubjectKey().equals(field.subjectID)) {
@@ -392,11 +399,11 @@ public class Redcap2ODM {
 	}
 
 	private String getOdmDataType(MetadataField field) {
-		String odmDataType = null;
+		String odmDataType;
 		String rcDataType = field.type;
 		String rcValidationType = field.validationType;
 
-		if(rcDataType.equalsIgnoreCase("select")
+		if (rcDataType.equalsIgnoreCase("select")
 				|| rcDataType.equalsIgnoreCase("radio")
 				|| rcDataType.equalsIgnoreCase("textarea")
 				|| rcDataType.equalsIgnoreCase("yesno")
@@ -410,9 +417,9 @@ public class Redcap2ODM {
 			} else {
 				odmDataType = "text";
 			}
-		} else if(rcDataType.equalsIgnoreCase("calc")){
+		} else if (rcDataType.equalsIgnoreCase("calc")) {
 			odmDataType = "float";
-		} else{
+		} else {
 			odmDataType = rcDataType;
 		}
 
@@ -426,7 +433,7 @@ public class Redcap2ODM {
 
 		Map<String, String> params = null;
 		if (token != null) {
-			params = new HashMap<String, String>();
+			params = new HashMap<>();
 			params.put("token", token);
 		}
 
@@ -436,12 +443,12 @@ public class Redcap2ODM {
 //		return new BufferedReader(new FileReader(testFile));
 	}
 
-	private void skipToNextForm(JsonParser jp, MetadataField field) throws JsonParseException, IOException {
+	private void skipToNextForm(JsonParser jp, MetadataField field) throws IOException {
 		String eventName = field.eventName;
 		String formName = field.formName;
 
-		if (log.isDebugEnabled()) {
-			log.debug("Skipping form " + formName + " in event " + eventName);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Skipping form " + formName + " in event " + eventName);
 		}
 
 		do {
@@ -454,7 +461,7 @@ public class Redcap2ODM {
 		} while (eventName.equals(field.eventName) && formName.equals(field.formName));
 	}
 
-	public static String nextValue(JsonParser jp) throws JsonParseException, IOException {
+	public static String nextValue(JsonParser jp) throws IOException {
 		jp.nextToken();
 		jp.nextToken();
 
@@ -478,7 +485,7 @@ public class Redcap2ODM {
 		String maxValue;
 		String validationType;
 
-		public boolean read(JsonParser jp) throws JsonParseException, IOException {
+		public boolean read(JsonParser jp) throws IOException {
 			if (jp.nextToken() == JsonToken.END_ARRAY) {
 				return false;
 			}
@@ -522,7 +529,7 @@ public class Redcap2ODM {
 		String name;
 		String value;
 
-		private boolean read(JsonParser jp) throws JsonParseException, IOException {
+		private boolean read(JsonParser jp) throws IOException {
 			if (jp.nextToken() == JsonToken.END_ARRAY) {
 				return false;
 			}

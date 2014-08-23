@@ -8,6 +8,9 @@
 
 package nl.vumc.odmtoi2b2.export;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
@@ -16,7 +19,12 @@ import java.util.Properties;
  * todo: add Javadocs.
  */
 public class Configuration {
-    private int maxClinicalDataEntry;
+	/**
+	 * The logger for this class.
+	 */
+	private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
+
+	private int maxClinicalDataEntry;
     private String forbiddenSymbolRegex;
     private boolean avoidTransmartSymbolBugs;
 
@@ -32,8 +40,8 @@ public class Configuration {
             this.avoidTransmartSymbolBugs = Boolean.parseBoolean(avoidTransmartSymbolBugsAsString);
 
         } catch (final IOException e) {
-            // todo: logger.
-            e.printStackTrace();
+			final String message = "Exception while reading configuration properties from file %s.";
+			logger.error(String.format(message, propertiesFilePath), e);
         }
     }
 
