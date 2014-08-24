@@ -33,12 +33,12 @@ public class FileExporter {
     private static final Logger logger = LoggerFactory.getLogger(FileExporter.class);
 
     /**
-     * A column header in the columns file and the wordmap file.
+     * A column header in the columns file and the word map file.
      */
     private static final String COLUMN_NUMBER = "Column Number";
 
     /**
-     * A column header in the columns file and the wordmap file.
+     * A column header in the columns file and the word map file.
      */
     private static final String FILENAME = "Filename";
 
@@ -75,12 +75,12 @@ public class FileExporter {
     private static final String SIXTH_COLUMN_ID_WITH_IG_NR = "sixthColumnIdWithIgNr";
 
     /**
-     * The separator that tranSMART expects to separate the concept names in the column namepath.
+     * The separator that tranSMART expects to separate the concept names in the column name path.
      */
     private static final String SEPARATOR = "+";
 
     /**
-     * The separator that tranSMART expects to separate the concept names in the column namepath,
+     * The separator that tranSMART expects to separate the concept names in the column name path,
      * like it is called in a regular expression.  Remove the "\\"
      * in case a separator is chosen that does not require to be preceded with \ in a regular expression.
      */
@@ -89,7 +89,7 @@ public class FileExporter {
     /**
      * The string by which the separator has to be replaced in case it occurs in the middle of a concept.
      */
-    private static final String SEPARATOR_ESCAPER = " and ";
+    private static final String SEPARATOR_REPLACEMENT = " and ";
 
     /**
      * The regex that specifies all the symbols that should not appear in the output file.
@@ -242,7 +242,16 @@ public class FileExporter {
         setClinicalDataName(this.clinicalDataFileName);
     }
 
-    /**
+	/**
+	 * Get a copy of the clinical data map. This method is meant for testing purposes.
+	 *
+	 * @return a copy of the clinical data map.
+	 */
+	protected Map<String, Map<String, String>> getClinicalDataMap() {
+		return new HashMap<>(clinicalDataMap);
+	}
+
+	/**
      * Set the output filename for the columns metadata file.
      *
      * @param columnsFileName the output filename.
@@ -257,7 +266,7 @@ public class FileExporter {
     }
 
     /**
-     * Set the output filename for the wordmap metadata file.
+     * Set the output filename for the word map metadata file.
      *
      * @param wordMapFileName the output filename.
      */
@@ -266,7 +275,7 @@ public class FileExporter {
             wordMapWriter = new BufferedWriter(new FileWriter(exportFilePath + wordMapFileName));
             logger.info("Writing word mappings to file " + exportFilePath + wordMapFileName);
         } catch (final IOException e) {
-            logger.error("Error while setting the wordmap filename.", e);
+            logger.error("Error while setting the word map filename.", e);
         }
     }
 
@@ -288,11 +297,10 @@ public class FileExporter {
      * Write the columns file: first the clinical data file name, then the path as specified in the second column of the
      * user's input concept map without the last node, then the column number and then the last node of the path.
      *
-     *
      * @param studyEventName
      * @param formName
      * @param preferredItemName The name of the last node in the concept tree.
-     * @param oidPath The full path of OID's, which provides a unique identifier for the columns.
+     * @param oidPath The full path of OIDs, which provides a unique identifier for the columns.
      * @throws IOException An input-output exception.
      */
     public void writeExportColumns(String studyEventName,
@@ -368,12 +376,10 @@ public class FileExporter {
             currentColumnNumber += 5;
         }
 
-
-
         if (avoidTransmartSymbolBugs) {
-            studyEventName = studyEventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_ESCAPER);
-            formName       =       formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_ESCAPER);
-            itemGroupName  =  itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_ESCAPER);
+            studyEventName = studyEventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            formName       =       formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            itemGroupName  =  itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
         }
 
         String namePath = studyEventName + SEPARATOR + formName + SEPARATOR + itemGroupName;
@@ -442,7 +448,7 @@ public class FileExporter {
      * Write the clinical data to a clinical data map, which is kept in the memory until the moment
      * that everything can be written out to a file in once.
      *
-     * @param columnId The full path of OID's, which identifies a column.
+     * @param columnId The full path of OIDs, which identifies a column.
      * @param dataValue The value, which might not yet be converted to a number.
      * @param patientId The identifier of the patient.
      * @param eventId
@@ -616,7 +622,7 @@ public class FileExporter {
 
     private Map<String,String> addWordOrNumber(String columnId, String dataValue, Map<String, String> subjectData) {
         if (wordMap.get(columnId + dataValue) != null) {
-            //fills clinical data with words from wordmap
+            //fills clinical data with words from word map
             subjectData.put(columnId, wordMap.get(columnId + dataValue));
         } else {
             subjectData.put(columnId, dataValue);
@@ -691,9 +697,6 @@ public class FileExporter {
                 clinicalDataMap.put(subject2Id, subject2Data);
             }
         }
-
-
-
     }
 
     /**

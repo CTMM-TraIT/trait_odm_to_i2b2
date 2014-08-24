@@ -65,6 +65,7 @@ public class I2B2ODMStudyHandlerClientTest {
 		//Assert.assertTrue(new File(exportFilePath).exists());
 
 		I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
+		// todo [Freek]: check whether all calls to getAbsolutePath are necessary.
 		client.loadODMFile2I2B2(new File(odmXmlPath).getAbsolutePath(),
 								new File(exportFilePath).getAbsolutePath() + File.separator,
 								new File(PROPERTIES_DIRECTORY + "ODM-to-i2b2.properties").getAbsolutePath());
