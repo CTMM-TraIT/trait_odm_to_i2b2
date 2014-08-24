@@ -8,7 +8,7 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
 <!--
-  -  Logging configuration for the Workflow Runner project.
+  -  Logging configuration for the ODM to i2b2 project.
   -
   -  Authors: Ward Blonde (w.blonde@vumc.nl) and Freek de Bruijn (f.debruijn@vumc.nl).
 -->
@@ -17,7 +17,7 @@
 
     <appender name="file-appender" class="org.apache.log4j.DailyRollingFileAppender">
         <param name="append" value="true"/>
-        <param name="file" value="log/workflow-runner.log"/>
+        <param name="file" value="log/odm2i2b2.log"/>
         <param name="DatePattern" value="'.'yyyy-MM-dd"/>
         <param name="threshold" value="trace"/>
         <layout class="org.apache.log4j.PatternLayout">
