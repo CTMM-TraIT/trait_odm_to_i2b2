@@ -8,7 +8,7 @@
 <!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
 
 <!--
-  -  Logging configuration for the Workflow Runner project.
+  -  Logging configuration for the ODM to i2b2 project.
   -
   -  Authors: Ward Blonde (w.blonde@vumc.nl) and Freek de Bruijn (f.debruijn@vumc.nl).
 -->
