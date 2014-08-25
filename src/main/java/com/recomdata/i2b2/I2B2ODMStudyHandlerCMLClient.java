@@ -12,7 +12,7 @@ import java.io.FileNotFoundException;
 
 import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.log4j.xml.DOMConfigurator;
 import org.cdisk.odm.jaxb.ODM;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,7 +81,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 */
 	public static void main(String[] args) {
         try {
-            PropertyConfigurator.configure(args[0]);
+			DOMConfigurator.configure(args[0]);
 
 			if (args.length < 3) {
 				logger.info("Please provide 1. the logging configuration (log4j.properties), "
