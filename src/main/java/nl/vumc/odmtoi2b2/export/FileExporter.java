@@ -739,13 +739,18 @@ public class FileExporter {
                 rowAsList.set(i, rowAsList.get(i).replaceAll(forbiddenSymbolRegex,""));
             }
         }
+//        if (avoidTransmartSymbolBugs) {
+//            for (int i=0; i < rowAsList.size(); i++) {
+//                rowAsList.set(i, rowAsList.get(i).replaceAll("`","'"));
+//                rowAsList.set(i, rowAsList.get(i).replaceAll("\\\\","/"));
+//                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
+//                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
+//                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
+//            }
+//        }
         if (avoidTransmartSymbolBugs) {
             for (int i=0; i < rowAsList.size(); i++) {
-                rowAsList.set(i, rowAsList.get(i).replaceAll("`","'"));
-                rowAsList.set(i, rowAsList.get(i).replaceAll("\\\\","/"));
-                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
-                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
-                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
+                rowAsList.set(i, StringUtilities.convertString(rowAsList.get(i)));
             }
         }
         final CSVWriter csvWriter = new CSVWriter(writer, '\t', CSVWriter.NO_QUOTE_CHARACTER);
