@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.*;
 
@@ -110,7 +111,7 @@ public class FileExporter {
     /**
      * The writer for writing the columns file.
      */
-    private BufferedWriter columnsWriter;
+    private Writer columnsWriter;
 
     /**
      * Is set to true right after the column number was increased.
@@ -216,7 +217,7 @@ public class FileExporter {
         this.writeWordMapHeaders = true;
         this.valueCounter = 1;
         this.increasedColumnNumber = false;
-        this.currentColumnNumber = 1;
+        this.currentColumnNumber = 0;
         this.currentColumnId = null;
         this.columnHeaders = new ArrayList<>();
         columnHeaders.add("SUBJ_ID");
@@ -266,6 +267,15 @@ public class FileExporter {
     }
 
     /**
+     * For testing purposes.
+     *
+     * @param columnsWriter the columns writer.
+     */
+    protected void setColumnsWriter(final Writer columnsWriter) {
+        this.columnsWriter = columnsWriter;
+    }
+
+    /**
      * Set the output filename for the word map metadata file.
      *
      * @param wordMapFileName the output filename.
@@ -309,72 +319,16 @@ public class FileExporter {
                                    final String preferredItemName,
                                    final String oidPath)
             throws IOException {
-        if (currentColumnNumber == 1) {
-            final List<String> rowAsList = new ArrayList<>();
-            rowAsList.add(FILENAME);
-            rowAsList.add("Category Code");
-            rowAsList.add(COLUMN_NUMBER);
-            rowAsList.add("Data Label");
-            rowAsList.add("Data Label Source");
-            rowAsList.add("Control Vocab Cd");
-            writeCSVData(columnsWriter, rowAsList);
-            // This first data line is required by tranSMART.
-            final List<String> rowAsList2 = new ArrayList<>();
-            rowAsList2.add(clinicalDataFileName);
-            rowAsList2.add("");
-            rowAsList2.add("1");
-            rowAsList2.add("SUBJ_ID");
-            rowAsList2.add("");
-            rowAsList2.add("");
-            writeCSVData(columnsWriter, rowAsList2);
-            // This first data line is required by tranSMART.
-            final List<String> rowAsList3 = new ArrayList<>();
-            rowAsList3.add(clinicalDataFileName);
-            rowAsList3.add("Subset selection type");
-            rowAsList3.add("2");
-            rowAsList3.add("type (patient, event or repeat)");
-            rowAsList3.add("");
-            rowAsList3.add("");
-            writeCSVData(columnsWriter, rowAsList3);
-            // This first data line is required by tranSMART.
-            final List<String> rowAsList4 = new ArrayList<>();
-            rowAsList4.add(clinicalDataFileName);
-            rowAsList4.add("Subset selection type");
-            rowAsList4.add("3");
-            rowAsList4.add("associated patient id");
-            rowAsList4.add("");
-            rowAsList4.add("");
-            writeCSVData(columnsWriter, rowAsList4);
-            // This first data line is required by tranSMART.
-            final List<String> rowAsList5 = new ArrayList<>();
-            rowAsList5.add(clinicalDataFileName);
-            rowAsList5.add("Subset selection type");
-            rowAsList5.add("4");
-            rowAsList5.add("associated event id");
-            rowAsList5.add("");
-            rowAsList5.add("");
-            writeCSVData(columnsWriter, rowAsList5);
-            // This first data line is required by tranSMART.
-            final List<String> rowAsList6 = new ArrayList<>();
-            rowAsList6.add(clinicalDataFileName);
-            rowAsList6.add("Subset selection type");
-            rowAsList6.add("5");
-            rowAsList6.add("event number");
-            rowAsList6.add("");
-            rowAsList6.add("");
-            writeCSVData(columnsWriter, rowAsList6);
-            // This first data line is required by tranSMART.
-            final List<String> rowAsList7 = new ArrayList<>();
-            rowAsList7.add(clinicalDataFileName);
-            rowAsList7.add("Subset selection type");
-            rowAsList7.add("6");
-            rowAsList7.add("repeat number");
-            rowAsList7.add("");
-            rowAsList7.add("");
-            writeCSVData(columnsWriter, rowAsList7);
-
-            currentColumnNumber += 5;
+        if (currentColumnNumber == 0) {
+            handleColumnMetadata(FILENAME, "Category Code", COLUMN_NUMBER, "Data Label", "Data Label Source", "Control Vocab Cd");
+            handleColumnMetadata(clinicalDataFileName, ""                     , String.valueOf(currentColumnNumber), "SUBJ_ID", "", "");
+            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "type (patient, event or repeat)", "", "");
+            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "associated patient id", "", "");
+            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "associated event id", "", "");
+            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "event number", "", "");
+            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "repeat number", "", "");
         }
+
 
         if (avoidTransmartSymbolBugs) {
             studyEventName = studyEventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
@@ -387,27 +341,39 @@ public class FileExporter {
         /**
          * Avoid that blank nodes are created by removing overabundant SEPARATOR symbols.
          */
-        namePath = namePath.replaceAll(SEPARATOR_IN_REGEX + SEPARATOR_IN_REGEX, SEPARATOR);
-        if (namePath.substring(0,1).equals(SEPARATOR)) {
+        while (namePath.contains(SEPARATOR + SEPARATOR)) {
+            namePath = namePath.replaceAll(SEPARATOR_IN_REGEX + SEPARATOR_IN_REGEX, SEPARATOR);
+        }
+        if (namePath.startsWith(SEPARATOR)) {
             namePath = namePath.substring(1);
         }
-        if (namePath.length() > 0 && namePath.substring(namePath.length()-1).equals(SEPARATOR)) {
+        if (namePath.endsWith(SEPARATOR)) {
             namePath = namePath.substring(0,namePath.length()-1);
         }
 
-        currentColumnNumber++;
-        increasedColumnNumber = true;
-        final List<String> rowAsList = new ArrayList<>();
-        rowAsList.add(clinicalDataFileName);
-        rowAsList.add(namePath);
-        rowAsList.add(currentColumnNumber + "");
-        rowAsList.add(preferredItemName);
-        rowAsList.add("");
-        rowAsList.add("");
-        writeCSVData(columnsWriter, rowAsList);
+        handleColumnMetadata(clinicalDataFileName, namePath, currentColumnNumber + "", preferredItemName, "", "");
+
         currentColumnId = oidPath;
         columnHeaders.add(preferredItemName);
         columnIds.add(oidPath);
+    }
+
+    private void handleColumnMetadata(final String filename,
+                                      final String categoryCode,
+                                      final String columnNumber,
+                                      final String dataLabel,
+                                      final String dataLabelSource,
+                                      final String controlVocabCode) throws IOException {
+        final List<String> rowAsList = new ArrayList<>();
+        rowAsList.add(filename);
+        rowAsList.add(categoryCode);
+        rowAsList.add(columnNumber);
+        rowAsList.add(dataLabel);
+        rowAsList.add(dataLabelSource);
+        rowAsList.add(controlVocabCode);
+        writeCSVData(columnsWriter, rowAsList);
+        currentColumnNumber++;
+        increasedColumnNumber = true;
     }
 
     /**
@@ -438,8 +404,8 @@ public class FileExporter {
         wordMap.put(currentColumnId + wordValue, value);
         final List<String> rowAsList = new ArrayList<>();
         rowAsList.add(clinicalDataFileName);
-        rowAsList.add(currentColumnNumber + "");
-        rowAsList.add(valueCounter + "");
+        rowAsList.add(String.valueOf(currentColumnNumber - 1));
+        rowAsList.add(value);
         rowAsList.add(wordValue);
         writeCSVData(wordMapWriter, rowAsList);
     }
@@ -733,21 +699,12 @@ public class FileExporter {
      * @param rowAsList The line as a list of items that will be separated by tabs.
      * @throws IOException An input-output exception.
      */
-    private void writeCSVData(final BufferedWriter writer, final List<String> rowAsList) throws IOException {
+    private void writeCSVData(final Writer writer, final List<String> rowAsList) throws IOException {
         if (forbiddenSymbolRegex != null && !forbiddenSymbolRegex.trim().equals("")) {
             for (int i=0; i < rowAsList.size(); i++) {
                 rowAsList.set(i, rowAsList.get(i).replaceAll(forbiddenSymbolRegex,""));
             }
         }
-//        if (avoidTransmartSymbolBugs) {
-//            for (int i=0; i < rowAsList.size(); i++) {
-//                rowAsList.set(i, rowAsList.get(i).replaceAll("`","'"));
-//                rowAsList.set(i, rowAsList.get(i).replaceAll("\\\\","/"));
-//                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
-//                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
-//                rowAsList.set(i, rowAsList.get(i).replaceAll("\"\"","\""));
-//            }
-//        }
         if (avoidTransmartSymbolBugs) {
             for (int i=0; i < rowAsList.size(); i++) {
                 rowAsList.set(i, StringUtilities.convertString(rowAsList.get(i)));
