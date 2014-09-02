@@ -126,7 +126,7 @@ public class FileExporter {
     /**
      * The writer for writing the word map file.
      */
-    private BufferedWriter wordMapWriter;
+    private Writer wordMapWriter;
 
     /**
      * The value that is written to the clinical data file, instead of the words in the word map file,
@@ -273,6 +273,15 @@ public class FileExporter {
      */
     protected void setColumnsWriter(final Writer columnsWriter) {
         this.columnsWriter = columnsWriter;
+    }
+
+    /**
+     * For testing purposes.
+     *
+     * @param wordMapWriter the wordmap writer.
+     */
+    protected void setWordMapWriter(final Writer wordMapWriter) {
+        this.wordMapWriter = wordMapWriter;
     }
 
     /**

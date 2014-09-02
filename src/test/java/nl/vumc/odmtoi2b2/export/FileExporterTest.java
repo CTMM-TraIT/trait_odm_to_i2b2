@@ -40,8 +40,8 @@ public class FileExporterTest {
 
         final StringWriter columnsWriter = new StringWriter();
         fileExporter.setColumnsWriter(columnsWriter);
-        fileExporter.writeExportColumns("abc+cde", "", "", "preferred-item-name",
-                "oid-path");
+        fileExporter.writeExportColumns("abc+cde", "", "", "preferred-item-name", "oid-path");
+        fileExporter.writeExportColumns("abc", "cde", "efg", "preferred-item-name2", "oid-path");
         final String expectedOutput =
                 "Filename\tCategory Code\tColumn Number\tData Label\tData Label Source\tControl Vocab Cd\n" +
                 "my-study-name_clinical_data.txt\t\t1\tSUBJ_ID\t\t\n" +
@@ -50,8 +50,33 @@ public class FileExporterTest {
                 "my-study-name_clinical_data.txt\tSubset selection type\t4\tassociated event id\t\t\n" +
                 "my-study-name_clinical_data.txt\tSubset selection type\t5\tevent number\t\t\n" +
                 "my-study-name_clinical_data.txt\tSubset selection type\t6\trepeat number\t\t\n" +
-                "my-study-name_clinical_data.txt\tabc and cde\t7\tpreferred-item-name\t\t\n";
+                "my-study-name_clinical_data.txt\tabc and cde\t7\tpreferred-item-name\t\t\n" +
+                "my-study-name_clinical_data.txt\tabc+cde+efg\t8\tpreferred-item-name2\t\t\n";
         assertEquals(expectedOutput, columnsWriter.toString());
+	}
+
+	/**
+	 * Test the writeExportWordMap method.
+	 */
+    @Test
+	public void testWriteExportWordMap() throws IOException {
+        final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
+        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "my-study-name", configuration);
+
+        final StringWriter wordMapWriter = new StringWriter();
+        fileExporter.setWordMapWriter(wordMapWriter);
+        fileExporter.writeExportColumns("abc+cde", "", "", "preferred-item-name", "oid-path");
+        fileExporter.writeExportWordMap("myWordValue");
+        fileExporter.writeExportWordMap("myWordValue2");
+        fileExporter.writeExportColumns("abc", "", "", "preferred-item-name2", "oid-path");
+        fileExporter.writeExportColumns("fghij", "", "", "preferred-item-name3", "oid-path");
+        fileExporter.writeExportWordMap("myWordValue3");
+        final String expectedOutput =
+                "Filename\tColumn Number\tOriginal Data Value\tNew Data Values\n" +
+                "my-study-name_clinical_data.txt\t7\t1\tmyWordValue\n" +
+                "my-study-name_clinical_data.txt\t7\t2\tmyWordValue2\n" +
+                "my-study-name_clinical_data.txt\t9\t1\tmyWordValue3\n";
+        assertEquals(expectedOutput, wordMapWriter.toString());
 	}
 
 	/**
@@ -61,16 +86,26 @@ public class FileExporterTest {
     @Test
 	public void testWriteExportClinicalDataInfoNoRepeats() throws IOException {
         final Map<String, Map<String, String>> expectedClinicalDataMap = new HashMap<>();
-        final Map<String, String> subjectDataMap = new HashMap<>();
-        expectedClinicalDataMap.put("patient-id", subjectDataMap);
-        subjectDataMap.put("firstColumnIdWithSubjectIds", "patient-id");
-        subjectDataMap.put("secondColumnIdWithType", "patient");
-        subjectDataMap.put("column-id", "data-value");
+        final Map<String, String> subjectDataMap1 = new HashMap<>();
+        final Map<String, String> subjectDataMap2 = new HashMap<>();
+        expectedClinicalDataMap.put("patient-id1", subjectDataMap1);
+        subjectDataMap1.put("firstColumnIdWithSubjectIds", "patient-id1");
+        subjectDataMap1.put("secondColumnIdWithType", "patient");
+        subjectDataMap1.put("column-id1", "data-value1");
+        subjectDataMap1.put("column-id2", "data-value2");
+        expectedClinicalDataMap.put("patient-id2", subjectDataMap2);
+        subjectDataMap2.put("firstColumnIdWithSubjectIds", "patient-id2");
+        subjectDataMap2.put("secondColumnIdWithType", "patient");
+        subjectDataMap2.put("column-id1", "data-value3");
 
 		final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
 		final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
 
-		fileExporter.writeExportClinicalDataInfo("column-id", "data-value", "patient-id", "event-id", null,
+		fileExporter.writeExportClinicalDataInfo("column-id1", "data-value1", "patient-id1", "event-id", null,
+                "item-group-id", null);
+		fileExporter.writeExportClinicalDataInfo("column-id2", "data-value2", "patient-id1", "event-id", null,
+                "item-group-id", null);
+		fileExporter.writeExportClinicalDataInfo("column-id1", "data-value3", "patient-id2", "event-id", null,
                 "item-group-id", null);
 
 		assertEquals(expectedClinicalDataMap, fileExporter.getClinicalDataMap());
