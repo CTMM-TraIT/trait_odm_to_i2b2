@@ -220,12 +220,12 @@ public class FileExporter {
         this.currentColumnNumber = 0;
         this.currentColumnId = null;
         this.columnHeaders = new ArrayList<>();
-        columnHeaders.add("SUBJ_ID");
-        columnHeaders.add("TYPE");
-        columnHeaders.add("ASSOC_PATIENT_ID");
-        columnHeaders.add("ASSOC_EVENT_ID");
-        columnHeaders.add("event number");
-        columnHeaders.add("repeat number");
+        columnHeaders.add("ENTITY_ID");
+        columnHeaders.add("DIMENSION_TYPE");
+        columnHeaders.add("Patient_num");
+        columnHeaders.add("Encounter_num");
+        columnHeaders.add("Encounter_repeat_key");
+        columnHeaders.add("Instance_num");
         this.columnIds = new ArrayList<>();
         columnIds.add(FIRST_COLUMN_ID_WITH_SUBJECT_IDS);
         columnIds.add(SECOND_COLUMN_ID_WITH_TYPE);
