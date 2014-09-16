@@ -14,7 +14,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * For each study, there is one FileExporter object. This class supports exporting ODM data to four files in i2b2
@@ -160,14 +163,15 @@ public class FileExporter {
     private List<String> subjectIds;
 
     /**
-     * The IDs of a repeating event, which are turned into an integer (the place in the list)
-     * and then made part of the ID of a repeated event of this repeating event (the eventSubjectId).
+     * The IDs of a type of repeating event, which are turned into an integer (the place in the list)
+     * and then made part of the ID of a repeated event of this type of repeating event (the eventSubjectId).
      */
     private List<String> repeatingEventIds;
 
     /**
-     * The IDs of a repeating item group, which are turned into an integer (the place in the list)
-     * and then made part of the ID of a repeated item group of this repeating item group (the itemGroupSubjectId).
+     * The IDs of a type of repeating item group, which are turned into an integer (the place in the list)
+     * and then made part of the ID of a repeated item group of this type of repeating item group
+     * (the itemGroupSubjectId).
      */
     private List<String> repeatingItemGroupIds;
 
@@ -243,16 +247,16 @@ public class FileExporter {
         setClinicalDataName(this.clinicalDataFileName);
     }
 
-	/**
-	 * Get a copy of the clinical data map. This method is meant for testing purposes.
-	 *
-	 * @return a copy of the clinical data map.
-	 */
-	protected Map<String, Map<String, String>> getClinicalDataMap() {
-		return new HashMap<>(clinicalDataMap);
-	}
+    /**
+     * Get a copy of the clinical data map. This method is meant for testing purposes.
+     *
+     * @return a copy of the clinical data map.
+     */
+    protected Map<String, Map<String, String>> getClinicalDataMap() {
+        return new HashMap<>(clinicalDataMap);
+    }
 
-	/**
+    /**
      * Set the output filename for the columns metadata file.
      *
      * @param columnsFileName the output filename.
@@ -316,13 +320,14 @@ public class FileExporter {
      * Write the columns file: first the clinical data file name, then the path as specified in the second column of the
      * user's input concept map without the last node, then the column number and then the last node of the path.
      *
-     * @param studyEventName
-     * @param formName
-     * @param preferredItemName The name of the last node in the concept tree.
+     * @param eventName         The human readable name of the event.
+     * @param formName          The human readable name of the form (the CRF).
+     * @param itemGroupName     The (most) human readable name of the item group.
+     * @param preferredItemName The human readable name of the last node in the concept tree.
      * @param oidPath The full path of OIDs, which provides a unique identifier for the columns.
      * @throws IOException An input-output exception.
      */
-    public void writeExportColumns(String studyEventName,
+    public void writeExportColumns(String eventName,
                                    String formName,
                                    String itemGroupName,
                                    final String preferredItemName,
@@ -340,12 +345,12 @@ public class FileExporter {
 
 
         if (avoidTransmartSymbolBugs) {
-            studyEventName = studyEventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            eventName      =      eventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
             formName       =       formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
             itemGroupName  =  itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
         }
 
-        String namePath = studyEventName + SEPARATOR + formName + SEPARATOR + itemGroupName;
+        String namePath = eventName + SEPARATOR + formName + SEPARATOR + itemGroupName;
 
         /**
          * Avoid that blank nodes are created by removing overabundant SEPARATOR symbols.
@@ -357,7 +362,7 @@ public class FileExporter {
             namePath = namePath.substring(1);
         }
         if (namePath.endsWith(SEPARATOR)) {
-            namePath = namePath.substring(0,namePath.length()-1);
+            namePath = namePath.substring(0, namePath.length() - 1);
         }
 
         handleColumnMetadata(clinicalDataFileName, namePath, currentColumnNumber + "", preferredItemName, "", "");
@@ -367,6 +372,19 @@ public class FileExporter {
         columnIds.add(oidPath);
     }
 
+    /**
+     * This method fills a rowAsList list, which represents a line in the columns file, and
+     * passes it to the file writer. The actual writing to the hard disk happens when the
+     * file writer is closed.
+     *
+     * @param filename          The filename.
+     * @param categoryCode      The category code (readable concept path).
+     * @param columnNumber      The column number.
+     * @param dataLabel         The data label (item name).
+     * @param dataLabelSource   The data label source (not used yet in tranSMART on 2014/09).
+     * @param controlVocabCode  The controlled vocabulary code (not used in tM   on 2014/09).
+     * @throws IOException An input-output exception.
+     */
     private void handleColumnMetadata(final String filename,
                                       final String categoryCode,
                                       final String columnNumber,
@@ -421,15 +439,15 @@ public class FileExporter {
 
     /**
      * Write the clinical data to a clinical data map, which is kept in the memory until the moment
-     * that everything can be written out to a file in once.
+     * that everything can be written out to a file writer in once.
      *
      * @param columnId The full path of OIDs, which identifies a column.
      * @param dataValue The value, which might not yet be converted to a number.
      * @param patientId The identifier of the patient.
-     * @param eventId
-     * @param eventRepeatKey
-     * @param itemGroupId
-     * @param itemGroupRepeatKey
+     * @param eventId The OID of a type of repeating event.
+     * @param eventRepeatKey The repeat key that identifies an event repeat.
+     * @param itemGroupId The OID of a type of repeating item group.
+     * @param itemGroupRepeatKey The repeat key that identifies an item group repeat.
      */
     public void writeExportClinicalDataInfo(final String columnId,
                                             final String dataValue,
@@ -451,7 +469,14 @@ public class FileExporter {
         }
     }
 
-    private void addPatientData(String columnId, String dataValue, String patientId) {
+    /**
+     * Write the clinical data to a clinical data map, for the case of a patient.
+     *
+     * @param columnId The full path of OIDs, which identifies a column.
+     * @param dataValue The value, which might not yet be converted to a number.
+     * @param patientId The identifier of the patient.
+     */
+    private void addPatientData(final String columnId, final String dataValue, final String patientId) {
         /**
          * Mapping of column ID to values for the current subject.
          */
@@ -472,11 +497,20 @@ public class FileExporter {
         clinicalDataMap.put(patientId, subjectData);
     }
 
-    private void addEventData(String columnId,
-                              String dataValue,
-                              String patientId,
-                              String eventId,
-                              String eventRepeatKey) {
+    /**
+     * Write the clinical data to a clinical data map, for the case of an event repeat.
+     *
+     * @param columnId The full path of OIDs, which identifies a column.
+     * @param dataValue The value, which might not yet be converted to a number.
+     * @param patientId The identifier of the patient.
+     * @param eventId   The OID that identifies the type of repeating event.
+     * @param eventRepeatKey The repeat key that identifies the event repeat.
+     */
+    private void addEventData(final String columnId,
+                              final String dataValue,
+                              final String patientId,
+                              final String eventId,
+                              final String eventRepeatKey) {
         /**
          * Mapping of column ID to values for the current subject.
          */
@@ -506,12 +540,23 @@ public class FileExporter {
         clinicalDataMap.put(eventSubjectId, subjectData);
     }
 
-    private void addItemGroupData(String columnId,
-                                  String dataValue,
-                                  String patientId,
-                                  String eventId,
-                                  String itemGroupId,
-                                  String itemGroupRepeatKey) {
+    /**
+     * Write the clinical data to a clinical data map, for the case of an item group repeat,
+     * that does not belong to a repeating event.
+     *
+     * @param columnId The full path of OIDs, which identifies a column.
+     * @param dataValue The value, which might not yet be converted to a number.
+     * @param patientId The identifier of the patient.
+     * @param eventId   The OID that identifies the non-repeating event.
+     * @param itemGroupId  The OID that identifies the type of repeating item group.
+     * @param itemGroupRepeatKey The repeat key that identifies the item group repeat.
+     */
+    private void addItemGroupData(final String columnId,
+                                  final String dataValue,
+                                  final String patientId,
+                                  final String eventId,
+                                  final String itemGroupId,
+                                  final String itemGroupRepeatKey) {
         /**
          * Mapping of column ID to values for the current subject.
          */
@@ -527,10 +572,10 @@ public class FileExporter {
 
         int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
         int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
-        String itemGroupSubjectId = patientId +
-                "_E"  + repeatingEventIndex +
-                "_IG" + repeatingItemGroupIndex +
-                "_R"  + itemGroupRepeatKey;
+        String itemGroupSubjectId = patientId
+                + "_E"  + repeatingEventIndex
+                + "_IG" + repeatingItemGroupIndex
+                + "_R"  + itemGroupRepeatKey;
 
         if (clinicalDataMap.containsKey(itemGroupSubjectId)) {
             subjectData = clinicalDataMap.get(itemGroupSubjectId);
@@ -549,13 +594,25 @@ public class FileExporter {
         clinicalDataMap.put(itemGroupSubjectId, subjectData);
     }
 
-    private void addEventAndItemGroupData(String columnId,
-                                          String dataValue,
-                                          String patientId,
-                                          String eventId,
-                                          String eventRepeatKey,
-                                          String itemGroupId,
-                                          String itemGroupRepeatKey) {
+    /**
+     * Write the clinical data to a clinical data map, for the case of an item group repeat,
+     * that does belong to an event repeat.
+     *
+     * @param columnId The full path of OIDs, which identifies a column.
+     * @param dataValue The value, which might not yet be converted to a number.
+     * @param patientId The identifier of the patient.
+     * @param eventId   The OID that identifies the type of repeating event.
+     * @param eventRepeatKey The repeat key that identifies the event repeat.
+     * @param itemGroupId  The OID that identifies the type of repeating item group.
+     * @param itemGroupRepeatKey The repeat key that identifies the item group repeat.
+     */
+    private void addEventAndItemGroupData(final String columnId,
+                                          final String dataValue,
+                                          final String patientId,
+                                          final String eventId,
+                                          final String eventRepeatKey,
+                                          final String itemGroupId,
+                                          final String itemGroupRepeatKey) {
         /**
          * Mapping of column ID to values for the current subject.
          */
@@ -572,9 +629,9 @@ public class FileExporter {
         int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
         int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
         String eventSubjectId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
-        String itemGroupSubjectId = patientId +
-                                    "_E"  + repeatingEventIndex + "_R" + eventRepeatKey +
-                                    "_IG" + repeatingItemGroupIndex + "_R" + itemGroupRepeatKey;
+        String itemGroupSubjectId = patientId
+                                    + "_E"  + repeatingEventIndex + "_R" + eventRepeatKey
+                                    + "_IG" + repeatingItemGroupIndex + "_R" + itemGroupRepeatKey;
 
         if (clinicalDataMap.containsKey(itemGroupSubjectId)) {
             subjectData = clinicalDataMap.get(itemGroupSubjectId);
@@ -595,7 +652,18 @@ public class FileExporter {
         clinicalDataMap.put(itemGroupSubjectId, subjectData);
     }
 
-    private Map<String,String> addWordOrNumber(String columnId, String dataValue, Map<String, String> subjectData) {
+    /**
+     * Adds a word or a number to a field in the clinical data file. Replaces a word by a number in case the
+     * word map has assigned such a replacement.
+     *
+     * @param columnId The column of the field in the clinical data file.
+     * @param dataValue The non-replaced data value.
+     * @param subjectData The data of the row of the field in the clinical data file.
+     * @return subjectData The data of the row of the field in the clinical data file.
+     */
+    private Map<String, String> addWordOrNumber(final String columnId,
+                                                final String dataValue,
+                                                final Map<String, String> subjectData) {
         if (wordMap.get(columnId + dataValue) != null) {
             //fills clinical data with words from word map
             subjectData.put(columnId, wordMap.get(columnId + dataValue));

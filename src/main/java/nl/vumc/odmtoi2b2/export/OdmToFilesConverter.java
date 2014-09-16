@@ -582,8 +582,8 @@ public class OdmToFilesConverter {
             }
         }
         if (modelStudiesAsColumn) {
-            fileExporters.get(definingStudyName).writeExportClinicalDataInfo
-                    (oidPath, studyName, patientId, null, null, null, null);
+            fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, studyName, patientId,
+                    null, null, null, null);
         }
     }
 
@@ -708,7 +708,7 @@ public class OdmToFilesConverter {
         }
 
         final String finalValue = (bigDecimal != null) ? bigDecimal.toString() : wordValue;
-        fileExporters.get(definingStudyName).writeExportClinicalDataInfo
-                (oidPath, finalValue, patientId, eventId, eventRepeatKey, itemGroupId, itemGroupRepeatKey);
+        fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, finalValue, patientId,
+                eventId, eventRepeatKey, itemGroupId, itemGroupRepeatKey);
     }
 }
