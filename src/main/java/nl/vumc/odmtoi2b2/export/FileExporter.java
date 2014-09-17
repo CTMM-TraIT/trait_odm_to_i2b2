@@ -673,6 +673,14 @@ public class FileExporter {
         return subjectData;
     }
 
+    /**
+     * This method basically performs two actions:
+     * - it completes the data for repeats and events that are present in events or patients
+     *   (for example an event with a male patient also gets the value 'male', or a repeat gets
+     *   the start date of an event)
+     * - it creates patients and/or events that are only mentioned in the context of events
+     *   and/or repeats.
+     */
     private void completeClinicalData() {
         List<String> newlyFoundSubjectIds = new ArrayList<>();
         for (final String subject1Id : subjectIds) {
@@ -704,11 +712,21 @@ public class FileExporter {
         subjectIds.addAll(newlyFoundSubjectIds);
     }
 
-    private List<String> findNewSubjects(Map<String, String> subject1Data,
+    /**
+     *
+     *
+     *
+     * @param subjectData
+     * @param newlyFoundSubjectIds
+     * @param associationColumnId
+     * @param associationType
+     * @return
+     */
+    private List<String> findNewSubjects(Map<String, String> subjectData,
                                          List<String> newlyFoundSubjectIds,
                                          String associationColumnId,
                                          String associationType) {
-        String associatedSubjectId = subject1Data.get(associationColumnId);
+        String associatedSubjectId = subjectData.get(associationColumnId);
         if (!subjectIds.contains(associatedSubjectId) &&
             !newlyFoundSubjectIds.contains(associatedSubjectId)) {
             Map<String, String> newlyFoundSubjectData = new HashMap<>();
@@ -717,8 +735,8 @@ public class FileExporter {
             newlyFoundSubjectData.put(SECOND_COLUMN_ID_WITH_TYPE, associationType);
             clinicalDataMap.put(associatedSubjectId, newlyFoundSubjectData);
             logger.debug("Found " + associationType + " " + associatedSubjectId + " from " +
-                    subject1Data.get(SECOND_COLUMN_ID_WITH_TYPE) + " " +
-                    subject1Data.get(FIRST_COLUMN_ID_WITH_SUBJECT_IDS));
+                    subjectData.get(SECOND_COLUMN_ID_WITH_TYPE) + " " +
+                    subjectData.get(FIRST_COLUMN_ID_WITH_SUBJECT_IDS));
         }
         return newlyFoundSubjectIds;
     }
