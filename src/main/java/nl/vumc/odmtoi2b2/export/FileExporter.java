@@ -47,9 +47,9 @@ public class FileExporter {
     private static final String FILENAME = "Filename";
 
     /**
-     * The column identifier of the very first column, which contains the subject identifiers.
+     * The column identifier of the very first column, which contains the entity identifiers.
      */
-    private static final String FIRST_COLUMN_ID_WITH_SUBJECT_IDS = "firstColumnIdWithSubjectIds";
+    private static final String FIRST_COLUMN_ID_WITH_ENTITY_IDS = "firstColumnIdWithEntityIds";
 
     /**
      * The column identifier of the second column, which contains the type (patient, event, or item group).
@@ -158,20 +158,20 @@ public class FileExporter {
     private List<String> columnIds;
 
     /**
-     * The subject IDs (either patient id, event id, or IG id), which correspond to the rows in the clinical data.
+     * The entity IDs (either patient id, event id, or IG id), which correspond to the rows in the clinical data.
      */
-    private List<String> subjectIds;
+    private List<String> entityIds;
 
     /**
      * The IDs of a type of repeating event, which are turned into an integer (the place in the list)
-     * and then made part of the ID of a repeated event of this type of repeating event (the eventSubjectId).
+     * and then made part of the ID of a repeated event of this type of repeating event (the eventEntityId).
      */
     private List<String> repeatingEventIds;
 
     /**
      * The IDs of a type of repeating item group, which are turned into an integer (the place in the list)
      * and then made part of the ID of a repeated item group of this type of repeating item group
-     * (the itemGroupSubjectId).
+     * (the itemGroupEntityId).
      */
     private List<String> repeatingItemGroupIds;
 
@@ -231,13 +231,13 @@ public class FileExporter {
         columnHeaders.add("Encounter_repeat_key");
         columnHeaders.add("Instance_num");
         this.columnIds = new ArrayList<>();
-        columnIds.add(FIRST_COLUMN_ID_WITH_SUBJECT_IDS);
+        columnIds.add(FIRST_COLUMN_ID_WITH_ENTITY_IDS);
         columnIds.add(SECOND_COLUMN_ID_WITH_TYPE);
         columnIds.add(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
         columnIds.add(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
         columnIds.add(FIFTH_COLUMN_ID_WITH_EVENT_NR);
         columnIds.add(SIXTH_COLUMN_ID_WITH_IG_NR);
-        this.subjectIds = new ArrayList<>();
+        this.entityIds = new ArrayList<>();
         this.repeatingEventIds = new ArrayList<>();
         this.repeatingItemGroupIds = new ArrayList<>();
         this.wordMap = new HashMap<>();
@@ -478,23 +478,23 @@ public class FileExporter {
      */
     private void addPatientData(final String columnId, final String dataValue, final String patientId) {
         /**
-         * Mapping of column ID to values for the current subject.
+         * Mapping of column ID to values for the current entity.
          */
-        Map<String, String> subjectData = new HashMap<>();
+        Map<String, String> entityData = new HashMap<>();
 
         if (clinicalDataMap.containsKey(patientId)) {
-            subjectData = clinicalDataMap.get(patientId);
+            entityData = clinicalDataMap.get(patientId);
         } else {
-            subjectIds.add(patientId);
-            subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, patientId);
-            subjectData.put(SECOND_COLUMN_ID_WITH_TYPE, "patient");
-            clinicalDataMap.put(patientId, subjectData);
+            entityIds.add(patientId);
+            entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, patientId);
+            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, "patient");
+            clinicalDataMap.put(patientId, entityData);
         }
 
-        subjectData = addWordOrNumber(columnId, dataValue, subjectData);
+        entityData = addWordOrNumber(columnId, dataValue, entityData);
 
-        logger.debug("Adding subject data for " + patientId);
-        clinicalDataMap.put(patientId, subjectData);
+        logger.debug("Adding entity data for " + patientId);
+        clinicalDataMap.put(patientId, entityData);
     }
 
     /**
@@ -512,32 +512,32 @@ public class FileExporter {
                               final String eventId,
                               final String eventRepeatKey) {
         /**
-         * Mapping of column ID to values for the current subject.
+         * Mapping of column ID to values for the current entity.
          */
-        Map<String, String> subjectData = new HashMap<>();
+        Map<String, String> entityData = new HashMap<>();
 
         if (!repeatingEventIds.contains(eventId)) {
             repeatingEventIds.add(eventId);
         }
 
         int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
-        String eventSubjectId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
+        String eventEntityId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
 
-        if (clinicalDataMap.containsKey(eventSubjectId)) {
-            subjectData = clinicalDataMap.get(eventSubjectId);
+        if (clinicalDataMap.containsKey(eventEntityId)) {
+            entityData = clinicalDataMap.get(eventEntityId);
         } else {
-            subjectIds.add(eventSubjectId);
-            subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, eventSubjectId);
-            subjectData.put(SECOND_COLUMN_ID_WITH_TYPE, "event");
-            subjectData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
-            subjectData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
-            clinicalDataMap.put(eventSubjectId, subjectData);
+            entityIds.add(eventEntityId);
+            entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, eventEntityId);
+            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, "event");
+            entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
+            entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
+            clinicalDataMap.put(eventEntityId, entityData);
         }
 
-        subjectData = addWordOrNumber(columnId, dataValue, subjectData);
+        entityData = addWordOrNumber(columnId, dataValue, entityData);
 
-        logger.debug("Adding subject data for " + eventSubjectId);
-        clinicalDataMap.put(eventSubjectId, subjectData);
+        logger.debug("Adding entity data for " + eventEntityId);
+        clinicalDataMap.put(eventEntityId, entityData);
     }
 
     /**
@@ -558,9 +558,9 @@ public class FileExporter {
                                   final String itemGroupId,
                                   final String itemGroupRepeatKey) {
         /**
-         * Mapping of column ID to values for the current subject.
+         * Mapping of column ID to values for the current entity.
          */
-        Map<String, String> subjectData = new HashMap<>();
+        Map<String, String> entityData = new HashMap<>();
 
         if (!repeatingEventIds.contains(eventId)) {
             repeatingEventIds.add(eventId);
@@ -572,26 +572,26 @@ public class FileExporter {
 
         int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
         int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
-        String itemGroupSubjectId = patientId
+        String itemGroupEntityId = patientId
                 + "_E"  + repeatingEventIndex
                 + "_IG" + repeatingItemGroupIndex
                 + "_R"  + itemGroupRepeatKey;
 
-        if (clinicalDataMap.containsKey(itemGroupSubjectId)) {
-            subjectData = clinicalDataMap.get(itemGroupSubjectId);
+        if (clinicalDataMap.containsKey(itemGroupEntityId)) {
+            entityData = clinicalDataMap.get(itemGroupEntityId);
         } else {
-            subjectIds.add(itemGroupSubjectId);
-            subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, itemGroupSubjectId);
-            subjectData.put(SECOND_COLUMN_ID_WITH_TYPE, "repeat");
-            subjectData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
-            subjectData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
-            clinicalDataMap.put(itemGroupSubjectId, subjectData);
+            entityIds.add(itemGroupEntityId);
+            entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
+            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, "repeat");
+            entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
+            entityData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
+            clinicalDataMap.put(itemGroupEntityId, entityData);
         }
 
-        subjectData = addWordOrNumber(columnId, dataValue, subjectData);
+        entityData = addWordOrNumber(columnId, dataValue, entityData);
 
-        logger.debug("Adding subject data for " + itemGroupSubjectId);
-        clinicalDataMap.put(itemGroupSubjectId, subjectData);
+        logger.debug("Adding entity data for " + itemGroupEntityId);
+        clinicalDataMap.put(itemGroupEntityId, entityData);
     }
 
     /**
@@ -614,9 +614,9 @@ public class FileExporter {
                                           final String itemGroupId,
                                           final String itemGroupRepeatKey) {
         /**
-         * Mapping of column ID to values for the current subject.
+         * Mapping of column ID to values for the current entity.
          */
-        Map<String, String> subjectData = new HashMap<>();
+        Map<String, String> entityData = new HashMap<>();
 
         if (!repeatingEventIds.contains(eventId)) {
             repeatingEventIds.add(eventId);
@@ -628,28 +628,28 @@ public class FileExporter {
 
         int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
         int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
-        String eventSubjectId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
-        String itemGroupSubjectId = patientId
+        String eventEntityId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
+        String itemGroupEntityId = patientId
                                     + "_E"  + repeatingEventIndex + "_R" + eventRepeatKey
                                     + "_IG" + repeatingItemGroupIndex + "_R" + itemGroupRepeatKey;
 
-        if (clinicalDataMap.containsKey(itemGroupSubjectId)) {
-            subjectData = clinicalDataMap.get(itemGroupSubjectId);
+        if (clinicalDataMap.containsKey(itemGroupEntityId)) {
+            entityData = clinicalDataMap.get(itemGroupEntityId);
         } else {
-            subjectIds.add(itemGroupSubjectId);
-            subjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, itemGroupSubjectId);
-            subjectData.put(SECOND_COLUMN_ID_WITH_TYPE, "repeat");
-            subjectData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
-            subjectData.put(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS, eventSubjectId);
-            subjectData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
-            subjectData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
-            clinicalDataMap.put(itemGroupSubjectId, subjectData);
+            entityIds.add(itemGroupEntityId);
+            entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
+            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, "repeat");
+            entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
+            entityData.put(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS, eventEntityId);
+            entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
+            entityData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
+            clinicalDataMap.put(itemGroupEntityId, entityData);
         }
 
-        subjectData = addWordOrNumber(columnId, dataValue, subjectData);
+        entityData = addWordOrNumber(columnId, dataValue, entityData);
 
-        logger.debug("Adding subject data for " + itemGroupSubjectId);
-        clinicalDataMap.put(itemGroupSubjectId, subjectData);
+        logger.debug("Adding entity data for " + itemGroupEntityId);
+        clinicalDataMap.put(itemGroupEntityId, entityData);
     }
 
     /**
@@ -658,19 +658,19 @@ public class FileExporter {
      *
      * @param columnId The column of the field in the clinical data file.
      * @param dataValue The non-replaced data value.
-     * @param subjectData The data of the row of the field in the clinical data file.
-     * @return subjectData The data of the row of the field in the clinical data file.
+     * @param entityData The data of the row of the field in the clinical data file.
+     * @return entityData The data of the row of the field in the clinical data file.
      */
     private Map<String, String> addWordOrNumber(final String columnId,
                                                 final String dataValue,
-                                                final Map<String, String> subjectData) {
+                                                final Map<String, String> entityData) {
         if (wordMap.get(columnId + dataValue) != null) {
             //fills clinical data with words from word map
-            subjectData.put(columnId, wordMap.get(columnId + dataValue));
+            entityData.put(columnId, wordMap.get(columnId + dataValue));
         } else {
-            subjectData.put(columnId, dataValue);
+            entityData.put(columnId, dataValue);
         }
-        return subjectData;
+        return entityData;
     }
 
     /**
@@ -678,84 +678,84 @@ public class FileExporter {
      * - it completes the data for repeats and events that are present in events or patients
      *   (for example an event with a male patient also gets the value 'male', or a repeat gets
      *   the start date of an event)
-     * - it creates patients and/or events that are only mentioned in the context of events
-     *   and/or repeats.
+     * - it finds new entities: patients and/or events that are only mentioned
+     *   in the context of events and/or repeats.
      */
     private void completeClinicalData() {
-        List<String> newlyFoundSubjectIds = new ArrayList<>();
-        for (final String subject1Id : subjectIds) {
-            Map<String, String> subject1Data = clinicalDataMap.get(subject1Id);
-            String subject1Type = subject1Data.get(SECOND_COLUMN_ID_WITH_TYPE);
-            if (subject1Type.equals("patient")) {
-                copyClinicalData(subject1Id, subject1Data, THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
-            } else if (subject1Type.equals("event")) {
-                copyClinicalData(subject1Id, subject1Data, FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
-                newlyFoundSubjectIds = findNewSubjects(subject1Data,
-                                                       newlyFoundSubjectIds,
-                                                       THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
-                                                       "patient");
-            } else if (subject1Type.equals("repeat")) {
-                newlyFoundSubjectIds = findNewSubjects(subject1Data,
-                                                       newlyFoundSubjectIds,
-                                                       THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
-                                                       "patient");
-                if (subject1Data.get(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS) != null) {
-                    newlyFoundSubjectIds = findNewSubjects(subject1Data,
-                                                           newlyFoundSubjectIds,
-                                                           FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS,
-                                                           "event");
+        List<String> newlyFoundEntityIds = new ArrayList<>();
+        for (final String entity1Id : entityIds) {
+            Map<String, String> entity1Data = clinicalDataMap.get(entity1Id);
+            String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_TYPE);
+            if (entity1Type.equals("patient")) {
+                copyClinicalData(entity1Id, entity1Data, THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
+            } else if (entity1Type.equals("event")) {
+                copyClinicalData(entity1Id, entity1Data, FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
+                newlyFoundEntityIds = findNewEntities(entity1Data,
+                        newlyFoundEntityIds,
+                        THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
+                        "patient");
+            } else if (entity1Type.equals("repeat")) {
+                newlyFoundEntityIds = findNewEntities(entity1Data,
+                        newlyFoundEntityIds,
+                        THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
+                        "patient");
+                if (entity1Data.get(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS) != null) {
+                    newlyFoundEntityIds = findNewEntities(entity1Data,
+                            newlyFoundEntityIds,
+                            FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS,
+                            "event");
                 }
             } else {
-                logger.error("Unexpected: the type of subject " + subject1Id + " is " + subject1Type);
+                logger.error("Unexpected: the type of entity " + entity1Id + " is " + entity1Type);
             }
         }
-        subjectIds.addAll(newlyFoundSubjectIds);
+        entityIds.addAll(newlyFoundEntityIds);
     }
 
     /**
+     * This method finds new entities, like patients or events, from entity data like event data
+     * or repeat data.
      *
-     *
-     *
-     * @param subjectData
-     * @param newlyFoundSubjectIds
-     * @param associationColumnId
-     * @param associationType
-     * @return
+     * @param entityData The row data of an entity (event or repeat).
+     * @param newlyFoundEntityIds A list of entities that were already found.
+     * @param associationColumnId The ID of the entity that can potentially be found anew.
+     * @param associationType The type of the entity that was newly found (patient or event).
+     * @return newlyFoundEntityIds A possibly longer list of entities that were already found.
      */
-    private List<String> findNewSubjects(Map<String, String> subjectData,
-                                         List<String> newlyFoundSubjectIds,
-                                         String associationColumnId,
-                                         String associationType) {
-        String associatedSubjectId = subjectData.get(associationColumnId);
-        if (!subjectIds.contains(associatedSubjectId) &&
-            !newlyFoundSubjectIds.contains(associatedSubjectId)) {
-            Map<String, String> newlyFoundSubjectData = new HashMap<>();
-            newlyFoundSubjectIds.add(associatedSubjectId);
-            newlyFoundSubjectData.put(FIRST_COLUMN_ID_WITH_SUBJECT_IDS, associatedSubjectId);
-            newlyFoundSubjectData.put(SECOND_COLUMN_ID_WITH_TYPE, associationType);
-            clinicalDataMap.put(associatedSubjectId, newlyFoundSubjectData);
-            logger.debug("Found " + associationType + " " + associatedSubjectId + " from " +
-                    subjectData.get(SECOND_COLUMN_ID_WITH_TYPE) + " " +
-                    subjectData.get(FIRST_COLUMN_ID_WITH_SUBJECT_IDS));
+    private List<String> findNewEntities(final Map<String, String> entityData,
+                                         final List<String> newlyFoundEntityIds,
+                                         final String associationColumnId,
+                                         final String associationType) {
+        String associatedEntityId = entityData.get(associationColumnId);
+        if (!entityIds.contains(associatedEntityId) &&
+            !newlyFoundEntityIds.contains(associatedEntityId)) {
+            Map<String, String> newlyFoundEntityData = new HashMap<>();
+            newlyFoundEntityIds.add(associatedEntityId);
+            newlyFoundEntityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, associatedEntityId);
+            newlyFoundEntityData.put(SECOND_COLUMN_ID_WITH_TYPE, associationType);
+            clinicalDataMap.put(associatedEntityId, newlyFoundEntityData);
+            logger.debug("Found " + associationType + " " + associatedEntityId + " from " +
+                    entityData.get(SECOND_COLUMN_ID_WITH_TYPE) + " " +
+                    entityData.get(FIRST_COLUMN_ID_WITH_ENTITY_IDS));
         }
-        return newlyFoundSubjectIds;
+        return newlyFoundEntityIds;
     }
 
-    private void copyClinicalData(String subject1Id,
-                                  Map<String, String> subject1Data,
+    private void copyClinicalData(String entity1Id,
+                                  Map<String, String> entity1Data,
                                   String associationType) {
-        for (final String subject2Id : subjectIds) {
-            Map<String, String> subject2Data = clinicalDataMap.get(subject2Id);
-            if (subject2Data.get(associationType) != null && subject2Data.get(associationType).equals(subject1Id)) {
+        for (final String entity2Id : entityIds) {
+            Map<String, String> entity2Data = clinicalDataMap.get(entity2Id);
+            if (entity2Data.get(associationType) != null && entity2Data.get(associationType).equals(entity1Id)) {
                 for (final String columnId : columnIds) {
-                    if (!columnId.equals(FIRST_COLUMN_ID_WITH_SUBJECT_IDS) &&
+                    if (!columnId.equals(FIRST_COLUMN_ID_WITH_ENTITY_IDS) &&
                         !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE )) {
-                        if (subject1Data.get(columnId) != null) {
-                            subject2Data.put(columnId, subject1Data.get(columnId));
+                        if (entity1Data.get(columnId) != null) {
+                            entity2Data.put(columnId, entity1Data.get(columnId));
                         }
                     }
                 }
-                clinicalDataMap.put(subject2Id, subject2Data);
+                clinicalDataMap.put(entity2Id, entity2Data);
             }
         }
     }
@@ -764,11 +764,11 @@ public class FileExporter {
      * Write the clinical data, which was kept in the memory, to the tab-delimited clinical data file.
      * @throws IOException An input-output exception.
      */
-    public void writeSubjectData() throws IOException {
+    public void writeEntityData() throws IOException {
         writeCSVData(clinicalDataWriter, columnHeaders);
-        for (final String subjectId : subjectIds) {
+        for (final String entityId : entityIds) {
             final List<String> rowAsList = new ArrayList<>();
-            final Map<String, String> patientData = clinicalDataMap.get(subjectId);
+            final Map<String, String> patientData = clinicalDataMap.get(entityId);
             for (final String columnId : columnIds) {
                 String rawDataEntry = patientData.get(columnId);
                 String dataEntry;
@@ -776,7 +776,7 @@ public class FileExporter {
                     dataEntry = "";
                 } else if (rawDataEntry.length() > maxClinicalDataEntry) {
                     dataEntry = rawDataEntry.substring(0, maxClinicalDataEntry - 4) + "...";
-                    logger.warn("Data entry " + dataEntry.substring(0, 15) + " of " + subjectId
+                    logger.warn("Data entry " + dataEntry.substring(0, 15) + " of " + entityId
                             + " and " + columnId + " was cut off at "
                             + rawDataEntry.substring(maxClinicalDataEntry - 20, maxClinicalDataEntry - 4));
                 } else {
@@ -816,7 +816,7 @@ public class FileExporter {
     public void close() {
         try {
             completeClinicalData();
-            writeSubjectData();
+            writeEntityData();
             columnsWriter.close();
             wordMapWriter.close();
             clinicalDataWriter.close();
