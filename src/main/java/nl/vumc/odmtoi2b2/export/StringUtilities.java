@@ -12,7 +12,7 @@ public class StringUtilities {
      * This method replaces:
      * - all the `-characters by '-characters
      * - all the \-characters by /-characters
-     * - all n occurrences of the "-character by exactly one occurrence of the "-character
+     * - all n occurrences of the "-character by exactly one occurrence of the "-character.
      * @param input The input string
      * @return result: the resulting string
      */

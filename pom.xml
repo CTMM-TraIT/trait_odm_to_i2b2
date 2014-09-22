@@ -41,7 +41,7 @@
         <build-helper-maven-plugin.version>1.9</build-helper-maven-plugin.version>
         <coveralls-maven-plugin.version>2.2.0</coveralls-maven-plugin.version>
         <jacoco-maven-plugin.version>0.7.1.201405082137</jacoco-maven-plugin.version>
-        <!--<maven-checkstyle-plugin.version>2.12.1</maven-checkstyle-plugin.version>-->
+        <maven-checkstyle-plugin.version>2.12.1</maven-checkstyle-plugin.version>
         <maven-compiler-plugin.version>3.1</maven-compiler-plugin.version>
         <maven-jar-plugin.version>2.4</maven-jar-plugin.version>
         <maven-jxr-plugin.version>2.4</maven-jxr-plugin.version>
@@ -190,9 +190,8 @@
                 <!--</configuration>-->
             <!--</plugin>-->
 
-            <!-- Disabled Checkstyle for now. -->
             <!-- Run Checkstyle in the verify phase. -->
-            <!-- <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
                 <version>${maven-checkstyle-plugin.version}</version>
@@ -208,15 +207,15 @@
                 <configuration>
                     <configLocation>checkstyle.xml</configLocation>
                     <suppressionsLocation>checkstyle-suppressions.xml</suppressionsLocation>
-                    <!-**-
+                    <!--
                         Workaround for resolving the suppressions file in a Maven build: always check two
                         module levels above the current project. IDE builds should provide the config_loc
                         property, hence this setting will not influence the builds triggered in IDEs.
-                    -**->
-                    <!-**-<propertyExpansion>config_loc=${project.parent.parent.basedir}/</propertyExpansion>-**->
+                    -->
+                    <!--<propertyExpansion>config_loc=${project.parent.parent.basedir}/</propertyExpansion>-->
                     <failsOnError>true</failsOnError>
                 </configuration>
-            </plugin> -->
+            </plugin>
 
             <!-- JaCoCo is used to determine the code coverage of the unit tests. -->
             <plugin>
@@ -302,16 +301,16 @@
         </plugins>
     </build>
 
-    <!-- <reporting>
+    <reporting>
         <plugins>
-            <!-**- Added the JXR plugin (Java cross-reference tool) to get rid of the "Unable to locate Source XRef to
-              -  link to - DISABLED" warning when running Checkstyle. -**->
+            <!-- Added the JXR plugin (Java cross-reference tool) to get rid of the "Unable to locate Source XRef to
+              -  link to - DISABLED" warning when running Checkstyle. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>${maven-jxr-plugin.version}</version>
             </plugin>
         </plugins>
-    </reporting> -->
+    </reporting>
 
 </project>

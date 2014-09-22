@@ -11,6 +11,12 @@
 
 <suppressions>
 
+    <!-- Exclude source files from the com.recomdata package. -->
+    <suppress checks="[a-zA-Z0-9]*" files="[\\/]recomdata[\\/]" />
+
+    <!--&lt;!&ndash; Exclude source files from the cdisk.odm.jaxb and w3.xmldsig.jaxb packages. &ndash;&gt;-->
+    <!--<suppress checks="[a-zA-Z0-9]*" files="[\\/]jaxb[\\/]" />-->
+
     <!-- Disable requiring method javadoc in the test cases. -->
     <suppress checks="JavadocMethod" files="^*Test\.java$"/>
 

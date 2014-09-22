@@ -8,26 +8,44 @@
 
 package nl.vumc.odmtoi2b2.export;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Properties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * todo: add Javadocs.
+ *
+ * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
  */
 public class Configuration {
-	/**
-	 * The logger for this class.
-	 */
-	private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
+    /**
+     * The logger for this class.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
-	private int maxClinicalDataEntry;
+    /**
+     * todo: add Javadocs.
+     */
+    private int maxClinicalDataEntry;
+
+    /**
+     * todo: add Javadocs.
+     */
     private String forbiddenSymbolRegex;
+
+    /**
+     * todo: add Javadocs.
+     */
     private boolean avoidTransmartSymbolBugs;
 
+    /**
+     * todo: add Javadocs.
+     *
+     * @param propertiesFilePath
+     */
     public Configuration(final String propertiesFilePath) {
         try {
             final Properties properties = new Properties();
@@ -40,21 +58,35 @@ public class Configuration {
             this.avoidTransmartSymbolBugs = Boolean.parseBoolean(avoidTransmartSymbolBugsAsString);
 
         } catch (final IOException e) {
-			final String message = "Exception while reading configuration properties from file %s.";
-			logger.error(String.format(message, propertiesFilePath), e);
+            final String message = "Exception while reading configuration properties from file %s.";
+            logger.error(String.format(message, propertiesFilePath), e);
         }
     }
 
+    /**
+     * todo: add Javadocs.
+     *
+     * @return
+     */
     public int getMaxClinicalDataEntry() {
         return maxClinicalDataEntry;
     }
 
+    /**
+     * todo: add Javadocs.
+     *
+     * @return
+     */
     public String getForbiddenSymbolRegex() {
         return forbiddenSymbolRegex;
     }
 
+    /**
+     * todo: add Javadocs.
+     *
+     * @return
+     */
     public boolean getAvoidTransmartSymbolBugs() {
         return avoidTransmartSymbolBugs;
     }
-
 }

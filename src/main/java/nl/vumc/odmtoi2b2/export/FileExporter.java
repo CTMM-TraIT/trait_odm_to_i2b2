@@ -6,6 +6,7 @@
 package nl.vumc.odmtoi2b2.export;
 
 import au.com.bytecode.opencsv.CSVWriter;
+import java.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,10 +15,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * For each study, there is one FileExporter object. This class supports exporting ODM data to four files in i2b2
@@ -223,20 +220,7 @@ public class FileExporter {
         this.increasedColumnNumber = false;
         this.currentColumnNumber = 0;
         this.currentColumnId = null;
-        this.columnHeaders = new ArrayList<>();
-        columnHeaders.add("ENTITY_ID");
-        columnHeaders.add("DIMENSION_TYPE");
-        columnHeaders.add("Patient_num");
-        columnHeaders.add("Encounter_num");
-        columnHeaders.add("Encounter_repeat_key");
-        columnHeaders.add("Instance_num");
-        this.columnIds = new ArrayList<>();
-        columnIds.add(FIRST_COLUMN_ID_WITH_ENTITY_IDS);
-        columnIds.add(SECOND_COLUMN_ID_WITH_TYPE);
-        columnIds.add(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
-        columnIds.add(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
-        columnIds.add(FIFTH_COLUMN_ID_WITH_EVENT_NR);
-        columnIds.add(SIXTH_COLUMN_ID_WITH_IG_NR);
+        initializeColumnHeadersAndIds();
         this.entityIds = new ArrayList<>();
         this.repeatingEventIds = new ArrayList<>();
         this.repeatingItemGroupIds = new ArrayList<>();
@@ -245,6 +229,26 @@ public class FileExporter {
         setColumnsName(columnsFileName);
         setWordMapName(wordMapFileName);
         setClinicalDataName(this.clinicalDataFileName);
+    }
+
+    private void initializeColumnHeadersAndIds() {
+        // todo: ward will make this beautiful!
+        this.columnHeaders = new ArrayList<>(Arrays.asList(
+                "ENTITY_ID",
+                "DIMENSION_TYPE",
+                "Patient_num",
+                "Encounter_num",
+                "Encounter_repeat_key",
+                "Instance_num"));
+
+        // todo: ward will make this beautiful!
+        this.columnIds = new ArrayList<>();
+        columnIds.add(FIRST_COLUMN_ID_WITH_ENTITY_IDS);
+        columnIds.add(SECOND_COLUMN_ID_WITH_TYPE);
+        columnIds.add(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
+        columnIds.add(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
+        columnIds.add(FIFTH_COLUMN_ID_WITH_EVENT_NR);
+        columnIds.add(SIXTH_COLUMN_ID_WITH_IG_NR);
     }
 
     /**
@@ -327,30 +331,32 @@ public class FileExporter {
      * @param oidPath The full path of OIDs, which provides a unique identifier for the columns.
      * @throws IOException An input-output exception.
      */
-    public void writeExportColumns(String eventName,
-                                   String formName,
-                                   String itemGroupName,
+    public void writeExportColumns(final String eventName,
+                                   final String formName,
+                                   final String itemGroupName,
                                    final String preferredItemName,
                                    final String oidPath)
             throws IOException {
         if (currentColumnNumber == 0) {
             handleColumnMetadata(FILENAME, "Category Code", COLUMN_NUMBER, "Data Label", "Data Label Source", "Control Vocab Cd");
-            handleColumnMetadata(clinicalDataFileName, ""                     , String.valueOf(currentColumnNumber), "SUBJ_ID", "", "");
-            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "type (patient, event or repeat)", "", "");
-            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "associated patient id", "", "");
-            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "associated event id", "", "");
-            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "event number", "", "");
-            handleColumnMetadata(clinicalDataFileName, "Subset selection type", String.valueOf(currentColumnNumber), "repeat number", "", "");
+            handleColumnAttribute("",                      "SUBJ_ID");
+            handleColumnAttribute("Subset selection type", "type (patient, event or repeat)");
+            handleColumnAttribute("Subset selection type", "associated patient id");
+            handleColumnAttribute("Subset selection type", "associated event id");
+            handleColumnAttribute("Subset selection type", "event number");
+            handleColumnAttribute("Subset selection type", "repeat number");
         }
 
-
+        String cleanEventName     = eventName;
+        String cleanFormName      = formName;
+        String cleanItemGroupName = itemGroupName;
         if (avoidTransmartSymbolBugs) {
-            eventName      =      eventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
-            formName       =       formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
-            itemGroupName  =  itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            cleanEventName      =      eventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            cleanFormName       =       formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            cleanItemGroupName  =  itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
         }
 
-        String namePath = eventName + SEPARATOR + formName + SEPARATOR + itemGroupName;
+        String namePath = cleanEventName + SEPARATOR + cleanFormName + SEPARATOR + cleanItemGroupName;
 
         /**
          * Avoid that blank nodes are created by removing overabundant SEPARATOR symbols.
@@ -365,7 +371,7 @@ public class FileExporter {
             namePath = namePath.substring(0, namePath.length() - 1);
         }
 
-        handleColumnMetadata(clinicalDataFileName, namePath, currentColumnNumber + "", preferredItemName, "", "");
+        handleColumnAttribute(namePath, preferredItemName);
 
         currentColumnId = oidPath;
         columnHeaders.add(preferredItemName);
@@ -401,6 +407,10 @@ public class FileExporter {
         writeCSVData(columnsWriter, rowAsList);
         currentColumnNumber++;
         increasedColumnNumber = true;
+    }
+
+    private void handleColumnAttribute(final String categoryCode, final String dataLabel) throws IOException {
+        handleColumnMetadata(clinicalDataFileName, categoryCode, String.valueOf(currentColumnNumber), dataLabel, "", "");
     }
 
     /**
@@ -686,15 +696,16 @@ public class FileExporter {
         for (final String entity1Id : entityIds) {
             Map<String, String> entity1Data = clinicalDataMap.get(entity1Id);
             String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_TYPE);
-            if (entity1Type.equals("patient")) {
+            //noinspection IfCanBeSwitch
+            if ("patient".equals(entity1Type)) {
                 copyClinicalData(entity1Id, entity1Data, THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
-            } else if (entity1Type.equals("event")) {
+            } else if ("event".equals(entity1Type)) {
                 copyClinicalData(entity1Id, entity1Data, FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
                 newlyFoundEntityIds = findNewEntities(entity1Data,
                         newlyFoundEntityIds,
                         THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
                         "patient");
-            } else if (entity1Type.equals("repeat")) {
+            } else if ("repeat".equals(entity1Type)) {
                 newlyFoundEntityIds = findNewEntities(entity1Data,
                         newlyFoundEntityIds,
                         THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
@@ -727,29 +738,40 @@ public class FileExporter {
                                          final String associationColumnId,
                                          final String associationType) {
         String associatedEntityId = entityData.get(associationColumnId);
-        if (!entityIds.contains(associatedEntityId) &&
-            !newlyFoundEntityIds.contains(associatedEntityId)) {
+        if (!entityIds.contains(associatedEntityId) && !newlyFoundEntityIds.contains(associatedEntityId)) {
             Map<String, String> newlyFoundEntityData = new HashMap<>();
             newlyFoundEntityIds.add(associatedEntityId);
             newlyFoundEntityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, associatedEntityId);
             newlyFoundEntityData.put(SECOND_COLUMN_ID_WITH_TYPE, associationType);
             clinicalDataMap.put(associatedEntityId, newlyFoundEntityData);
-            logger.debug("Found " + associationType + " " + associatedEntityId + " from " +
-                    entityData.get(SECOND_COLUMN_ID_WITH_TYPE) + " " +
-                    entityData.get(FIRST_COLUMN_ID_WITH_ENTITY_IDS));
+            logger.debug("Found " + associationType + " " + associatedEntityId + " from "
+                    + entityData.get(SECOND_COLUMN_ID_WITH_TYPE) + " "
+                    + entityData.get(FIRST_COLUMN_ID_WITH_ENTITY_IDS));
         }
         return newlyFoundEntityIds;
     }
 
-    private void copyClinicalData(String entity1Id,
-                                  Map<String, String> entity1Data,
-                                  String associationType) {
+    /**
+     *   This method completes the data for repeats and events that are present in events or patients
+     *   (for example an event with a male patient also gets the value 'male', or a repeat gets
+     *   the start date of an event).
+     *
+     * @param entity1Id The patient ID or event ID that contains the data that has to be copied.
+     * @param entity1Data The data that has to be copied.
+     * @param associationType The column ID of the column in which entity1Id might be referred. This
+     *                        column contains therefore either patient IDs or event IDs. If entity1Id
+     *                        is indeed present in this column for an entity 2, the the data will be
+     *                        copied towards entity 2.
+     */
+    private void copyClinicalData(final String entity1Id,
+                                  final Map<String, String> entity1Data,
+                                  final String associationType) {
         for (final String entity2Id : entityIds) {
             Map<String, String> entity2Data = clinicalDataMap.get(entity2Id);
             if (entity2Data.get(associationType) != null && entity2Data.get(associationType).equals(entity1Id)) {
                 for (final String columnId : columnIds) {
-                    if (!columnId.equals(FIRST_COLUMN_ID_WITH_ENTITY_IDS) &&
-                        !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE )) {
+                    if (!columnId.equals(FIRST_COLUMN_ID_WITH_ENTITY_IDS)
+                     && !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE)) {
                         if (entity1Data.get(columnId) != null) {
                             entity2Data.put(columnId, entity1Data.get(columnId));
                         }
@@ -775,10 +797,14 @@ public class FileExporter {
                 if (rawDataEntry == null) {
                     dataEntry = "";
                 } else if (rawDataEntry.length() > maxClinicalDataEntry) {
-                    dataEntry = rawDataEntry.substring(0, maxClinicalDataEntry - 4) + "...";
-                    logger.warn("Data entry " + dataEntry.substring(0, 15) + " of " + entityId
+                    final String tooLongIndicator = "...";
+                    final int logSegmentLength = 15;
+                    dataEntry = rawDataEntry.substring(0, maxClinicalDataEntry - tooLongIndicator.length())
+                            + tooLongIndicator;
+                    logger.warn("Data entry " + dataEntry.substring(0, logSegmentLength) + " of " + entityId
                             + " and " + columnId + " was cut off at "
-                            + rawDataEntry.substring(maxClinicalDataEntry - 20, maxClinicalDataEntry - 4));
+                            + rawDataEntry.substring(maxClinicalDataEntry - logSegmentLength,
+                            maxClinicalDataEntry - tooLongIndicator.length()));
                 } else {
                     dataEntry = rawDataEntry;
                 }
@@ -796,12 +822,12 @@ public class FileExporter {
      */
     private void writeCSVData(final Writer writer, final List<String> rowAsList) throws IOException {
         if (forbiddenSymbolRegex != null && !forbiddenSymbolRegex.trim().equals("")) {
-            for (int i=0; i < rowAsList.size(); i++) {
-                rowAsList.set(i, rowAsList.get(i).replaceAll(forbiddenSymbolRegex,""));
+            for (int i = 0; i < rowAsList.size(); i++) {
+                rowAsList.set(i, rowAsList.get(i).replaceAll(forbiddenSymbolRegex, ""));
             }
         }
         if (avoidTransmartSymbolBugs) {
-            for (int i=0; i < rowAsList.size(); i++) {
+            for (int i = 0; i < rowAsList.size(); i++) {
                 rowAsList.set(i, StringUtilities.convertString(rowAsList.get(i)));
             }
         }
