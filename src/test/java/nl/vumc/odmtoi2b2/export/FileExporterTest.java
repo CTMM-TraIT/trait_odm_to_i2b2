@@ -86,17 +86,17 @@ public class FileExporterTest {
     @Test
 	public void testWriteExportClinicalDataInfoNoRepeats() throws IOException {
         final Map<String, Map<String, String>> expectedClinicalDataMap = new HashMap<>();
-        final Map<String, String> subjectDataMap1 = new HashMap<>();
-        final Map<String, String> subjectDataMap2 = new HashMap<>();
-        expectedClinicalDataMap.put("patient-id1", subjectDataMap1);
-        subjectDataMap1.put("firstColumnIdWithSubjectIds", "patient-id1");
-        subjectDataMap1.put("secondColumnIdWithType", "patient");
-        subjectDataMap1.put("column-id1", "data-value1");
-        subjectDataMap1.put("column-id2", "data-value2");
-        expectedClinicalDataMap.put("patient-id2", subjectDataMap2);
-        subjectDataMap2.put("firstColumnIdWithSubjectIds", "patient-id2");
-        subjectDataMap2.put("secondColumnIdWithType", "patient");
-        subjectDataMap2.put("column-id1", "data-value3");
+        final Map<String, String> entityDataMap1 = new HashMap<>();
+        final Map<String, String> entityDataMap2 = new HashMap<>();
+        expectedClinicalDataMap.put("patient-id1", entityDataMap1);
+        entityDataMap1.put("firstColumnIdWithEntityIds", "patient-id1");
+        entityDataMap1.put("secondColumnIdWithType", "patient");
+        entityDataMap1.put("column-id1", "data-value1");
+        entityDataMap1.put("column-id2", "data-value2");
+        expectedClinicalDataMap.put("patient-id2", entityDataMap2);
+        entityDataMap2.put("firstColumnIdWithEntityIds", "patient-id2");
+        entityDataMap2.put("secondColumnIdWithType", "patient");
+        entityDataMap2.put("column-id1", "data-value3");
 
 		final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
 		final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
@@ -118,13 +118,13 @@ public class FileExporterTest {
     @Test
     public void testWriteExportClinicalDataInfoOnlyEventRepeat() throws IOException {
         final Map<String, Map<String, String>> expectedClinicalDataMap = new HashMap<>();
-        final Map<String, String> subjectDataMap = new HashMap<>();
-        expectedClinicalDataMap.put("patient-id_E1_Revent-repeat-key", subjectDataMap);
-        subjectDataMap.put("firstColumnIdWithSubjectIds", "patient-id_E1_Revent-repeat-key");
-        subjectDataMap.put("secondColumnIdWithType", "event");
-        subjectDataMap.put("thirdColumnIdWithAssocPatientIds", "patient-id");
-        subjectDataMap.put("fifthColumnIdWithEventNr", "event-repeat-key");
-        subjectDataMap.put("column-id", "data-value");
+        final Map<String, String> entityDataMap = new HashMap<>();
+        expectedClinicalDataMap.put("patient-id_E1_Revent-repeat-key", entityDataMap);
+        entityDataMap.put("firstColumnIdWithEntityIds", "patient-id_E1_Revent-repeat-key");
+        entityDataMap.put("secondColumnIdWithType", "event");
+        entityDataMap.put("thirdColumnIdWithAssocPatientIds", "patient-id");
+        entityDataMap.put("fifthColumnIdWithEventNr", "event-repeat-key");
+        entityDataMap.put("column-id", "data-value");
 
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
         final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
@@ -142,13 +142,13 @@ public class FileExporterTest {
     @Test
 	public void testWriteExportClinicalDataInfoOnlyItemGroupRepeat() throws IOException {
         final Map<String, Map<String, String>> expectedClinicalDataMap = new HashMap<>();
-        final Map<String, String> subjectDataMap = new HashMap<>();
-        expectedClinicalDataMap.put("patient-id_E1_IG1_Ritem-group-repeat-key", subjectDataMap);
-        subjectDataMap.put("firstColumnIdWithSubjectIds", "patient-id_E1_IG1_Ritem-group-repeat-key");
-        subjectDataMap.put("secondColumnIdWithType", "repeat");
-        subjectDataMap.put("thirdColumnIdWithAssocPatientIds", "patient-id");
-        subjectDataMap.put("sixthColumnIdWithIgNr", "item-group-repeat-key");
-        subjectDataMap.put("column-id", "data-value");
+        final Map<String, String> entityDataMap = new HashMap<>();
+        expectedClinicalDataMap.put("patient-id_E1_IG1_Ritem-group-repeat-key", entityDataMap);
+        entityDataMap.put("firstColumnIdWithEntityIds", "patient-id_E1_IG1_Ritem-group-repeat-key");
+        entityDataMap.put("secondColumnIdWithType", "repeat");
+        entityDataMap.put("thirdColumnIdWithAssocPatientIds", "patient-id");
+        entityDataMap.put("sixthColumnIdWithIgNr", "item-group-repeat-key");
+        entityDataMap.put("column-id", "data-value");
 
 		final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
 		final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
@@ -166,15 +166,15 @@ public class FileExporterTest {
     @Test
     public void testWriteExportClinicalDataInfoDoubleRepeat() throws IOException {
         final Map<String, Map<String, String>> expectedClinicalDataMap = new HashMap<>();
-        final Map<String, String> subjectDataMap = new HashMap<>();
-        expectedClinicalDataMap.put("patient-id_E1_Revent-repeat-key_IG1_Ritem-group-repeat-key", subjectDataMap);
-        subjectDataMap.put("firstColumnIdWithSubjectIds", "patient-id_E1_Revent-repeat-key_IG1_Ritem-group-repeat-key");
-        subjectDataMap.put("secondColumnIdWithType", "repeat");
-        subjectDataMap.put("thirdColumnIdWithAssocPatientIds", "patient-id");
-        subjectDataMap.put("fourthColumnIdWithAssocEventIds", "patient-id_E1_Revent-repeat-key");
-        subjectDataMap.put("fifthColumnIdWithEventNr", "event-repeat-key");
-        subjectDataMap.put("sixthColumnIdWithIgNr", "item-group-repeat-key");
-        subjectDataMap.put("column-id", "data-value");
+        final Map<String, String> entityDataMap = new HashMap<>();
+        expectedClinicalDataMap.put("patient-id_E1_Revent-repeat-key_IG1_Ritem-group-repeat-key", entityDataMap);
+        entityDataMap.put("firstColumnIdWithEntityIds", "patient-id_E1_Revent-repeat-key_IG1_Ritem-group-repeat-key");
+        entityDataMap.put("secondColumnIdWithType", "repeat");
+        entityDataMap.put("thirdColumnIdWithAssocPatientIds", "patient-id");
+        entityDataMap.put("fourthColumnIdWithAssocEventIds", "patient-id_E1_Revent-repeat-key");
+        entityDataMap.put("fifthColumnIdWithEventNr", "event-repeat-key");
+        entityDataMap.put("sixthColumnIdWithIgNr", "item-group-repeat-key");
+        entityDataMap.put("column-id", "data-value");
 
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
         final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
