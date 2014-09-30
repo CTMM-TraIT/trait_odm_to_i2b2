@@ -202,7 +202,7 @@ public class FileExporter {
      *
      * @param exportFilePath the directory for the export files.
      * @param studyName      the name of the study.
-     * @param configuration  todo
+     * @param configuration  a configuration object that is derived from the configuration file.
      * @throws IOException when creating the file fails.
      */
     public FileExporter(final String exportFilePath, final String studyName, final Configuration configuration)
@@ -232,7 +232,6 @@ public class FileExporter {
     }
 
     private void initializeColumnHeadersAndIds() {
-        // todo: ward will make this beautiful!
         this.columnHeaders = new ArrayList<>(Arrays.asList(
                 "ENTITY_ID",
                 "DIMENSION_TYPE",
@@ -241,14 +240,13 @@ public class FileExporter {
                 "Encounter_repeat_key",
                 "Instance_num"));
 
-        // todo: ward will make this beautiful!
-        this.columnIds = new ArrayList<>();
-        columnIds.add(FIRST_COLUMN_ID_WITH_ENTITY_IDS);
-        columnIds.add(SECOND_COLUMN_ID_WITH_TYPE);
-        columnIds.add(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
-        columnIds.add(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
-        columnIds.add(FIFTH_COLUMN_ID_WITH_EVENT_NR);
-        columnIds.add(SIXTH_COLUMN_ID_WITH_IG_NR);
+        this.columnIds = new ArrayList<>(Arrays.asList(
+                "FIRST_COLUMN_ID_WITH_ENTITY_IDS",
+                "SECOND_COLUMN_ID_WITH_TYPE",
+                "THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS",
+                "FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS",
+                "FIFTH_COLUMN_ID_WITH_EVENT_NR",
+                "SIXTH_COLUMN_ID_WITH_IG_NR"));
     }
 
     /**

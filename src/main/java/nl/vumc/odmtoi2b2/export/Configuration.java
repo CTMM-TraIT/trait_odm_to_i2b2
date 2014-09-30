@@ -16,7 +16,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * todo: add Javadocs.
+ * This class queries the configuration file. This configuration file can be modified by the user
+ * to set values for the maximal length of a text field in the clinical data file, or to indicate
+ * which symbols might be forbidden.
  *
  * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
  */
@@ -27,24 +29,25 @@ public class Configuration {
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
 
     /**
-     * todo: add Javadocs.
+     * The maximal length for a text field in the clinical data file (e.g. 256).
      */
     private int maxClinicalDataEntry;
 
     /**
-     * todo: add Javadocs.
+     * A regular expression that indicates which symbols are forbidden in the export to the database.
      */
     private String forbiddenSymbolRegex;
 
     /**
-     * todo: add Javadocs.
+     * A boolean that indicates whether the export should be adapted to avoid specific bugs in the
+     * tranSMART data analysis platform.
      */
     private boolean avoidTransmartSymbolBugs;
 
     /**
-     * todo: add Javadocs.
+     * Construct the configuration object by reading in the properties in the configuration file.
      *
-     * @param propertiesFilePath
+     * @param propertiesFilePath The path that identifies the configuration file.
      */
     public Configuration(final String propertiesFilePath) {
         try {
@@ -64,27 +67,28 @@ public class Configuration {
     }
 
     /**
-     * todo: add Javadocs.
+     * Get the maximal-length-property for a text field in the clinical data file from the configuration file.
      *
-     * @return
+     * @return the maximal length.
      */
     public int getMaxClinicalDataEntry() {
         return maxClinicalDataEntry;
     }
 
     /**
-     * todo: add Javadocs.
+     * Get the regular expression that contains the list of symbols that are forbidden in the export.
      *
-     * @return
+     * @return the regular expression that contains the list of symbols that are forbidden in the export.
      */
     public String getForbiddenSymbolRegex() {
         return forbiddenSymbolRegex;
     }
 
     /**
-     * todo: add Javadocs.
+     * Get the information whether special measures should be taken to avoid specific bugs in the
+     * tranSMART system. True = take special measures.
      *
-     * @return
+     * @return the boolean that says true in case special measures have to be taken to avoid tranSMART bugs.
      */
     public boolean getAvoidTransmartSymbolBugs() {
         return avoidTransmartSymbolBugs;
