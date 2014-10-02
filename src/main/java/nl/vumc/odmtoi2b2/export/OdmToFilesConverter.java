@@ -41,8 +41,8 @@ import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionStudyEventRef;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionSubjectData;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionTranslatedText;
 import org.jsoup.Jsoup;
-import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class goes through the tree-structure of the odm object that was constructed by the
@@ -476,7 +476,7 @@ public class OdmToFilesConverter {
                 && itemDef.getQuestion().getTranslatedText().size() >= 1
                 && itemDef.getQuestion().getTranslatedText().get(0) != null
                 && itemDef.getQuestion().getTranslatedText().get(0).getValue() != null
-                && !itemDef.getQuestion().getTranslatedText().get(0).getValue().trim().equals("")
+                && !"".equals(itemDef.getQuestion().getTranslatedText().get(0).getValue().trim())
                 ? itemDef.getQuestion().getTranslatedText().get(0).getValue().trim()
                 : null;
     }
@@ -701,7 +701,7 @@ public class OdmToFilesConverter {
             }
         } else if (ODMUtil.isNumericDataType(itemDef.getDataType())) {
             wordValue = "";
-            bigDecimal = itemValue == null || itemValue.trim().equals("") ? null : new BigDecimal(itemValue);
+            bigDecimal = itemValue == null || "".equals(itemValue.trim()) ? null : new BigDecimal(itemValue);
         } else {
             wordValue = itemValue;
             bigDecimal = null;

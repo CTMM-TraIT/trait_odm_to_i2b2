@@ -9,6 +9,14 @@ package nl.vumc.odmtoi2b2.export;
 public class StringUtilities {
 
     /**
+     * Since this is a utilities class, only the static methods are used and no instances are
+     * ever created for this class. Therefore a private constructor is added to disable this
+     * possibility.
+     */
+    private StringUtilities() {
+    }
+
+    /**
      * This method replaces:
      * - all the `-characters by '-characters
      * - all the \-characters by /-characters
@@ -19,9 +27,15 @@ public class StringUtilities {
     public static String convertString(final String input) {
         String result = input;
         if (input != null) {
-            result = result.replaceAll("`", "'").replaceAll("\\\\", "/");
-            while (result.contains("\"\"")) {
-                result = result.replaceAll("\"\"", "\"");
+            final String twoDoubleQuotes = "\"\"";
+            final String oneDoubleQuote = "\"";
+            final String tick = "`";
+            final String singleQuote = "'";
+            final String backSlash = "\\\\";
+            final String forwardSlash = "/";
+            result = result.replaceAll(tick, singleQuote).replaceAll(backSlash, forwardSlash);
+            while (result.contains(twoDoubleQuotes)) {
+                result = result.replaceAll(twoDoubleQuotes, oneDoubleQuote);
             }
         }
         return result;

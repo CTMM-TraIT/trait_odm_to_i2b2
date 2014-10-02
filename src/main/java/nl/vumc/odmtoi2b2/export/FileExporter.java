@@ -6,15 +6,21 @@
 package nl.vumc.odmtoi2b2.export;
 
 import au.com.bytecode.opencsv.CSVWriter;
-import java.util.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Field;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * For each study, there is one FileExporter object. This class supports exporting ODM data to four files in i2b2
@@ -42,6 +48,41 @@ public class FileExporter {
      * A column header in the columns file and the word map file.
      */
     private static final String FILENAME = "Filename";
+
+    /**
+     * A top node in the ontology tree that assembles the metadata.
+     */
+    private static final String SUBSET_SELECTION_TYPE = "Subset selection type";
+
+    /**
+     * The name of the entity type for patients.
+     */
+    private static final String PATIENT = "patient";
+
+    /**
+     * The name of the entity type for events.
+     */
+    private static final String EVENT = "event";
+
+    /**
+     * The name of the entity type for item group repeats.
+     */
+    private static final String REPEAT = "repeat";
+
+    /**
+     * The abbreviation for 'event' in the ID of an entity.
+     */
+    private static final String EVENT_ABBREVIATION_IN_ID = "_E";
+
+    /**
+     * The abbreviation for 'item group' in the ID of an entity.
+     */
+    private static final String ITEM_GROUP_ABBREVIATION_IN_ID = "_IG";
+
+    /**
+     * The abbreviation for 'repeat' in the ID of an entity.
+     */
+    private static final String REPEAT_ABBREVIATION_IN_ID = "_R";
 
     /**
      * The column identifier of the very first column, which contains the entity identifiers.
@@ -91,6 +132,11 @@ public class FileExporter {
      * The string by which the separator has to be replaced in case it occurs in the middle of a concept.
      */
     private static final String SEPARATOR_REPLACEMENT = " and ";
+
+    /**
+     * A space for usage between the words in the log statements.
+     */
+    private static final String SPACE = " ";
 
     /**
      * The regex that specifies all the symbols that should not appear in the output file.
@@ -231,6 +277,11 @@ public class FileExporter {
         setClinicalDataName(this.clinicalDataFileName);
     }
 
+
+    /**
+     * This is a cosmetic method for making the constructor method a bit shorter by initializing
+     * the columnHeaders array list and the column ids array list.
+     */
     private void initializeColumnHeadersAndIds() {
         this.columnHeaders = new ArrayList<>(Arrays.asList(
                 "ENTITY_ID",
@@ -338,11 +389,11 @@ public class FileExporter {
         if (currentColumnNumber == 0) {
             handleColumnMetadata(FILENAME, "Category Code", COLUMN_NUMBER, "Data Label", "Data Label Source", "Control Vocab Cd");
             handleColumnAttribute("",                      "SUBJ_ID");
-            handleColumnAttribute("Subset selection type", "type (patient, event or repeat)");
-            handleColumnAttribute("Subset selection type", "associated patient id");
-            handleColumnAttribute("Subset selection type", "associated event id");
-            handleColumnAttribute("Subset selection type", "event number");
-            handleColumnAttribute("Subset selection type", "repeat number");
+            handleColumnAttribute(SUBSET_SELECTION_TYPE, "type (patient, event or repeat)");
+            handleColumnAttribute(SUBSET_SELECTION_TYPE, "associated patient id");
+            handleColumnAttribute(SUBSET_SELECTION_TYPE, "associated event id");
+            handleColumnAttribute(SUBSET_SELECTION_TYPE, "event number");
+            handleColumnAttribute(SUBSET_SELECTION_TYPE, "repeat number");
         }
 
         String cleanEventName     = eventName;
@@ -387,7 +438,7 @@ public class FileExporter {
      * @param dataLabel         The data label (item name).
      * @param dataLabelSource   The data label source (not used yet in tranSMART on 2014/09).
      * @param controlVocabCode  The controlled vocabulary code (not used in tM   on 2014/09).
-     * @throws IOException An input-output exception.
+     * @throws IOException      An input-output exception.
      */
     private void handleColumnMetadata(final String filename,
                                       final String categoryCode,
@@ -407,6 +458,15 @@ public class FileExporter {
         increasedColumnNumber = true;
     }
 
+    /**
+     * This method fills a rowAsList list, which represents a line in the columns file, and
+     * passes it to the file writer. The actual writing to the hard disk happens when the
+     * file writer is closed.
+     *
+     * @param categoryCode      The category code (readable concept path).
+     * @param dataLabel         The data label (item name).
+     * @throws IOException      An input-output exception.
+     */
     private void handleColumnAttribute(final String categoryCode, final String dataLabel) throws IOException {
         handleColumnMetadata(clinicalDataFileName, categoryCode, String.valueOf(currentColumnNumber), dataLabel, "", "");
     }
@@ -495,13 +555,13 @@ public class FileExporter {
         } else {
             entityIds.add(patientId);
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, patientId);
-            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, "patient");
+            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, PATIENT);
             clinicalDataMap.put(patientId, entityData);
         }
 
         entityData = addWordOrNumber(columnId, dataValue, entityData);
 
-        logger.debug("Adding entity data for " + patientId);
+        logger.debug("Adding patient data for " + patientId);
         clinicalDataMap.put(patientId, entityData);
     }
 
@@ -528,15 +588,17 @@ public class FileExporter {
             repeatingEventIds.add(eventId);
         }
 
-        int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
-        String eventEntityId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
+        final int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
+        final String eventEntityId = patientId
+                        + EVENT_ABBREVIATION_IN_ID + repeatingEventIndex
+                        + REPEAT_ABBREVIATION_IN_ID + eventRepeatKey;
 
         if (clinicalDataMap.containsKey(eventEntityId)) {
             entityData = clinicalDataMap.get(eventEntityId);
         } else {
             entityIds.add(eventEntityId);
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, eventEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, "event");
+            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, EVENT);
             entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
             entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
             clinicalDataMap.put(eventEntityId, entityData);
@@ -544,7 +606,7 @@ public class FileExporter {
 
         entityData = addWordOrNumber(columnId, dataValue, entityData);
 
-        logger.debug("Adding entity data for " + eventEntityId);
+        logger.debug("Adding event data for " + eventEntityId);
         clinicalDataMap.put(eventEntityId, entityData);
     }
 
@@ -578,19 +640,19 @@ public class FileExporter {
             repeatingItemGroupIds.add(itemGroupId);
         }
 
-        int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
-        int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
-        String itemGroupEntityId = patientId
-                + "_E"  + repeatingEventIndex
-                + "_IG" + repeatingItemGroupIndex
-                + "_R"  + itemGroupRepeatKey;
+        final int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
+        final int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
+        final String itemGroupEntityId = patientId
+                + EVENT_ABBREVIATION_IN_ID  + repeatingEventIndex
+                + ITEM_GROUP_ABBREVIATION_IN_ID + repeatingItemGroupIndex
+                + REPEAT_ABBREVIATION_IN_ID  + itemGroupRepeatKey;
 
         if (clinicalDataMap.containsKey(itemGroupEntityId)) {
             entityData = clinicalDataMap.get(itemGroupEntityId);
         } else {
             entityIds.add(itemGroupEntityId);
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, "repeat");
+            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, REPEAT);
             entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
             entityData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
             clinicalDataMap.put(itemGroupEntityId, entityData);
@@ -598,7 +660,7 @@ public class FileExporter {
 
         entityData = addWordOrNumber(columnId, dataValue, entityData);
 
-        logger.debug("Adding entity data for " + itemGroupEntityId);
+        logger.debug("Adding IG1 data for " + itemGroupEntityId);
         clinicalDataMap.put(itemGroupEntityId, entityData);
     }
 
@@ -634,19 +696,23 @@ public class FileExporter {
             repeatingItemGroupIds.add(itemGroupId);
         }
 
-        int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
-        int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
-        String eventEntityId = patientId + "_E" + repeatingEventIndex + "_R" + eventRepeatKey;
-        String itemGroupEntityId = patientId
-                                    + "_E"  + repeatingEventIndex + "_R" + eventRepeatKey
-                                    + "_IG" + repeatingItemGroupIndex + "_R" + itemGroupRepeatKey;
+        final int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
+        final int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
+        final String eventEntityId = patientId
+                + EVENT_ABBREVIATION_IN_ID + repeatingEventIndex
+                + REPEAT_ABBREVIATION_IN_ID + eventRepeatKey;
+        final String itemGroupEntityId = patientId
+                + EVENT_ABBREVIATION_IN_ID  + repeatingEventIndex
+                + REPEAT_ABBREVIATION_IN_ID + eventRepeatKey
+                + ITEM_GROUP_ABBREVIATION_IN_ID + repeatingItemGroupIndex
+                + REPEAT_ABBREVIATION_IN_ID + itemGroupRepeatKey;
 
         if (clinicalDataMap.containsKey(itemGroupEntityId)) {
             entityData = clinicalDataMap.get(itemGroupEntityId);
         } else {
             entityIds.add(itemGroupEntityId);
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, "repeat");
+            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, REPEAT);
             entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
             entityData.put(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS, eventEntityId);
             entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
@@ -656,7 +722,7 @@ public class FileExporter {
 
         entityData = addWordOrNumber(columnId, dataValue, entityData);
 
-        logger.debug("Adding entity data for " + itemGroupEntityId);
+        logger.debug("Adding IG2 data for " + itemGroupEntityId);
         clinicalDataMap.put(itemGroupEntityId, entityData);
     }
 
@@ -692,27 +758,27 @@ public class FileExporter {
     private void completeClinicalData() {
         List<String> newlyFoundEntityIds = new ArrayList<>();
         for (final String entity1Id : entityIds) {
-            Map<String, String> entity1Data = clinicalDataMap.get(entity1Id);
-            String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_TYPE);
+            final Map<String, String> entity1Data = clinicalDataMap.get(entity1Id);
+            final String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_TYPE);
             //noinspection IfCanBeSwitch
-            if ("patient".equals(entity1Type)) {
+            if (PATIENT.equals(entity1Type)) {
                 copyClinicalData(entity1Id, entity1Data, THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
-            } else if ("event".equals(entity1Type)) {
+            } else if (EVENT.equals(entity1Type)) {
                 copyClinicalData(entity1Id, entity1Data, FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
                 newlyFoundEntityIds = findNewEntities(entity1Data,
                         newlyFoundEntityIds,
                         THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
-                        "patient");
-            } else if ("repeat".equals(entity1Type)) {
+                        PATIENT);
+            } else if (REPEAT.equals(entity1Type)) {
                 newlyFoundEntityIds = findNewEntities(entity1Data,
                         newlyFoundEntityIds,
                         THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
-                        "patient");
+                        PATIENT);
                 if (entity1Data.get(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS) != null) {
                     newlyFoundEntityIds = findNewEntities(entity1Data,
                             newlyFoundEntityIds,
                             FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS,
-                            "event");
+                            EVENT);
                 }
             } else {
                 logger.error("Unexpected: the type of entity " + entity1Id + " is " + entity1Type);
@@ -735,15 +801,15 @@ public class FileExporter {
                                          final List<String> newlyFoundEntityIds,
                                          final String associationColumnId,
                                          final String associationType) {
-        String associatedEntityId = entityData.get(associationColumnId);
+        final String associatedEntityId = entityData.get(associationColumnId);
         if (!entityIds.contains(associatedEntityId) && !newlyFoundEntityIds.contains(associatedEntityId)) {
-            Map<String, String> newlyFoundEntityData = new HashMap<>();
+            final Map<String, String> newlyFoundEntityData = new HashMap<>();
             newlyFoundEntityIds.add(associatedEntityId);
             newlyFoundEntityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, associatedEntityId);
             newlyFoundEntityData.put(SECOND_COLUMN_ID_WITH_TYPE, associationType);
             clinicalDataMap.put(associatedEntityId, newlyFoundEntityData);
-            logger.debug("Found " + associationType + " " + associatedEntityId + " from "
-                    + entityData.get(SECOND_COLUMN_ID_WITH_TYPE) + " "
+            logger.debug("Found " + associationType + SPACE + associatedEntityId + " from "
+                    + entityData.get(SECOND_COLUMN_ID_WITH_TYPE) + SPACE
                     + entityData.get(FIRST_COLUMN_ID_WITH_ENTITY_IDS));
         }
         return newlyFoundEntityIds;
@@ -754,28 +820,41 @@ public class FileExporter {
      *   (for example an event with a male patient also gets the value 'male', or a repeat gets
      *   the start date of an event).
      *
-     * @param entity1Id The patient ID or event ID that contains the data that has to be copied.
-     * @param entity1Data The data that has to be copied.
-     * @param associationType The column ID of the column in which entity1Id might be referred. This
-     *                        column contains therefore either patient IDs or event IDs. If entity1Id
-     *                        is indeed present in this column for an entity 2, the the data will be
-     *                        copied towards entity 2.
+     * @param dataContainingEntityId The patient ID or event ID that contains the data that has to be copied.
+     * @param dataContainingEntityData The data that has to be copied.
+     * @param assocColumnID The column ID of the column in which dataContainingEntityId might be referred. This
+     *                      column contains therefore either patient IDs or event IDs. If dataContainingEntityId
+     *                      is indeed present in this column for an entity 2, the the data will be
+     *                      copied towards entity 2.
      */
-    private void copyClinicalData(final String entity1Id,
-                                  final Map<String, String> entity1Data,
-                                  final String associationType) {
-        for (final String entity2Id : entityIds) {
-            Map<String, String> entity2Data = clinicalDataMap.get(entity2Id);
-            if (entity2Data.get(associationType) != null && entity2Data.get(associationType).equals(entity1Id)) {
-                for (final String columnId : columnIds) {
-                    if (!columnId.equals(FIRST_COLUMN_ID_WITH_ENTITY_IDS)
-                     && !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE)) {
-                        if (entity1Data.get(columnId) != null) {
-                            entity2Data.put(columnId, entity1Data.get(columnId));
-                        }
-                    }
+    private void copyClinicalData(final String dataContainingEntityId,
+                                  final Map<String, String> dataContainingEntityData,
+                                  final String assocColumnID) {
+        for (final String receivingEntityId : entityIds) {
+            final Map<String, String> receivingEntityData = clinicalDataMap.get(receivingEntityId);
+            if (receivingEntityData.get(assocColumnID) != null
+             && receivingEntityData.get(assocColumnID).equals(dataContainingEntityId)) {
+                copyColumnByColumn(dataContainingEntityData, receivingEntityData);
+                clinicalDataMap.put(receivingEntityId, receivingEntityData);
+            }
+        }
+    }
+
+    /**
+     * This method copies every column, except for the first two, from a data containing entity to a data
+     * receiving entity.
+     *
+     * @param dataContainingEntityData The data of the data containing entity that has to be copied.
+     * @param receivingEntityData The data of the receiving entity.
+     */
+    private void copyColumnByColumn(final Map<String, String> dataContainingEntityData,
+                                    final Map<String, String> receivingEntityData) {
+        for (final String columnId : columnIds) {
+            if (!columnId.equals(FIRST_COLUMN_ID_WITH_ENTITY_IDS)
+             && !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE)) {
+                if (dataContainingEntityData.get(columnId) != null) {
+                    receivingEntityData.put(columnId, dataContainingEntityData.get(columnId));
                 }
-                clinicalDataMap.put(entity2Id, entity2Data);
             }
         }
     }
@@ -790,7 +869,7 @@ public class FileExporter {
             final List<String> rowAsList = new ArrayList<>();
             final Map<String, String> patientData = clinicalDataMap.get(entityId);
             for (final String columnId : columnIds) {
-                String rawDataEntry = patientData.get(columnId);
+                final String rawDataEntry = patientData.get(columnId);
                 String dataEntry;
                 if (rawDataEntry == null) {
                     dataEntry = "";
@@ -800,7 +879,7 @@ public class FileExporter {
                     dataEntry = rawDataEntry.substring(0, maxClinicalDataEntry - tooLongIndicator.length())
                             + tooLongIndicator;
                     logger.warn("Data entry " + dataEntry.substring(0, logSegmentLength) + " of " + entityId
-                            + " and " + columnId + " was cut off at "
+                            + " and column " + columnId + " was cut off at "
                             + rawDataEntry.substring(maxClinicalDataEntry - logSegmentLength,
                             maxClinicalDataEntry - tooLongIndicator.length()));
                 } else {
@@ -819,7 +898,7 @@ public class FileExporter {
      * @throws IOException An input-output exception.
      */
     private void writeCSVData(final Writer writer, final List<String> rowAsList) throws IOException {
-        if (forbiddenSymbolRegex != null && !forbiddenSymbolRegex.trim().equals("")) {
+        if (forbiddenSymbolRegex != null && !"".equals(forbiddenSymbolRegex.trim())) {
             for (int i = 0; i < rowAsList.size(); i++) {
                 rowAsList.set(i, rowAsList.get(i).replaceAll(forbiddenSymbolRegex, ""));
             }
