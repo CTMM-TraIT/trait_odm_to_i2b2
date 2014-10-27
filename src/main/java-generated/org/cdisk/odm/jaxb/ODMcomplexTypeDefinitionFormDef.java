@@ -114,7 +114,7 @@ public class ODMcomplexTypeDefinitionFormDef {
      */
     public List<ODMcomplexTypeDefinitionItemGroupRef> getItemGroupRef() {
         if (itemGroupRef == null) {
-            itemGroupRef = new ArrayList<ODMcomplexTypeDefinitionItemGroupRef>();
+            itemGroupRef = new ArrayList<>();
         }
         return this.itemGroupRef;
     }

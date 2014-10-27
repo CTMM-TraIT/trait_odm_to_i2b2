@@ -7,6 +7,7 @@ package com.recomdata.i2b2;
  * @date: September 2, 2011
  */
 import java.math.BigDecimal;
+import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -162,25 +163,17 @@ public class I2B2ODMStudyHandler implements IConstants {
         studyInfo.setCname(studyEventDef.getName());
         studyInfo.setCdimcode(eventPath);
         studyInfo.setCtooltip(eventToolTip);
-
-        // It is a leaf node
-        if (studyEventDef.getFormRef() == null) {
-            studyInfo.setCvisualAttributes(IConstants.C_VISUALATTRIBUTES_LEAF);
-        } else {
-            studyInfo.setCvisualAttributes(IConstants.C_VISUALATTRIBUTES_FOLDER);
-        }
+        studyInfo.setCvisualAttributes(IConstants.C_VISUALATTRIBUTES_FOLDER);
 
         logStudyInfo();
 
         // insert level 2 data
         studyDao.insertMetadata(studyInfo);
 
-        if (studyEventDef.getFormRef() != null) {
-            for (ODMcomplexTypeDefinitionFormRef formRef : studyEventDef.getFormRef()) {
-                ODMcomplexTypeDefinitionFormDef formDef = ODMUtil.getForm(study, formRef.getFormOID());
+        for (ODMcomplexTypeDefinitionFormRef formRef : studyEventDef.getFormRef()) {
+            ODMcomplexTypeDefinitionFormDef formDef = ODMUtil.getForm(study, formRef.getFormOID());
 
-                saveForm(study, studyEventDef, formDef, eventPath, eventToolTip);
-            }
+            saveForm(study, studyEventDef, formDef, eventPath, eventToolTip);
         }
     }
 
@@ -202,13 +195,7 @@ public class I2B2ODMStudyHandler implements IConstants {
         studyInfo.setCname(getTranslatedDescription(formDef.getDescription(), "en", formDef.getName()));
         studyInfo.setCdimcode(formPath);
         studyInfo.setCtooltip(formToolTip);
-
-        // It is a leaf node
-        if (formDef.getItemGroupRef() == null) {
-            studyInfo.setCvisualAttributes(IConstants.C_VISUALATTRIBUTES_LEAF);
-        } else {
-            studyInfo.setCvisualAttributes(IConstants.C_VISUALATTRIBUTES_FOLDER);
-        }
+        studyInfo.setCvisualAttributes(IConstants.C_VISUALATTRIBUTES_FOLDER);
 
         logStudyInfo();
 
@@ -216,17 +203,15 @@ public class I2B2ODMStudyHandler implements IConstants {
         studyDao.insertMetadata(studyInfo);
 
 
-        if (formDef.getItemGroupRef() != null) {
-            for (ODMcomplexTypeDefinitionItemGroupRef itemGroupRef : formDef.getItemGroupRef()) {
-                ODMcomplexTypeDefinitionItemGroupDef itemGroupDef =
-                        ODMUtil.getItemGroup(study, itemGroupRef.getItemGroupOID());
+        for (ODMcomplexTypeDefinitionItemGroupRef itemGroupRef : formDef.getItemGroupRef()) {
+            ODMcomplexTypeDefinitionItemGroupDef itemGroupDef =
+                    ODMUtil.getItemGroup(study, itemGroupRef.getItemGroupOID());
 
-                if (itemGroupDef.getItemRef() != null) {
-                    for (ODMcomplexTypeDefinitionItemRef itemRef : itemGroupDef.getItemRef()) {
-                        ODMcomplexTypeDefinitionItemDef itemDef = ODMUtil.getItem(study, itemRef.getItemOID());
+            if (itemGroupDef.getItemRef() != null) {
+                for (ODMcomplexTypeDefinitionItemRef itemRef : itemGroupDef.getItemRef()) {
+                    ODMcomplexTypeDefinitionItemDef itemDef = ODMUtil.getItem(study, itemRef.getItemOID());
 
-                        saveItem(study, studyEventDef, formDef, itemDef, formPath, formToolTip);
-                    }
+                    saveItem(study, studyEventDef, formDef, itemDef, formPath, formToolTip);
                 }
             }
         }
@@ -602,17 +587,17 @@ public class I2B2ODMStudyHandler implements IConstants {
         conceptBuffer.setLength(6);
         conceptBuffer.append(studyOID).append("|");
 
-        messageDigest.update(odm.getSourceSystem().getBytes());
+        messageDigest.update(odm.getSourceSystem().getBytes(Charset.forName("UTF-8")));
         messageDigest.update((byte) '|');
-        messageDigest.update(studyEventOID.getBytes());
+        messageDigest.update(studyEventOID.getBytes(Charset.forName("UTF-8")));
         messageDigest.update((byte) '|');
-        messageDigest.update(formOID.getBytes());
+        messageDigest.update(formOID.getBytes(Charset.forName("UTF-8")));
         messageDigest.update((byte) '|');
-        messageDigest.update(itemOID.getBytes());
+        messageDigest.update(itemOID.getBytes(Charset.forName("UTF-8")));
 
         if (value != null) {
             messageDigest.update((byte) '|');
-            messageDigest.update(value.getBytes());
+            messageDigest.update(value.getBytes(Charset.forName("UTF-8")));
         }
 
         byte[] digest = messageDigest.digest();

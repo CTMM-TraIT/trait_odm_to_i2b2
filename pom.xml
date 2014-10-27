@@ -25,6 +25,7 @@
     <properties>
 
         <!-- Dependency versions. -->
+        <findbugs-jsr305.version>2.0.3</findbugs-jsr305.version>
         <guava.version>15.0</guava.version>
         <jsoup.version>1.7.3</jsoup.version>
         <junit.version>4.11</junit.version>
@@ -38,6 +39,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
         <!-- Plugin versions. -->
+        <findbugs-maven-plugin.version>2.5.3</findbugs-maven-plugin.version>
         <build-helper-maven-plugin.version>1.9</build-helper-maven-plugin.version>
         <coveralls-maven-plugin.version>2.2.0</coveralls-maven-plugin.version>
         <jacoco-maven-plugin.version>0.7.1.201405082137</jacoco-maven-plugin.version>
@@ -63,6 +65,15 @@
     </pluginRepositories>
 
     <dependencies>
+
+        <!-- Dependency for JSR-305 annotations (like @NonNull and @Nullable) for Findbugs. -->
+        <dependency>
+            <groupId>com.google.code.findbugs</groupId>
+            <artifactId>jsr305</artifactId>
+            <version>${findbugs-jsr305.version}</version>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
 
         <dependency>
             <groupId>commons-lang</groupId>
@@ -303,6 +314,14 @@
 
     <reporting>
         <plugins>
+
+            <!-- FindBugs configuration. See http://mojo.codehaus.org/findbugs-maven-plugin/ for more information. -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>findbugs-maven-plugin</artifactId>
+                <version>${findbugs-maven-plugin.version}</version>
+            </plugin>
+
             <!-- Added the JXR plugin (Java cross-reference tool) to get rid of the "Unable to locate Source XRef to
               -  link to - DISABLED" warning when running Checkstyle. -->
             <plugin>
