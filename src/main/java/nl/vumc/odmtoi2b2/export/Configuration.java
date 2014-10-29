@@ -8,8 +8,9 @@
 
 package nl.vumc.odmtoi2b2.export;
 
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -52,7 +53,9 @@ public class Configuration {
     public Configuration(final String propertiesFilePath) {
         try {
             final Properties properties = new Properties();
-            properties.load(new FileReader(propertiesFilePath));
+            final FileInputStream fileInputStream = new FileInputStream(propertiesFilePath);
+            final InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
+            properties.load(inputStreamReader);
 
             final String maxClinicalDataEntryAsString = properties.getProperty("max-clinical-data-entry");
             this.maxClinicalDataEntry = Integer.parseInt(maxClinicalDataEntryAsString);
@@ -60,6 +63,8 @@ public class Configuration {
             final String avoidTransmartSymbolBugsAsString = properties.getProperty("avoid-transmart-symbol-bugs");
             this.avoidTransmartSymbolBugs = Boolean.parseBoolean(avoidTransmartSymbolBugsAsString);
 
+            fileInputStream.close();
+            inputStreamReader.close();
         } catch (final IOException e) {
             final String message = "Exception while reading configuration properties from file %s.";
             logger.error(String.format(message, propertiesFilePath), e);
