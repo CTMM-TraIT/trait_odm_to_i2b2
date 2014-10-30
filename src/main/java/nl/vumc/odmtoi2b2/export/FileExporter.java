@@ -8,8 +8,9 @@ package nl.vumc.odmtoi2b2.export;
 import au.com.bytecode.opencsv.CSVWriter;
 
 import java.io.BufferedWriter;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 
@@ -137,6 +138,11 @@ public class FileExporter {
      * A space for usage between the words in the log statements.
      */
     private static final String SPACE = " ";
+
+    /**
+     * The character encoding used for all the files.
+     */
+    private static final String UTF8 = "UTF-8";
 
     /**
      * The regex that specifies all the symbols that should not appear in the output file.
@@ -316,7 +322,8 @@ public class FileExporter {
      */
     private void setColumnsName(final String columnsFileName) {
         try {
-            columnsWriter = new BufferedWriter(new FileWriter(exportFilePath + columnsFileName));
+            final FileOutputStream fileOutputStream = new FileOutputStream(exportFilePath + columnsFileName);
+            columnsWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream, UTF8));
             logger.info("Writing columns to file " + exportFilePath + columnsFileName);
         } catch (final IOException e) {
             logger.error("Error while setting the columns filename.", e);
@@ -348,7 +355,8 @@ public class FileExporter {
      */
     private void setWordMapName(final String wordMapFileName) {
         try {
-            wordMapWriter = new BufferedWriter(new FileWriter(exportFilePath + wordMapFileName));
+            final FileOutputStream fileOutputStream = new FileOutputStream(exportFilePath + wordMapFileName);
+            wordMapWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream, UTF8));
             logger.info("Writing word mappings to file " + exportFilePath + wordMapFileName);
         } catch (final IOException e) {
             logger.error("Error while setting the word map filename.", e);
@@ -362,7 +370,8 @@ public class FileExporter {
      */
     private void setClinicalDataName(final String clinicalDataFileName) {
         try {
-            clinicalDataWriter = new BufferedWriter(new FileWriter(exportFilePath + clinicalDataFileName));
+            final FileOutputStream fileOutputStream = new FileOutputStream(exportFilePath + clinicalDataFileName);
+            clinicalDataWriter = new BufferedWriter(new OutputStreamWriter(fileOutputStream, UTF8));
             logger.info("Writing clinical data to file " + exportFilePath + clinicalDataFileName);
         } catch (final IOException e) {
             logger.error("Error while setting the clinical data filename.", e);
