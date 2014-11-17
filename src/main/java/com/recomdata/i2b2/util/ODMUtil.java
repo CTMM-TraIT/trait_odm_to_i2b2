@@ -32,9 +32,9 @@ public class ODMUtil {
 	{		
 		ODMcomplexTypeDefinitionMetaDataVersion version = study.getMetaDataVersion().get(0);
 
-		if ((version.getStudyEventDef() != null) && (version.getStudyEventDef().size() > 0)) {
+		if (version.getStudyEventDef() != null && version.getStudyEventDef().size() > 0) {
 			for (ODMcomplexTypeDefinitionStudyEventDef studyEventDef : version.getStudyEventDef()) {
-				if(studyEventDef.getOID().equals(studyEventOID)){
+				if (studyEventDef.getOID().equals(studyEventOID)){
 					return studyEventDef;
 				}
 			}

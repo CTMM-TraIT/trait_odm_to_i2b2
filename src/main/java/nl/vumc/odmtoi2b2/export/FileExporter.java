@@ -860,10 +860,9 @@ public class FileExporter {
                                     final Map<String, String> receivingEntityData) {
         for (final String columnId : columnIds) {
             if (!columnId.equals(FIRST_COLUMN_ID_WITH_ENTITY_IDS)
-             && !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE)) {
-                if (dataContainingEntityData.get(columnId) != null) {
-                    receivingEntityData.put(columnId, dataContainingEntityData.get(columnId));
-                }
+                    && !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE)
+                    && dataContainingEntityData.get(columnId) != null) {
+                receivingEntityData.put(columnId, dataContainingEntityData.get(columnId));
             }
         }
     }

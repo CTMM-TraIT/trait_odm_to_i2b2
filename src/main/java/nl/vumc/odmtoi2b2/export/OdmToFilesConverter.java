@@ -286,7 +286,7 @@ public class OdmToFilesConverter {
         }
 
         // 3. Loop through the events.
-        if ((metaData.getProtocol().getStudyEventRef() != null) && (includedMetaData == null)) {
+        if (metaData.getProtocol().getStudyEventRef() != null && includedMetaData == null) {
             for (ODMcomplexTypeDefinitionStudyEventRef studyEventRef : metaData.getProtocol().getStudyEventRef()) {
                 final ODMcomplexTypeDefinitionStudyEventDef studyEventDef =
                         metaDataWithIncludes.getStudyEventDef(studyEventRef.getStudyEventOID());
@@ -554,7 +554,7 @@ public class OdmToFilesConverter {
 
         for (ODMcomplexTypeDefinitionSubjectData subjectData : clinicalData.getSubjectData()) {
             if (subjectData.getStudyEventData() != null) {
-                saveSubjectData(study, clinicalData, subjectData);
+                saveSubjectData(study, subjectData);
             }
         }
     }
@@ -564,11 +564,9 @@ public class OdmToFilesConverter {
      * was treated.
      *
      * @param study The study or study-site in which the patient is treated.
-     * @param clinicalData The clinical data object in which the study is stored.
      * @param subjectData The data of a particular patient.
      */
     private void saveSubjectData(final ODMcomplexTypeDefinitionStudy study,
-                                 final ODMcomplexTypeDefinitionClinicalData clinicalData,
                                  final ODMcomplexTypeDefinitionSubjectData subjectData) {
         final ODMcomplexTypeDefinitionStudy definingStudy = metaDataMap.get(getMetaDataKey(study)).getDefiningStudy(odm);
         final String definingStudyName = definingStudy.getGlobalVariables().getStudyName().getValue();
@@ -578,7 +576,7 @@ public class OdmToFilesConverter {
 
         for (ODMcomplexTypeDefinitionStudyEventData eventData : subjectData.getStudyEventData()) {
             if (eventData.getFormData() != null) {
-                saveEventData(study, clinicalData, subjectData, eventData);
+                saveEventData(study, subjectData, eventData);
             }
         }
         if (modelStudiesAsColumn) {
@@ -591,17 +589,15 @@ public class OdmToFilesConverter {
      * This method loops through the forms of a particular event of a particular patient.
      *
      * @param study The study or study-site in which the patient is treated.
-     * @param clinicalData The clinical data object in which the study is stored.
      * @param subjectData The data of a particular patient.
      * @param eventData The data of a particular event.
      */
     private void saveEventData(final ODMcomplexTypeDefinitionStudy study,
-                               final ODMcomplexTypeDefinitionClinicalData clinicalData,
                                final ODMcomplexTypeDefinitionSubjectData subjectData,
                                final ODMcomplexTypeDefinitionStudyEventData eventData) {
         for (ODMcomplexTypeDefinitionFormData formData : eventData.getFormData()) {
             if (formData.getItemGroupData() != null) {
-                saveFormData(study, clinicalData, subjectData, eventData, formData);
+                saveFormData(study, subjectData, eventData, formData);
             }
         }
     }
@@ -610,19 +606,17 @@ public class OdmToFilesConverter {
      * This method loops through the item groups in a particular form.
      *
      * @param study The study or study-site in which the patient is treated.
-     * @param clinicalData The clinical data object in which the study is stored.
      * @param subjectData The data of a particular patient.
      * @param eventData The data of a particular event.
      * @param formData The data of a particular form.
      */
     private void saveFormData(final ODMcomplexTypeDefinitionStudy study,
-                              final ODMcomplexTypeDefinitionClinicalData clinicalData,
                               final ODMcomplexTypeDefinitionSubjectData subjectData,
                               final ODMcomplexTypeDefinitionStudyEventData eventData,
                               final ODMcomplexTypeDefinitionFormData formData) {
         for (ODMcomplexTypeDefinitionItemGroupData itemGroupData : formData.getItemGroupData()) {
             if (itemGroupData.getItemDataGroup() != null) {
-                saveItemGroupData(study, clinicalData, subjectData, eventData, formData, itemGroupData);
+                saveItemGroupData(study, subjectData, eventData, formData, itemGroupData);
             }
         }
     }
@@ -631,21 +625,19 @@ public class OdmToFilesConverter {
      * This method loops through the items of a particular item group.
      *
      * @param study The study or study-site in which the patient is treated.
-     * @param clinicalData The clinical data object in which the study is stored.
      * @param subjectData The data of a particular patient.
      * @param eventData The data of a particular event.
      * @param formData The data of a particular form.
      * @param itemGroupData The data of a particular item group.
      */
     private void saveItemGroupData(final ODMcomplexTypeDefinitionStudy study,
-                                   final ODMcomplexTypeDefinitionClinicalData clinicalData,
                                    final ODMcomplexTypeDefinitionSubjectData subjectData,
                                    final ODMcomplexTypeDefinitionStudyEventData eventData,
                                    final ODMcomplexTypeDefinitionFormData formData,
                                    final ODMcomplexTypeDefinitionItemGroupData itemGroupData) {
         for (ODMcomplexTypeDefinitionItemData itemData : itemGroupData.getItemDataGroup()) {
             if (itemData.getValue() != null) {
-                saveItemData(study, clinicalData, subjectData, eventData, formData, itemGroupData, itemData);
+                saveItemData(study, subjectData, eventData, formData, itemGroupData, itemData);
             }
         }
     }
@@ -656,7 +648,6 @@ public class OdmToFilesConverter {
      * identifier.
      *
      * @param study The study or study-site in which the patient is treated.
-     * @param clinicalData The clinical data object in which the study is stored.
      * @param subjectData The data of a particular patient.
      * @param eventData The data of a particular event.
      * @param formData The data of a particular form.
@@ -664,7 +655,6 @@ public class OdmToFilesConverter {
      * @param itemData The data of a particular item.
      */
     private void saveItemData(final ODMcomplexTypeDefinitionStudy study,
-                              @SuppressWarnings("UnusedParameters") final ODMcomplexTypeDefinitionClinicalData clinicalData,
                               final ODMcomplexTypeDefinitionSubjectData subjectData,
                               final ODMcomplexTypeDefinitionStudyEventData eventData,
                               final ODMcomplexTypeDefinitionFormData formData,

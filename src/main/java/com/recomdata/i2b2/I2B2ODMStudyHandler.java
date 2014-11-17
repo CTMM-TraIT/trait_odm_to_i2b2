@@ -466,7 +466,7 @@ public class I2B2ODMStudyHandler implements IConstants {
 
                             for (ODMcomplexTypeDefinitionItemData itemData : itemGroupData.getItemDataGroup()) {
                                 if (itemData.getValue() != null) {
-                                    saveItemData(study, clinicalData, subjectData, studyEventData, formData, itemData, encounterNum);
+                                    saveItemData(study, subjectData, studyEventData, formData, itemData, encounterNum);
                                 }
                             }
                         }
@@ -493,7 +493,6 @@ public class I2B2ODMStudyHandler implements IConstants {
 
     private void saveItemData(
             ODMcomplexTypeDefinitionStudy study,
-            @SuppressWarnings("UnusedParameters") ODMcomplexTypeDefinitionClinicalData clinicalData,
             ODMcomplexTypeDefinitionSubjectData subjectData,
             ODMcomplexTypeDefinitionStudyEventData studyEventData,
             ODMcomplexTypeDefinitionFormData formData,
