@@ -226,10 +226,10 @@ public class OdmToFilesConverter {
             final String definingStudyName = studies.get(evaluatedStudyName);
             if (!evaluatedStudyName.equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
                 final String oidPath = definingStudyName + SEP + STUDYSITE;
-                fileExporters.get(definingStudyName).writeExportColumns("", "", "", STUDYSITE, oidPath);
+                fileExporters.get(definingStudyName).storeColumn("", "", "", STUDYSITE, oidPath);
                 for (String studyName : studies.keySet()) {
                     if (studies.get(studyName).equals(definingStudyName)) {
-                        fileExporters.get(definingStudyName).writeExportWordMap(studyName);
+                        fileExporters.get(definingStudyName).storeWord(studyName);
                     }
                 }
                 handledStudies.put(definingStudyName, true);
@@ -280,8 +280,9 @@ public class OdmToFilesConverter {
 
         if (!fileExporters.containsKey(definingStudyName)) {
             logger.debug("Creating file exporter for study " + definingStudyName);
-            final Configuration configuration = new Configuration(propertiesFilePath);
-            final FileExporter fileExporter = new FileExporter(exportFilePath, definingStudyName, configuration);
+            //final Configuration configuration = new Configuration(propertiesFilePath);
+            //final FileExporter fileExporter = new FileExporterFull(exportFilePath, definingStudyName, configuration);
+            final FileExporter fileExporter = new FileExporterLight();
             fileExporters.put(definingStudyName, fileExporter);
         }
 
@@ -424,7 +425,7 @@ public class OdmToFilesConverter {
                 + "; item group name: " + itemGroupName
                 + "; preferred item name: " + preferredItemName
                 + "; OID path: " + oidPath);
-        fileExporters.get(studyName).writeExportColumns(studyEventName, formName, itemGroupName, preferredItemName, oidPath);
+        fileExporters.get(studyName).storeColumn(studyEventName, formName, itemGroupName, preferredItemName, oidPath);
 
         if (itemDef.getCodeListRef() != null) {
             final ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(definingStudy,
@@ -493,7 +494,7 @@ public class OdmToFilesConverter {
                                   final ODMcomplexTypeDefinitionCodeListItem codeListItem) throws IOException {
         final String studyName = definingStudy.getGlobalVariables().getStudyName().getValue();
         final String dataValue = ODMUtil.getTranslatedValue(codeListItem, LANGUAGE);
-        fileExporters.get(studyName).writeExportWordMap(dataValue);
+        fileExporters.get(studyName).storeWord(dataValue);
 
     }
 
@@ -580,7 +581,7 @@ public class OdmToFilesConverter {
             }
         }
         if (modelStudiesAsColumn) {
-            fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, studyName, patientId,
+            fileExporters.get(definingStudyName).storeClinicalDataInfo(oidPath, studyName, patientId,
                     null, null, null, null);
         }
     }
@@ -698,7 +699,7 @@ public class OdmToFilesConverter {
         }
 
         final String finalValue = (bigDecimal != null) ? bigDecimal.toString() : wordValue;
-        fileExporters.get(definingStudyName).writeExportClinicalDataInfo(oidPath, finalValue, patientId,
+        fileExporters.get(definingStudyName).storeClinicalDataInfo(oidPath, finalValue, patientId,
                 eventId, eventRepeatKey, itemGroupId, itemGroupRepeatKey);
     }
 }

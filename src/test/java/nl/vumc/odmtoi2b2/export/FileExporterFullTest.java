@@ -13,11 +13,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
 /**
- * Unit test for the FileExporter class.
+ * Unit test for the FileExporterFull class.
  *
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
-public class FileExporterTest {
+public class FileExporterFullTest {
 	/**
 	 * The output directory.
 	 */
@@ -31,17 +31,17 @@ public class FileExporterTest {
 	) + File.separator;
 
 	/**
-	 * Test the writeExportColumns method.
+	 * Test the storeColumn method.
 	 */
     @Test
 	public void testWriteExportColumns() throws IOException {
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "my-study-name", configuration);
+        final FileExporterFull fileExporter = new FileExporterFull(OUTPUT_DIRECTORY, "my-study-name", configuration);
 
         final StringWriter columnsWriter = new StringWriter();
         fileExporter.setColumnsWriter(columnsWriter);
-        fileExporter.writeExportColumns("abc+cde", "", "", "preferred-item-name", "oid-path");
-        fileExporter.writeExportColumns("abc", "cde", "efg", "preferred-item-name2", "oid-path");
+        fileExporter.storeColumn("abc+cde", "", "", "preferred-item-name", "oid-path");
+        fileExporter.storeColumn("abc", "cde", "efg", "preferred-item-name2", "oid-path");
         final String expectedOutput =
                 "Filename\tCategory Code\tColumn Number\tData Label\tData Label Source\tControl Vocab Cd\n" +
                 "my-study-name_clinical_data.txt\t\t1\tSUBJ_ID\t\t\n" +
@@ -56,21 +56,21 @@ public class FileExporterTest {
 	}
 
 	/**
-	 * Test the writeExportWordMap method.
+	 * Test the storeWord method.
 	 */
     @Test
 	public void testWriteExportWordMap() throws IOException {
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "my-study-name", configuration);
+        final FileExporterFull fileExporter = new FileExporterFull(OUTPUT_DIRECTORY, "my-study-name", configuration);
 
         final StringWriter wordMapWriter = new StringWriter();
         fileExporter.setWordMapWriter(wordMapWriter);
-        fileExporter.writeExportColumns("abc+cde", "", "", "preferred-item-name", "oid-path");
-        fileExporter.writeExportWordMap("myWordValue");
-        fileExporter.writeExportWordMap("myWordValue2");
-        fileExporter.writeExportColumns("abc", "", "", "preferred-item-name2", "oid-path");
-        fileExporter.writeExportColumns("fghij", "", "", "preferred-item-name3", "oid-path");
-        fileExporter.writeExportWordMap("myWordValue3");
+        fileExporter.storeColumn("abc+cde", "", "", "preferred-item-name", "oid-path");
+        fileExporter.storeWord("myWordValue");
+        fileExporter.storeWord("myWordValue2");
+        fileExporter.storeColumn("abc", "", "", "preferred-item-name2", "oid-path");
+        fileExporter.storeColumn("fghij", "", "", "preferred-item-name3", "oid-path");
+        fileExporter.storeWord("myWordValue3");
         final String expectedOutput =
                 "Filename\tColumn Number\tOriginal Data Value\tNew Data Values\n" +
                 "my-study-name_clinical_data.txt\t7\t1\tmyWordValue\n" +
@@ -80,7 +80,7 @@ public class FileExporterTest {
 	}
 
 	/**
-	 * Test the writeExportClinicalDataInfo method.
+	 * Test the storeClinicalDataInfo method.
 	 */
 	@SuppressWarnings("SpellCheckingInspection")
     @Test
@@ -99,20 +99,20 @@ public class FileExporterTest {
         entityDataMap2.put("column-id1", "data-value3");
 
 		final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-		final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
+		final FileExporterFull fileExporter = new FileExporterFull(OUTPUT_DIRECTORY, "study-name", configuration);
 
-		fileExporter.writeExportClinicalDataInfo("column-id1", "data-value1", "patient-id1", "event-id", null,
+		fileExporter.storeClinicalDataInfo("column-id1", "data-value1", "patient-id1", "event-id", null,
                 "item-group-id", null);
-		fileExporter.writeExportClinicalDataInfo("column-id2", "data-value2", "patient-id1", "event-id", null,
+		fileExporter.storeClinicalDataInfo("column-id2", "data-value2", "patient-id1", "event-id", null,
                 "item-group-id", null);
-		fileExporter.writeExportClinicalDataInfo("column-id1", "data-value3", "patient-id2", "event-id", null,
+		fileExporter.storeClinicalDataInfo("column-id1", "data-value3", "patient-id2", "event-id", null,
                 "item-group-id", null);
 
 		assertEquals(expectedClinicalDataMap, fileExporter.getClinicalDataMap());
 	}
 
     /**
-     * Test the writeExportClinicalDataInfo method.
+     * Test the storeClinicalDataInfo method.
      */
     @SuppressWarnings("SpellCheckingInspection")
     @Test
@@ -127,16 +127,16 @@ public class FileExporterTest {
         entityDataMap.put("column-id", "data-value");
 
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
+        final FileExporterFull fileExporter = new FileExporterFull(OUTPUT_DIRECTORY, "study-name", configuration);
 
-        fileExporter.writeExportClinicalDataInfo("column-id", "data-value", "patient-id", "event-id",
+        fileExporter.storeClinicalDataInfo("column-id", "data-value", "patient-id", "event-id",
                 "event-repeat-key", "item-group-id", null);
 
         assertEquals(expectedClinicalDataMap, fileExporter.getClinicalDataMap());
     }
 
 	/**
-	 * Test the writeExportClinicalDataInfo method.
+	 * Test the storeClinicalDataInfo method.
 	 */
 	@SuppressWarnings("SpellCheckingInspection")
     @Test
@@ -151,16 +151,16 @@ public class FileExporterTest {
         entityDataMap.put("column-id", "data-value");
 
 		final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-		final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
+		final FileExporterFull fileExporter = new FileExporterFull(OUTPUT_DIRECTORY, "study-name", configuration);
 
-		fileExporter.writeExportClinicalDataInfo("column-id", "data-value", "patient-id", "event-id", null,
+		fileExporter.storeClinicalDataInfo("column-id", "data-value", "patient-id", "event-id", null,
                 "item-group-id", "item-group-repeat-key");
 
 		assertEquals(expectedClinicalDataMap, fileExporter.getClinicalDataMap());
 	}
 
     /**
-     * Test the writeExportClinicalDataInfo method.
+     * Test the storeClinicalDataInfo method.
      */
     @SuppressWarnings("SpellCheckingInspection")
     @Test
@@ -177,9 +177,9 @@ public class FileExporterTest {
         entityDataMap.put("column-id", "data-value");
 
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
+        final FileExporterFull fileExporter = new FileExporterFull(OUTPUT_DIRECTORY, "study-name", configuration);
 
-        fileExporter.writeExportClinicalDataInfo("column-id", "data-value", "patient-id", "event-id",
+        fileExporter.storeClinicalDataInfo("column-id", "data-value", "patient-id", "event-id",
                 "event-repeat-key", "item-group-id", "item-group-repeat-key");
 
         assertEquals(expectedClinicalDataMap, fileExporter.getClinicalDataMap());
