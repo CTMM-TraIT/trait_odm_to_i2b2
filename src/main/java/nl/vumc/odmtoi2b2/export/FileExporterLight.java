@@ -4,6 +4,9 @@ import java.io.IOException;
 
 /**
  * File exporter for the I2B2 "light" data model.
+ *
+ * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
+ * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
 public class FileExporterLight implements FileExporter {
     @Override

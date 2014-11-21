@@ -3,7 +3,10 @@ package nl.vumc.odmtoi2b2.export;
 import java.io.IOException;
 
 /**
+ * File exporter interface that sets the template for both the export to i2b2-full and i2b2-light.
  *
+ * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
+ * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
 public interface FileExporter {
     /**
