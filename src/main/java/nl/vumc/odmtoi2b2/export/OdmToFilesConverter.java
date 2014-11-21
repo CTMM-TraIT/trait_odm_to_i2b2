@@ -280,9 +280,9 @@ public class OdmToFilesConverter {
 
         if (!fileExporters.containsKey(definingStudyName)) {
             logger.debug("Creating file exporter for study " + definingStudyName);
-            //final Configuration configuration = new Configuration(propertiesFilePath);
-            //final FileExporter fileExporter = new FileExporterFull(exportFilePath, definingStudyName, configuration);
-            final FileExporter fileExporter = new FileExporterLight();
+            final Configuration configuration = new Configuration(propertiesFilePath);
+            final FileExporter fileExporter = new FileExporterFull(exportFilePath, definingStudyName, configuration);
+//            final FileExporter fileExporter = new FileExporterLight();
             fileExporters.put(definingStudyName, fileExporter);
         }
 
