@@ -46,6 +46,11 @@ public class Configuration {
     private boolean avoidTransmartSymbolBugs;
 
     /**
+     * The location of the log4j properties file.
+     */
+    private String log4jPropertiesPath;
+
+    /**
      * Construct the configuration object by reading in the properties in the configuration file.
      *
      * @param propertiesFilePath The path that identifies the configuration file.
@@ -62,6 +67,7 @@ public class Configuration {
             this.forbiddenSymbolRegex = properties.getProperty("forbidden-symbols-regex");
             final String avoidTransmartSymbolBugsAsString = properties.getProperty("avoid-transmart-symbol-bugs");
             this.avoidTransmartSymbolBugs = Boolean.parseBoolean(avoidTransmartSymbolBugsAsString);
+            this.log4jPropertiesPath = properties.getProperty("log4j-properties-file"); //todo: finish this
 
             fileInputStream.close();
             inputStreamReader.close();

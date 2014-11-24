@@ -10,8 +10,11 @@ import java.io.IOException;
  */
 public class FileExporterLight implements FileExporter {
     @Override
-    public void storeColumn(final String eventName, final String formName, final String itemGroupName,
-                            final String preferredItemName, final String oidPath) throws IOException {
+    public void storeColumn(final String eventName,
+                            final String formName,
+                            final String itemGroupName,
+                            final String preferredItemName,
+                            final String oidPath) throws IOException {
     }
 
     @Override
@@ -20,8 +23,12 @@ public class FileExporterLight implements FileExporter {
     }
 
     @Override
-    public void storeClinicalDataInfo(final String columnId, final String dataValue, final String patientId,
-                                      final String eventId, final String eventRepeatKey, final String itemGroupId,
+    public void storeClinicalDataInfo(final String columnId,
+                                      final String dataValue,
+                                      final String patientId,
+                                      final String eventId,
+                                      final String eventRepeatKey,
+                                      final String itemGroupId,
                                       final String itemGroupRepeatKey) {
     }
 
