@@ -68,7 +68,8 @@ public class I2B2ODMStudyHandlerClientTest {
 		// todo [Freek]: check whether all calls to getAbsolutePath are necessary.
 		client.loadODMFile2I2B2(new File(odmXmlPath).getAbsolutePath(),
 								new File(exportFilePath).getAbsolutePath() + File.separator,
-								new File(PROPERTIES_DIRECTORY + "ODM-to-i2b2.properties").getAbsolutePath());
+                                false,
+                                new File(PROPERTIES_DIRECTORY + "ODM-to-i2b2.properties").getAbsolutePath());
 
 		final long end = System.currentTimeMillis();
 		logger.warn("Finish...[" + (end - start) / 1000.00 + "] secs");

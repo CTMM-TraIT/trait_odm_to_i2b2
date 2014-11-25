@@ -10,8 +10,10 @@ package com.recomdata.i2b2;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import nl.vumc.odmtoi2b2.export.Configuration;
 import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 
+import nl.vumc.odmtoi2b2.export.StringUtilities;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.cdisk.odm.jaxb.ODM;
 import org.slf4j.Logger;
@@ -44,10 +46,13 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * 
 	 * @param odmXmlPath the ODM file to process.
 	 * @param exportFilePath the path of the export file.
-	 * @param propertiesFilePath the file path to the properties.
-	 * @throws Exception
+	 * @param exportToI2b2Light
+     *@param propertiesFilePath the file path to the properties.  @throws Exception
 	 */
-    public void loadODMFile2I2B2(String odmXmlPath, String exportFilePath, final String propertiesFilePath) throws Exception {
+    public void loadODMFile2I2B2(String odmXmlPath,
+                                 String exportFilePath,
+                                 Boolean exportToI2b2Light,
+                                 final String propertiesFilePath) throws Exception {
 		File xmlFile = new File(odmXmlPath);
 
 		if (!xmlFile.exists()) {
@@ -69,7 +74,7 @@ public class I2B2ODMStudyHandlerCMLClient {
             odmHandler.processODM();
         } else {
             OdmToFilesConverter odmHandler = new OdmToFilesConverter();
-            odmHandler.processODM(odm, exportFilePath, propertiesFilePath);
+            odmHandler.processODM(odm, exportFilePath, exportToI2b2Light, propertiesFilePath);
             odmHandler.closeExportWriters();
         }
     }
@@ -81,19 +86,27 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 */
 	public static void main(String[] args) {
         try {
-			DOMConfigurator.configure(args[0]);
+            String propertiesFilePath = "ODM-to-i2b2.properties";
+            final Configuration configuration = new Configuration(propertiesFilePath);
+			DOMConfigurator.configure(configuration.getLog4jPath());
 
-			if (args.length < 3) {
-				logger.info("Please provide 1. the logging configuration (log4j.properties), "
-						    + "2. the ODM file (plus path) to process, and "
-						    + "3. the path of the export directory (without slash).");
+			if (args.length < 2) {
+				logger.info("Please provide 1. the ODM file (plus path) to process, and "
+						    + "2. the path of the export directory (without slash)."
+                            + "3. (optionally) y in case an export to i2b2-light is desired.");
 				return;
 			}
 
-			String odmFilePath = args[1];
-            String exportFilePath = args[2];
+			String odmFilePath = args[0];
+            String exportFilePath = args[1];
+            Boolean exportToI2b2Light;
+            if (args.length >= 3 && args[2].startsWith("y")) {
+                exportToI2b2Light = true;
+            } else {
+                exportToI2b2Light = false;
+            }
 
-			if (EXPORT_TO_DATABASE) {
+            if (EXPORT_TO_DATABASE) {
                 logger.info("Initializing database connection...");
 				Config config = Config.getConfig();
 				I2B2DBUtils.init(config);
@@ -102,7 +115,7 @@ public class I2B2ODMStudyHandlerCMLClient {
             logger.info("Parsing ODM file ..." + odmFilePath);
 
 			I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
-			client.loadODMFile2I2B2(odmFilePath, exportFilePath, "ODM-to-i2b2.properties");
+			client.loadODMFile2I2B2(odmFilePath, exportFilePath, exportToI2b2Light, propertiesFilePath);
 
 			if (EXPORT_TO_DATABASE) {
                 logger.info("Releasing database connection.");

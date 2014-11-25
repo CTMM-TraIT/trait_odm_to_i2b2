@@ -104,6 +104,14 @@ public class OdmToFilesConverter {
      */
     private boolean modelStudiesAsColumn;
 
+
+    /**
+     * Is set to true when the export should be made to i2b2-light, in which each patient
+     * corresponds to exactly one row in the clinical data file. Repeated events and repeated
+     * observations are modeled as concepts, hence as columns in the clinical data file.
+     */
+    private boolean exportToI2b2Light;
+
     /**
      * The odm object with all the content from the ODM xml file.
      */
@@ -160,14 +168,15 @@ public class OdmToFilesConverter {
      *            the unmarshaller. The unmarshaller uses automatically generated Java sources,
      *            generated from xsd files.
      * @param exportFilePath The path to the directory in which the export files will be written.
-     * @param propertiesFilePath the file path to the properties.
-     * @throws IOException An input-output exception.
+     * @param exportToI2b2Light Is true when the export should be made to i2b2-light instead of -full.
+     *@param propertiesFilePath the file path to the properties.  @throws IOException An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
-    public void processODM(final ODM odm, final String exportFilePath, final String propertiesFilePath)
+    public void processODM(final ODM odm, final String exportFilePath, Boolean exportToI2b2Light, final String propertiesFilePath)
         throws IOException, JAXBException {
         this.odm = odm;
         this.exportFilePath = exportFilePath + File.separator;
+        this.exportToI2b2Light = exportToI2b2Light;
 
         processODMStudy(propertiesFilePath);
         processODMClinicalData();
@@ -281,8 +290,12 @@ public class OdmToFilesConverter {
         if (!fileExporters.containsKey(definingStudyName)) {
             logger.debug("Creating file exporter for study " + definingStudyName);
             final Configuration configuration = new Configuration(propertiesFilePath);
-            final FileExporter fileExporter = new FileExporterFull(exportFilePath, definingStudyName, configuration);
-//            final FileExporter fileExporter = new FileExporterLight();
+            final FileExporter fileExporter;
+            if (exportToI2b2Light) {
+                fileExporter = new FileExporterLight();
+            } else {
+                fileExporter = new FileExporterFull(exportFilePath, definingStudyName, configuration);
+            }
             fileExporters.put(definingStudyName, fileExporter);
         }
 

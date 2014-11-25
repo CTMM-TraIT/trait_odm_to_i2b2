@@ -25,6 +25,11 @@ import org.slf4j.LoggerFactory;
  */
 public class Configuration {
     /**
+     * The location of the log4j properties file.
+     */
+    private String log4jPropertiesPath;
+
+    /**
      * The logger for this class.
      */
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
@@ -46,11 +51,6 @@ public class Configuration {
     private boolean avoidTransmartSymbolBugs;
 
     /**
-     * The location of the log4j properties file.
-     */
-    private String log4jPropertiesPath;
-
-    /**
      * Construct the configuration object by reading in the properties in the configuration file.
      *
      * @param propertiesFilePath The path that identifies the configuration file.
@@ -62,12 +62,12 @@ public class Configuration {
             final InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, "UTF-8");
             properties.load(inputStreamReader);
 
+            this.log4jPropertiesPath = properties.getProperty("log4j-properties-file");
             final String maxClinicalDataEntryAsString = properties.getProperty("max-clinical-data-entry");
             this.maxClinicalDataEntry = Integer.parseInt(maxClinicalDataEntryAsString);
             this.forbiddenSymbolRegex = properties.getProperty("forbidden-symbols-regex");
             final String avoidTransmartSymbolBugsAsString = properties.getProperty("avoid-transmart-symbol-bugs");
             this.avoidTransmartSymbolBugs = Boolean.parseBoolean(avoidTransmartSymbolBugsAsString);
-            this.log4jPropertiesPath = properties.getProperty("log4j-properties-file"); //todo: finish this
 
             fileInputStream.close();
             inputStreamReader.close();
@@ -75,6 +75,16 @@ public class Configuration {
             final String message = "Exception while reading configuration properties from file %s.";
             logger.error(String.format(message, propertiesFilePath), e);
         }
+    }
+
+    /**
+     * Get the path and the filename that contain the properties for logging errors, warnings, etc.,
+     * called the log4j properties file.
+     *
+     * @return the path to the log4j file.
+     */
+    public String getLog4jPath() {
+        return log4jPropertiesPath;
     }
 
     /**
