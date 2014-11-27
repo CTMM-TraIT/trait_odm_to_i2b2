@@ -266,6 +266,37 @@ public class FileExporterLight implements FileExporter {
         if (currentColumnNumber == 0) {
             handleColumnMetadata(FILENAME, "Category Code", COLUMN_NUMBER, "Data Label", "Data Label Source", "Control Vocab Cd");
         }
+
+        String cleanEventName     = eventName;
+        String cleanFormName      = formName;
+        String cleanItemGroupName = itemGroupName;
+        if (avoidTransmartSymbolBugs) {
+            cleanEventName      =      eventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            cleanFormName       =       formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            cleanItemGroupName  =  itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+        }
+
+        String namePath = cleanEventName + SEPARATOR + cleanFormName + SEPARATOR + cleanItemGroupName;
+
+        /**
+         * Avoid that blank nodes are created by removing overabundant SEPARATOR symbols.
+         */
+        while (namePath.contains(SEPARATOR + SEPARATOR)) {
+            namePath = namePath.replaceAll(SEPARATOR_IN_REGEX + SEPARATOR_IN_REGEX, SEPARATOR);
+        }
+        if (namePath.startsWith(SEPARATOR)) {
+            namePath = namePath.substring(1);
+        }
+        if (namePath.endsWith(SEPARATOR)) {
+            namePath = namePath.substring(0, namePath.length() - 1);
+        }
+
+        handleColumnAttribute(namePath, preferredItemName);
+
+        currentColumnId = oidPath;
+        columnHeaders.add(preferredItemName);
+        columnIds.add(oidPath);
+
     }
 
 
@@ -298,6 +329,20 @@ public class FileExporterLight implements FileExporter {
         writeCSVData(columnsWriter, rowAsList);
         currentColumnNumber++;
         increasedColumnNumber = true;
+    }
+
+
+    /**
+     * This method fills a rowAsList list, which represents a line in the columns file, and
+     * passes it to the file writer. The actual writing to the hard disk happens when the
+     * file writer is closed.
+     *
+     * @param categoryCode      The category code (readable concept path).
+     * @param dataLabel         The data label (item name).
+     * @throws IOException      An input-output exception.
+     */
+    private void handleColumnAttribute(final String categoryCode, final String dataLabel) throws IOException {
+        handleColumnMetadata(clinicalDataFileName, categoryCode, String.valueOf(currentColumnNumber), dataLabel, "", "");
     }
 
 
