@@ -347,8 +347,30 @@ public class FileExporterLight implements FileExporter {
 
 
     @Override
-    public void storeWord(final String wordValue) throws IOException {
-        System.out.println("wordValue = " + wordValue);
+    public void storeWord(final String wordValue) throws IOException {  //todo: debug this. Compare with earlier export to wordmap file.
+        if (writeWordMapHeaders) {
+            final List<String> rowAsList = new ArrayList<>();
+            rowAsList.add(FILENAME);
+            rowAsList.add(COLUMN_NUMBER);
+            rowAsList.add("Original Data Value");
+            rowAsList.add("New Data Values");
+            writeCSVData(wordMapWriter, rowAsList);
+            writeWordMapHeaders = false;
+        }
+        if (increasedColumnNumber) {
+            valueCounter = 1;
+            increasedColumnNumber = false;
+        } else {
+            valueCounter++;
+        }
+        final String value = String.valueOf(valueCounter);
+        wordMap.put(currentColumnId + wordValue, value);
+        final List<String> rowAsList = new ArrayList<>();
+        rowAsList.add(clinicalDataFileName);
+        rowAsList.add(String.valueOf(currentColumnNumber - 1));
+        rowAsList.add(value);
+        rowAsList.add(wordValue);
+        writeCSVData(wordMapWriter, rowAsList);
     }
 
     @Override
