@@ -1,3 +1,8 @@
+/**
+ * Copyright(c) 2014 VU University Medical Center.
+ * Licensed under the Apache License version 2.0 (see http://opensource.org/licenses/Apache-2.0).
+ */
+
 package nl.vumc.odmtoi2b2.export;
 
 import au.com.bytecode.opencsv.CSVWriter;
@@ -9,10 +14,9 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+//import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+//import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +64,7 @@ public class FileExporterLight implements FileExporter {
     /**
      * A space for usage between the words in the log statements.
      */
-    private static final String SPACE = " ";
+//    private static final String SPACE = " ";
 
     /**
      * The character encoding used for all the files.
@@ -122,17 +126,17 @@ public class FileExporterLight implements FileExporter {
     /**
      * The patient IDs.
      */
-    private List<String> entityIds;
+//    private List<String> entityIds;
 
     /**
      * The column headers for the clinical data.
      */
-    private List<String> columnHeaders;
+//    private List<String> columnHeaders;
 
     /**
      * The column IDs (paths) for the clinical data.
      */
-    private List<String> columnIds;
+//    private List<String> columnIds;
 
     /**
      * The current column number during the processing of the study info.
@@ -142,22 +146,22 @@ public class FileExporterLight implements FileExporter {
     /**
      * The current column id during the processing of the study info.
      */
-    private String currentColumnId;
+//    private String currentColumnId;
 
     /**
      * Mapping of (column ID + word) to values for the current patient.
      */
-    private Map<String, String> wordMap;
+//    private Map<String, String> wordMap;
 
     /**
      * A map of maps: Map<patientID, patientData>, with patientData a map of columnIds to data values.
      */
-    private Map<String, Map<String, String>> clinicalDataMap;
+//    private Map<String, Map<String, String>> clinicalDataMap;
 
     /**
      * The cut-off length of the clinical data entry strings in the clinical data file.
      */
-    private int maxClinicalDataEntry;
+//    private int maxClinicalDataEntry;
 
 
     /**
@@ -175,19 +179,19 @@ public class FileExporterLight implements FileExporter {
         final String wordMapFileName = studyNameWithUnderscores + "_word_map.txt";
         this.clinicalDataFileName = studyNameWithUnderscores + "_clinical_data.txt";
         this.exportFilePath = exportFilePath;
-        this.maxClinicalDataEntry = configuration.getMaxClinicalDataEntry();
+//        this.maxClinicalDataEntry = configuration.getMaxClinicalDataEntry();
         this.forbiddenSymbolRegex = configuration.getForbiddenSymbolRegex();
         this.avoidTransmartSymbolBugs = configuration.getAvoidTransmartSymbolBugs();
         this.writeWordMapHeaders = true;
         this.valueCounter = 1;
         this.increasedColumnNumber = false;
         this.currentColumnNumber = 0;
-        this.currentColumnId = null;
-        this.columnHeaders = new ArrayList<>();
-        this.columnIds = new ArrayList<>();
-        this.entityIds = new ArrayList<>();
-        this.wordMap = new HashMap<>();
-        this.clinicalDataMap = new HashMap<>();
+//        this.currentColumnId = null;
+//        this.columnHeaders = new ArrayList<>();
+//        this.columnIds = new ArrayList<>();
+//        this.entityIds = new ArrayList<>();
+//        this.wordMap = new HashMap<>();
+//        this.clinicalDataMap = new HashMap<>();
         setColumnsName(columnsFileName);
         setWordMapName(wordMapFileName);
         setClinicalDataName(this.clinicalDataFileName);
@@ -213,18 +217,18 @@ public class FileExporterLight implements FileExporter {
      *
      * @param columnsWriter the columns writer.
      */
-    protected void setColumnsWriter(final Writer columnsWriter) {
-        this.columnsWriter = columnsWriter;
-    }
+//    protected void setColumnsWriter(final Writer columnsWriter) {
+//        this.columnsWriter = columnsWriter;
+//    }
 
     /**
      * For testing purposes.
      *
      * @param wordMapWriter the wordmap writer.
      */
-    protected void setWordMapWriter(final Writer wordMapWriter) {
-        this.wordMapWriter = wordMapWriter;
-    }
+//    protected void setWordMapWriter(final Writer wordMapWriter) {
+//        this.wordMapWriter = wordMapWriter;
+//    }
 
     /**
      * Set the output filename for the word map metadata file.
@@ -293,9 +297,9 @@ public class FileExporterLight implements FileExporter {
 
         handleColumnAttribute(namePath, preferredItemName);
 
-        currentColumnId = oidPath;
-        columnHeaders.add(preferredItemName);
-        columnIds.add(oidPath);
+//        currentColumnId = oidPath;
+//        columnHeaders.add(preferredItemName);
+//        columnIds.add(oidPath);
 
     }
 
@@ -364,7 +368,7 @@ public class FileExporterLight implements FileExporter {
             valueCounter++;
         }
         final String value = String.valueOf(valueCounter);
-        wordMap.put(currentColumnId + wordValue, value);
+//        wordMap.put(currentColumnId + wordValue, value);
         final List<String> rowAsList = new ArrayList<>();
         rowAsList.add(clinicalDataFileName);
         rowAsList.add(String.valueOf(currentColumnNumber - 1));
@@ -408,6 +412,12 @@ public class FileExporterLight implements FileExporter {
 
     @Override
     public void close() {
-        System.out.println("FileExporterLight.close");
+        try {
+            columnsWriter.close();
+//            wordMapWriter.close();
+            clinicalDataWriter.close();
+        } catch (final IOException e) {
+            e.printStackTrace();
+        }
     }
 }

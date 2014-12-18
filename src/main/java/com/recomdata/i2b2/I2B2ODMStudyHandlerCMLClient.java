@@ -13,7 +13,6 @@ import java.io.FileNotFoundException;
 import nl.vumc.odmtoi2b2.export.Configuration;
 import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 
-import nl.vumc.odmtoi2b2.export.StringUtilities;
 import org.apache.log4j.xml.DOMConfigurator;
 import org.cdisk.odm.jaxb.ODM;
 import org.slf4j.Logger;
@@ -46,12 +45,12 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * 
 	 * @param odmXmlPath the ODM file to process.
 	 * @param exportFilePath the path of the export file.
-	 * @param exportToI2b2Light
+	 * @param exportToI2b2Light whether to export to i2b2 light or full.
      *@param propertiesFilePath the file path to the properties.  @throws Exception
 	 */
     public void loadODMFile2I2B2(String odmXmlPath,
                                  String exportFilePath,
-                                 Boolean exportToI2b2Light,
+                                 boolean exportToI2b2Light,
                                  final String propertiesFilePath) throws Exception {
 		File xmlFile = new File(odmXmlPath);
 
@@ -86,44 +85,37 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 */
 	public static void main(String[] args) {
         try {
-            String propertiesFilePath = "ODM-to-i2b2.properties";
-            final Configuration configuration = new Configuration(propertiesFilePath);
-			DOMConfigurator.configure(configuration.getLog4jPath());
+            if (args.length >= 2) {
+                String propertiesFilePath = "ODM-to-i2b2.properties";
+                final Configuration configuration = new Configuration(propertiesFilePath);
+                DOMConfigurator.configure(configuration.getLog4jPath());
 
-			if (args.length < 2) {
-				logger.info("Please provide 1. the ODM file (plus path) to process, and "
-						    + "2. the path of the export directory (without slash)."
-                            + "3. (optionally) y in case an export to i2b2-light is desired.");
-				return;
-			}
+                if (EXPORT_TO_DATABASE) {
+                    logger.info("Initializing database connection...");
+                    Config config = Config.getConfig();
+                    I2B2DBUtils.init(config);
+                }
 
-			String odmFilePath = args[0];
-            String exportFilePath = args[1];
-            Boolean exportToI2b2Light;
-            if (args.length >= 3 && args[2].startsWith("y")) {
-                exportToI2b2Light = true;
+                String odmFilePath = args[0];
+                String exportFilePath = args[1];
+                boolean exportToI2b2Light = args.length >= 3 && args[2].startsWith("y");
+
+                logger.info("Parsing ODM file ..." + odmFilePath);
+                I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
+                client.loadODMFile2I2B2(odmFilePath, exportFilePath, exportToI2b2Light, propertiesFilePath);
+
+                if (EXPORT_TO_DATABASE) {
+                    logger.info("Releasing database connection.");
+                    I2B2DBUtils.shutdown();
+                }
+
+                logger.info("Processing complete.");
             } else {
-                exportToI2b2Light = false;
+                logger.info("Please provide 1. the ODM file (plus path) to process, "
+                        + "2. the path of the export directory (without slash), and "
+                        + "3. (optionally) 'yes' in case an export to i2b2-light is desired.");
             }
-
-            if (EXPORT_TO_DATABASE) {
-                logger.info("Initializing database connection...");
-				Config config = Config.getConfig();
-				I2B2DBUtils.init(config);
-			}
-
-            logger.info("Parsing ODM file ..." + odmFilePath);
-
-			I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
-			client.loadODMFile2I2B2(odmFilePath, exportFilePath, exportToI2b2Light, propertiesFilePath);
-
-			if (EXPORT_TO_DATABASE) {
-                logger.info("Releasing database connection.");
-				I2B2DBUtils.shutdown();
-			}
-
-            logger.info("Processing complete.");
-		} catch (Exception ex) {
+        } catch (Exception ex) {
 			ex.printStackTrace();
 		}
 	}
