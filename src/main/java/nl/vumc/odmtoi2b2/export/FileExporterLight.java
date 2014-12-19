@@ -14,10 +14,10 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 
 import java.util.ArrayList;
-//import java.util.HashMap;
+import java.util.HashMap;
 import java.util.List;
-//import java.util.Map;
 
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -77,6 +77,11 @@ public class FileExporterLight implements FileExporter {
     private String forbiddenSymbolRegex;
 
     /**
+     * The column identifier of the very first column, which contains the patient identifiers.
+     */
+    private static final String FIRST_COLUMN_ID_WITH_PATIENT_IDS = "firstColumnIdWithPatientIds";
+
+    /**
      * The boolean that is true when precautions have to be taken to avoid bugs caused by
      * special symbols in tranSMART.
      */
@@ -126,17 +131,17 @@ public class FileExporterLight implements FileExporter {
     /**
      * The patient IDs.
      */
-//    private List<String> entityIds;
+    private List<String> patientIds;
 
     /**
      * The column headers for the clinical data.
      */
-//    private List<String> columnHeaders;
+    private List<String> columnHeaders;
 
     /**
      * The column IDs (paths) for the clinical data.
      */
-//    private List<String> columnIds;
+    private List<String> columnIds;
 
     /**
      * The current column number during the processing of the study info.
@@ -151,17 +156,17 @@ public class FileExporterLight implements FileExporter {
     /**
      * Mapping of (column ID + word) to values for the current patient.
      */
-//    private Map<String, String> wordMap;
+    private Map<String, String> wordMap;
 
     /**
      * A map of maps: Map<patientID, patientData>, with patientData a map of columnIds to data values.
      */
-//    private Map<String, Map<String, String>> clinicalDataMap;
+    private Map<String, Map<String, String>> clinicalDataMap;
 
     /**
      * The cut-off length of the clinical data entry strings in the clinical data file.
      */
-//    private int maxClinicalDataEntry;
+    private int maxClinicalDataEntry;
 
 
     /**
@@ -179,7 +184,7 @@ public class FileExporterLight implements FileExporter {
         final String wordMapFileName = studyNameWithUnderscores + "_word_map.txt";
         this.clinicalDataFileName = studyNameWithUnderscores + "_clinical_data.txt";
         this.exportFilePath = exportFilePath;
-//        this.maxClinicalDataEntry = configuration.getMaxClinicalDataEntry();
+        this.maxClinicalDataEntry = configuration.getMaxClinicalDataEntry();
         this.forbiddenSymbolRegex = configuration.getForbiddenSymbolRegex();
         this.avoidTransmartSymbolBugs = configuration.getAvoidTransmartSymbolBugs();
         this.writeWordMapHeaders = true;
@@ -187,11 +192,11 @@ public class FileExporterLight implements FileExporter {
         this.increasedColumnNumber = false;
         this.currentColumnNumber = 0;
 //        this.currentColumnId = null;
-//        this.columnHeaders = new ArrayList<>();
-//        this.columnIds = new ArrayList<>();
-//        this.entityIds = new ArrayList<>();
-//        this.wordMap = new HashMap<>();
-//        this.clinicalDataMap = new HashMap<>();
+        this.columnHeaders = new ArrayList<>();
+        this.columnIds = new ArrayList<>();
+        this.patientIds = new ArrayList<>();
+        this.wordMap = new HashMap<>();
+        this.clinicalDataMap = new HashMap<>();
         setColumnsName(columnsFileName);
         setWordMapName(wordMapFileName);
         setClinicalDataName(this.clinicalDataFileName);
@@ -351,7 +356,7 @@ public class FileExporterLight implements FileExporter {
 
 
     @Override
-    public void storeWord(final String wordValue) throws IOException {  //todo: debug this. Compare with earlier export to wordmap file.
+    public void storeWord(final String wordValue) throws IOException {
         if (writeWordMapHeaders) {
             final List<String> rowAsList = new ArrayList<>();
             rowAsList.add(FILENAME);
@@ -385,7 +390,105 @@ public class FileExporterLight implements FileExporter {
                                       final String eventRepeatKey,
                                       final String itemGroupId,
                                       final String itemGroupRepeatKey) {
+
+        if (eventRepeatKey == null && itemGroupRepeatKey == null) {
+            addPatientData(columnId, dataValue, patientId);
+        }
+
+//        else if (eventRepeatKey != null && itemGroupRepeatKey == null) {
+//            addEventData(columnId, dataValue, patientId, eventId, eventRepeatKey);
+//        } else if (eventRepeatKey == null) {
+//            addItemGroupData(columnId, dataValue, patientId, eventId, itemGroupId, itemGroupRepeatKey);
+//        } else {
+//            addEventAndItemGroupData(columnId, dataValue, patientId, eventId,
+//                    eventRepeatKey, itemGroupId, itemGroupRepeatKey);
+//        }
+
     }
+
+
+    /**
+     * Write the clinical data to a clinical data map, for the case of a patient.
+     *
+     * @param columnId The full path of OIDs, which identifies a column.
+     * @param dataValue The value, which might not yet be converted to a number.
+     * @param patientId The identifier of the patient.
+     */
+    private void addPatientData(final String columnId, final String dataValue, final String patientId) {
+        /**
+         * Mapping of column ID to values for the current entity.
+         */
+        Map<String, String> patientData = new HashMap<>();
+
+        if (clinicalDataMap.containsKey(patientId)) {
+            patientData = clinicalDataMap.get(patientId);
+        } else {
+            patientIds.add(patientId);
+            patientData.put(FIRST_COLUMN_ID_WITH_PATIENT_IDS, patientId);
+            clinicalDataMap.put(patientId, patientData);
+        }
+
+        patientData = addWordOrNumber(columnId, dataValue, patientData);
+
+        logger.debug("Adding patient data for " + patientId);
+        clinicalDataMap.put(patientId, patientData);
+    }
+
+
+    /**
+     * Adds a word or a number to a field in the clinical data file. Replaces a word by a number in case the
+     * word map has assigned such a replacement.
+     *
+     * @param columnId The column of the field in the clinical data file.
+     * @param dataValue The non-replaced data value.
+     * @param entityData The data of the row of the field in the clinical data file.
+     * @return entityData The data of the row of the field in the clinical data file.
+     */
+    private Map<String, String> addWordOrNumber(final String columnId,
+                                                final String dataValue,
+                                                final Map<String, String> entityData) {
+        if (wordMap.get(columnId + dataValue) != null) {
+            //fills clinical data with words from word map
+            entityData.put(columnId, wordMap.get(columnId + dataValue));
+        } else {
+            entityData.put(columnId, dataValue);
+        }
+        return entityData;
+    }
+
+
+    /**
+     * Write the clinical data, which was kept in the memory, to the tab-delimited clinical data file.
+     * @throws java.io.IOException An input-output exception.
+     */
+    private void writeEntityData() throws IOException {
+        writeCSVData(clinicalDataWriter, columnHeaders);
+        for (final String patientId : patientIds) {
+            final List<String> rowAsList = new ArrayList<>();
+            final Map<String, String> patientData = clinicalDataMap.get(patientId);
+            for (final String columnId : columnIds) {
+                final String rawDataEntry = patientData.get(columnId);
+                String dataEntry;
+                if (rawDataEntry == null) {
+                    dataEntry = "";
+                } else if (rawDataEntry.length() > maxClinicalDataEntry) {
+                    final String tooLongIndicator = "...";
+                    final int logSegmentLength = 15;
+                    dataEntry = rawDataEntry.substring(0, maxClinicalDataEntry - tooLongIndicator.length())
+                            + tooLongIndicator;
+                    logger.warn("Data entry " + dataEntry.substring(0, logSegmentLength) + " of " + patientId
+                            + " and column " + columnId + " was cut off at "
+                            + rawDataEntry.substring(maxClinicalDataEntry - logSegmentLength,
+                            maxClinicalDataEntry - tooLongIndicator.length()));
+                } else {
+                    dataEntry = rawDataEntry;
+                }
+                rowAsList.add(dataEntry);
+            }
+            writeCSVData(clinicalDataWriter, rowAsList);
+        }
+    }
+
 
     /**
      * Write one line of tab separated data to the correct file. Replaces double quotes by single quotes first.
@@ -413,8 +516,9 @@ public class FileExporterLight implements FileExporter {
     @Override
     public void close() {
         try {
+            writeEntityData();
             columnsWriter.close();
-//            wordMapWriter.close();
+            wordMapWriter.close();
             clinicalDataWriter.close();
         } catch (final IOException e) {
             e.printStackTrace();
