@@ -13,11 +13,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -151,7 +148,7 @@ public class FileExporterLight implements FileExporter {
     /**
      * The current column id during the processing of the study info.
      */
-//    private String currentColumnId;
+    private String currentColumnId;
 
     /**
      * Mapping of (column ID + word) to values for the current patient.
@@ -191,9 +188,9 @@ public class FileExporterLight implements FileExporter {
         this.valueCounter = 1;
         this.increasedColumnNumber = false;
         this.currentColumnNumber = 0;
-//        this.currentColumnId = null;
-        this.columnHeaders = new ArrayList<>();
-        this.columnIds = new ArrayList<>();
+        this.currentColumnId = null;
+        this.columnHeaders = new ArrayList<>(Arrays.asList("Patient ID"));
+        this.columnIds = new ArrayList<>(Arrays.asList("firstColumnIdWithPatientIds"));
         this.patientIds = new ArrayList<>();
         this.wordMap = new HashMap<>();
         this.clinicalDataMap = new HashMap<>();
@@ -302,9 +299,9 @@ public class FileExporterLight implements FileExporter {
 
         handleColumnAttribute(namePath, preferredItemName);
 
-//        currentColumnId = oidPath;
-//        columnHeaders.add(preferredItemName);
-//        columnIds.add(oidPath);
+        currentColumnId = oidPath;
+        columnHeaders.add(preferredItemName);
+        columnIds.add(oidPath);
 
     }
 
@@ -373,7 +370,7 @@ public class FileExporterLight implements FileExporter {
             valueCounter++;
         }
         final String value = String.valueOf(valueCounter);
-//        wordMap.put(currentColumnId + wordValue, value);
+        wordMap.put(currentColumnId + wordValue, value);
         final List<String> rowAsList = new ArrayList<>();
         rowAsList.add(clinicalDataFileName);
         rowAsList.add(String.valueOf(currentColumnNumber - 1));

@@ -297,12 +297,12 @@ public class FileExporterFull implements FileExporter {
                 "Instance_num"));
 
         this.columnIds = new ArrayList<>(Arrays.asList(
-                "FIRST_COLUMN_ID_WITH_ENTITY_IDS",
-                "SECOND_COLUMN_ID_WITH_TYPE",
-                "THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS",
-                "FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS",
-                "FIFTH_COLUMN_ID_WITH_EVENT_NR",
-                "SIXTH_COLUMN_ID_WITH_IG_NR"));
+                "firstColumnIdWithEntityIds",
+                "secondColumnIdWithType",
+                "thirdColumnIdWithAssocPatientIds",
+                "fourthColumnIdWithAssocEventIds",
+                "fifthColumnIdWithEventNr",
+                "sixthColumnIdWithIgNr"));
     }
 
     /**
