@@ -20,7 +20,35 @@ import org.slf4j.LoggerFactory;
 
 
 /**
- * File exporter for the I2B2 "light" data model.
+ * File exporter for the I2B2 "light" data model. All the data for a single patient will be written into a single line
+ * of the file. Extra columns are generated for repeating data. The order of the columns is of importance to know for
+ * repeating data, to which repeat and/or event the data in some column belongs. Consider the following 22 columns:
+ *
+ * 1  2  3  4  5     6  7  8    9  10 11    12 13 14    15  16  17   18  19  20    21  22
+ * P1 c1 c2 c3 IG1-1 c4 c5 E1-1 c6 c7 IG2-1 c8 c9 IG2-2 c10 c11 E2-1 c12 c13 IG3-1 c14 c15
+ *
+ * Pn    = patient n
+ * cn    = column n that contains data
+ * IGn-m = repetition m of the item group of type n
+ * En-m  = repetition m of the event      of type n
+ *
+ * Columns c1, c2 and c3 contain data that are not repeating data. They are associated to patient 1, but not to any event
+ * or item group. Columns c4 and c5 contain repeating data, belonging to the first repeat of the item group of type 1.
+ * It is important to notice that no events are mentioned to the left of IG1, which means that item group of type 1 does
+ * not belong to any event. Columns c6 and c7 are data that belong to the first repetition of the event of type1, but do
+ * not belong to any item group. Columns c8, c9, c10 anc c11 belong to item group of type 2 and to event of type 1. They
+ * all belong to the first repetition of event type 1, but c10 and c11 belong to the second repetition of the item group
+ * of type 2. Columns c12 and c13 belong to event type 2, but not to any item group. Columns c14 and c15 also belong to
+ * event type 2, but in addition, they also belong to item group of type 3.
+ *
+ * As an example, event type 2 can be a doctor's visit, item group of type 3 can be a temperature measurement, c14 can
+ * be the value of the measurement (e.g. 37 or 101) and c15 can be the unit of the measurement (e.g. Celcius or
+ * Fahrenheit)
+ *
+ * In conclusion, for each column you have to walk to the left until you find an event type or a patient. If one or more
+ * item group types were passed during that walk, the first item group counts.
+ *
+ *
  *
  * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
