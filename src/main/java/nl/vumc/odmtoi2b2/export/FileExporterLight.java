@@ -46,9 +46,15 @@ import org.slf4j.LoggerFactory;
  * Fahrenheit)
  *
  * In conclusion, for each column you have to walk to the left until you find an event type or a patient. If one or more
- * item group types were passed during that walk, the first item group counts.
+ * item group types were encountered during that walk, the first encountered item group (so the most to the right)
+ * counts.
  *
- *
+ * In order to fit this format in a map-of-maps-structure, an event repetition of type zero is created, which contains the
+ * patient data and item group data that have no associated event. This event type zero has maximally one repetition.
+ * Then the patient data contains a series of event repetitions, each of which has a type and a repetition number.
+ * Again, in each event repetition map we create a - possibly empty - item group repetition of type zero, which
+ * contains the event data that have no associated item group. Then the event data contains a series of item group
+ * type maps.
  *
  * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
@@ -418,12 +424,10 @@ public class FileExporterLight implements FileExporter {
 
         if (eventRepeatKey == null && itemGroupRepeatKey == null) {
             addPatientData(columnId, dataValue, patientId);
-        }
-
-//        else if (eventRepeatKey != null && itemGroupRepeatKey == null) {
-//            addEventData(columnId, dataValue, patientId, eventId, eventRepeatKey);
-//        } else if (eventRepeatKey == null) {
+        }  else if (eventRepeatKey == null) {
 //            addItemGroupData(columnId, dataValue, patientId, eventId, itemGroupId, itemGroupRepeatKey);
+        } //else if (eventRepeatKey != null && itemGroupRepeatKey == null) {
+//            addEventData(columnId, dataValue, patientId, eventId, eventRepeatKey);
 //        } else {
 //            addEventAndItemGroupData(columnId, dataValue, patientId, eventId,
 //                    eventRepeatKey, itemGroupId, itemGroupRepeatKey);
