@@ -423,27 +423,32 @@ public class FileExporterLight implements FileExporter {
                                       final String itemGroupRepeatKey) {
 
         if (eventRepeatKey == null && itemGroupRepeatKey == null) {
-            addPatientData(columnId, dataValue, patientId);
+            addPatientData(columnId, dataValue, patientId, null, "0", null, "0");
         }  else if (eventRepeatKey == null) {
-//            addItemGroupData(columnId, dataValue, patientId, eventId, itemGroupId, itemGroupRepeatKey);
-        } //else if (eventRepeatKey != null && itemGroupRepeatKey == null) {
-//            addEventData(columnId, dataValue, patientId, eventId, eventRepeatKey);
-//        } else {
-//            addEventAndItemGroupData(columnId, dataValue, patientId, eventId,
-//                    eventRepeatKey, itemGroupId, itemGroupRepeatKey);
-//        }
-
+            addPatientData(columnId, dataValue, patientId, null, "0", itemGroupId, itemGroupRepeatKey);
+        } else if (eventRepeatKey != null && itemGroupRepeatKey == null) {
+            addPatientData(columnId, dataValue, patientId, eventId, eventRepeatKey, null, "0");
+        } else {
+            addPatientData(columnId, dataValue, patientId, eventId,
+                    eventRepeatKey, itemGroupId, itemGroupRepeatKey);
+        }
     }
 
 
     /**
      * Write the clinical data to a clinical data map, for the case of a patient.
      *
-     * @param columnId The full path of OIDs, which identifies a column.
+     * @param dataTypeId The full path of OIDs, which identifies a data type.
      * @param dataValue The value, which might not yet be converted to a number.
      * @param patientId The identifier of the patient.
      */
-    private void addPatientData(final String columnId, final String dataValue, final String patientId) {
+    private void addPatientData(final String dataTypeId,
+                                final String dataValue,
+                                final String patientId,
+                                final String eventId,
+                                final String eventRepeatKey,
+                                final String itemGroupId,
+                                final String itemGroupRepeatKey) {
         /**
          * Mapping of column ID to values for the current entity.
          */
@@ -457,7 +462,7 @@ public class FileExporterLight implements FileExporter {
             clinicalDataMap.put(patientId, patientData);
         }
 
-        patientData = addWordOrNumber(columnId, dataValue, patientData);
+        patientData = addWordOrNumber(dataTypeId, dataValue, patientData);
 
         logger.debug("Adding patient data for " + patientId);
         clinicalDataMap.put(patientId, patientData);
