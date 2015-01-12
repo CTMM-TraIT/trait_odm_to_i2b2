@@ -292,7 +292,7 @@ public class OdmToFilesConverter {
             final Configuration configuration = new Configuration(propertiesFilePath);
             final FileExporter fileExporter;
             if (exportToI2b2Light) {
-                fileExporter = new FileExporterLight(exportFilePath, definingStudyName, configuration);
+                fileExporter = new FileExporterTransmart(exportFilePath, definingStudyName, configuration);
             } else {
                 fileExporter = new FileExporterFull(exportFilePath, definingStudyName, configuration);
             }
