@@ -752,23 +752,16 @@ public class FileExporterTransmart implements FileExporter {
     }
 
     /**
-     * This method basically performs two actions:
-     * - it completes the data for repeats and events that are present in events or patients
-     *   (for example an event with a male patient also gets the value 'male', or a repeat gets
-     *   the start date of an event)
-     * - it finds new entities: patients and/or events that are only mentioned
+     * This method finds new entities: patients and/or events that are only mentioned
      *   in the context of events and/or repeats.
      */
-    private void completeClinicalData() {
+    private void scanForNewEntities() {
         List<String> newlyFoundEntityIds = new ArrayList<>();
         for (final String entity1Id : entityIds) {
             final Map<String, String> entity1Data = clinicalDataMap.get(entity1Id);
             final String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_TYPE);
             //noinspection IfCanBeSwitch
-            if (PATIENT.equals(entity1Type)) {
-                copyClinicalData(entity1Id, entity1Data, THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS);
-            } else if (EVENT.equals(entity1Type)) {
-                copyClinicalData(entity1Id, entity1Data, FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS);
+            if (EVENT.equals(entity1Type)) {
                 newlyFoundEntityIds = findNewEntities(entity1Data,
                         newlyFoundEntityIds,
                         THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
@@ -784,8 +777,6 @@ public class FileExporterTransmart implements FileExporter {
                             FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS,
                             EVENT);
                 }
-            } else {
-                logger.error("Unexpected: the type of entity " + entity1Id + " is " + entity1Type);
             }
         }
         entityIds.addAll(newlyFoundEntityIds);
@@ -817,49 +808,6 @@ public class FileExporterTransmart implements FileExporter {
                     + entityData.get(FIRST_COLUMN_ID_WITH_ENTITY_IDS));
         }
         return newlyFoundEntityIds;
-    }
-
-    /**
-     *   This method completes the data for repeats and events that are present in events or patients
-     *   (for example an event with a male patient also gets the value 'male', or a repeat gets
-     *   the start date of an event).
-     *
-     * @param dataContainingEntityId The patient ID or event ID that contains the data that has to be copied.
-     * @param dataContainingEntityData The data that has to be copied.
-     * @param assocColumnID The column ID of the column in which dataContainingEntityId might be referred. This
-     *                      column contains therefore either patient IDs or event IDs. If dataContainingEntityId
-     *                      is indeed present in this column for an entity 2, the the data will be
-     *                      copied towards entity 2.
-     */
-    private void copyClinicalData(final String dataContainingEntityId,
-                                  final Map<String, String> dataContainingEntityData,
-                                  final String assocColumnID) {
-        for (final String receivingEntityId : entityIds) {
-            final Map<String, String> receivingEntityData = clinicalDataMap.get(receivingEntityId);
-            if (receivingEntityData.get(assocColumnID) != null
-                    && receivingEntityData.get(assocColumnID).equals(dataContainingEntityId)) {
-                copyColumnByColumn(dataContainingEntityData, receivingEntityData);
-                clinicalDataMap.put(receivingEntityId, receivingEntityData);
-            }
-        }
-    }
-
-    /**
-     * This method copies every column, except for the first two, from a data containing entity to a data
-     * receiving entity.
-     *
-     * @param dataContainingEntityData The data of the data containing entity that has to be copied.
-     * @param receivingEntityData The data of the receiving entity.
-     */
-    private void copyColumnByColumn(final Map<String, String> dataContainingEntityData,
-                                    final Map<String, String> receivingEntityData) {
-        for (final String columnId : columnIds) {
-            if (!columnId.equals(FIRST_COLUMN_ID_WITH_ENTITY_IDS)
-                    && !columnId.equals(SECOND_COLUMN_ID_WITH_TYPE)
-                    && dataContainingEntityData.get(columnId) != null) {
-                receivingEntityData.put(columnId, dataContainingEntityData.get(columnId));
-            }
-        }
     }
 
     /**
@@ -921,7 +869,7 @@ public class FileExporterTransmart implements FileExporter {
      */
     public void close() {
         try {
-            completeClinicalData();
+            scanForNewEntities();
             writeEntityData();
             columnsWriter.close();
             wordMapWriter.close();

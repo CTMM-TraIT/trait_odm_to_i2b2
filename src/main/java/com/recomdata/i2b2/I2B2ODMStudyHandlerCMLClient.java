@@ -98,11 +98,11 @@ public class I2B2ODMStudyHandlerCMLClient {
 
                 String odmFilePath = args[0];
                 String exportFilePath = args[1];
-                boolean exportToI2b2Light = args.length >= 3 && args[2].startsWith("y");
+                boolean exportToI2b2Transmart = args.length >= 3 && args[2].startsWith("y");
 
                 logger.info("Parsing ODM file ..." + odmFilePath);
                 I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
-                client.loadODMFile2I2B2(odmFilePath, exportFilePath, exportToI2b2Light, propertiesFilePath);
+                client.loadODMFile2I2B2(odmFilePath, exportFilePath, exportToI2b2Transmart, propertiesFilePath);
 
                 if (EXPORT_TO_DATABASE) {
                     logger.info("Releasing database connection.");
