@@ -92,17 +92,17 @@ public class FileExporterTransmart implements FileExporter {
     /**
      * The column identifier of the second column, which contains the type (patient, event, or item group).
      */
-    private static final String SECOND_COLUMN_ID_WITH_TYPE = "secondColumnIdWithType";
+    private static final String SECOND_COLUMN_ID_WITH_DIMENSION_TYPE = "secondColumnIdWithDimensionType";
 
     /**
      * The column identifier of the third column, which contains the associated-patient IDs.
      */
-    private static final String THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS = "thirdColumnIdWithAssocPatientIds";
+    private static final String THIRD_COLUMN_ID_WITH_PATIENT_IDS = "thirdColumnIdWithPatientIds";
 
     /**
      * The column identifier of the fourth column, which contains the associated-event IDs.
      */
-    private static final String FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS = "fourthColumnIdWithAssocEventIds";
+    private static final String FOURTH_COLUMN_ID_WITH_EVENT_IDS = "fourthColumnIdWithEventIds";
 
     /**
      * The column identifier of the fifth column, which contains the event repeat key (nr in the
@@ -114,7 +114,13 @@ public class FileExporterTransmart implements FileExporter {
      * The column identifier of the sixth column, which contains the item group repeat key (nr in the
      * series of repeated item groups).
      */
-    private static final String SIXTH_COLUMN_ID_WITH_IG_NR = "sixthColumnIdWithIgNr";
+    private static final String SIXTH_COLUMN_ID_WITH_IG_IDS = "sixthColumnIdWithIgIds";
+
+    /**
+     * The column identifier of the sixth column, which contains the item group repeat key (nr in the
+     * series of repeated item groups).
+     */
+    private static final String SEVENTH_COLUMN_ID_WITH_IG_NR = "seventhColumnIdWithIgNr";
 
     /**
      * The separator that tranSMART expects to separate the concept names in the column name path.
@@ -289,18 +295,18 @@ public class FileExporterTransmart implements FileExporter {
      */
     private void initializeColumnHeadersAndIds() {
         this.columnHeaders = new ArrayList<>(Arrays.asList(
-                "ENTITY_ID",
                 "Patient_num",
                 "Encounter_num",
                 "Encounter_repeat_key",
+                "Item_group_id",
                 "Instance_num"));
 
         this.columnIds = new ArrayList<>(Arrays.asList(
-                "firstColumnIdWithEntityIds",
-                "thirdColumnIdWithAssocPatientIds",
-                "fourthColumnIdWithAssocEventIds",
+                "thirdColumnIdWithPatientIds",
+                "fourthColumnIdWithEventIds",
                 "fifthColumnIdWithEventNr",
-                "sixthColumnIdWithIgNr"));
+                "sixthColumnIdWithIgIds",
+                "seventhColumnIdWithIgNr"));
     }
 
     /**
@@ -548,7 +554,9 @@ public class FileExporterTransmart implements FileExporter {
      * @param dataValue The value, which might not yet be converted to a number.
      * @param patientId The identifier of the patient.
      */
-    private void addPatientData(final String columnId, final String dataValue, final String patientId) {
+    private void addPatientData(final String columnId,
+                                final String dataValue,
+                                final String patientId) {
         /**
          * Mapping of column ID to values for the current entity.
          */
@@ -559,7 +567,8 @@ public class FileExporterTransmart implements FileExporter {
         } else {
             entityIds.add(patientId);
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, patientId);
-            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, PATIENT);
+            entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, PATIENT);
+            entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
             clinicalDataMap.put(patientId, entityData);
         }
 
@@ -602,8 +611,9 @@ public class FileExporterTransmart implements FileExporter {
         } else {
             entityIds.add(eventEntityId);
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, eventEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, EVENT);
-            entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
+            entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, EVENT);
+            entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
+            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventId);
             entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
             clinicalDataMap.put(eventEntityId, entityData);
         }
@@ -656,9 +666,11 @@ public class FileExporterTransmart implements FileExporter {
         } else {
             entityIds.add(itemGroupEntityId);
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, REPEAT);
-            entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
-            entityData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
+            entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, REPEAT);
+            entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
+            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventId);
+            entityData.put(SIXTH_COLUMN_ID_WITH_IG_IDS, itemGroupId);
+            entityData.put(SEVENTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
             clinicalDataMap.put(itemGroupEntityId, entityData);
         }
 
@@ -716,11 +728,12 @@ public class FileExporterTransmart implements FileExporter {
         } else {
             entityIds.add(itemGroupEntityId);
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_TYPE, REPEAT);
-            entityData.put(THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS, patientId);
-            entityData.put(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS, eventEntityId);
+            entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, REPEAT);
+            entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
+            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventId);
             entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
-            entityData.put(SIXTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
+            entityData.put(SIXTH_COLUMN_ID_WITH_IG_IDS, itemGroupId);
+            entityData.put(SEVENTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
             clinicalDataMap.put(itemGroupEntityId, entityData);
         }
 
@@ -759,22 +772,22 @@ public class FileExporterTransmart implements FileExporter {
         List<String> newlyFoundEntityIds = new ArrayList<>();
         for (final String entity1Id : entityIds) {
             final Map<String, String> entity1Data = clinicalDataMap.get(entity1Id);
-            final String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_TYPE);
+            final String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE);
             //noinspection IfCanBeSwitch
             if (EVENT.equals(entity1Type)) {
                 newlyFoundEntityIds = findNewEntities(entity1Data,
                         newlyFoundEntityIds,
-                        THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
+                        THIRD_COLUMN_ID_WITH_PATIENT_IDS,
                         PATIENT);
             } else if (REPEAT.equals(entity1Type)) {
                 newlyFoundEntityIds = findNewEntities(entity1Data,
                         newlyFoundEntityIds,
-                        THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
+                        THIRD_COLUMN_ID_WITH_PATIENT_IDS,
                         PATIENT);
-                if (entity1Data.get(FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS) != null) {
+                if (entity1Data.get(FOURTH_COLUMN_ID_WITH_EVENT_IDS) != null) {
                     newlyFoundEntityIds = findNewEntities(entity1Data,
                             newlyFoundEntityIds,
-                            FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS,
+                            FOURTH_COLUMN_ID_WITH_EVENT_IDS,
                             EVENT);
                 }
             }
@@ -801,10 +814,10 @@ public class FileExporterTransmart implements FileExporter {
             final Map<String, String> newlyFoundEntityData = new HashMap<>();
             newlyFoundEntityIds.add(associatedEntityId);
             newlyFoundEntityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, associatedEntityId);
-            newlyFoundEntityData.put(SECOND_COLUMN_ID_WITH_TYPE, associationType);
+            newlyFoundEntityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, associationType);
             clinicalDataMap.put(associatedEntityId, newlyFoundEntityData);
             logger.debug("Found " + associationType + SPACE + associatedEntityId + " from "
-                    + entityData.get(SECOND_COLUMN_ID_WITH_TYPE) + SPACE
+                    + entityData.get(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE) + SPACE
                     + entityData.get(FIRST_COLUMN_ID_WITH_ENTITY_IDS));
         }
         return newlyFoundEntityIds;
@@ -815,6 +828,7 @@ public class FileExporterTransmart implements FileExporter {
      * @throws IOException An input-output exception.
      */
     private void writeEntityData() throws IOException {
+
         writeCSVData(clinicalDataWriter, columnHeaders);
         for (final String entityId : entityIds) {
             final List<String> rowAsList = new ArrayList<>();
@@ -841,6 +855,8 @@ public class FileExporterTransmart implements FileExporter {
             writeCSVData(clinicalDataWriter, rowAsList);
         }
     }
+
+
 
     /**
      * Write one line of tab separated data to the correct file. Replaces double quotes by single quotes first.
