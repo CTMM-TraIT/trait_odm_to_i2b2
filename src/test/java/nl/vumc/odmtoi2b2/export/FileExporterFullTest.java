@@ -40,8 +40,8 @@ public class FileExporterFullTest {
 
         final StringWriter columnsWriter = new StringWriter();
         fileExporter.setColumnsWriter(columnsWriter);
-        fileExporter.storeColumn("abc+cde", "", "", "preferred-item-name", "oid-path");
-        fileExporter.storeColumn("abc", "cde", "efg", "preferred-item-name2", "oid-path");
+        fileExporter.storeColumn("abc+cde", "", "", "", "", "preferred-item-name", "oid-path");
+        fileExporter.storeColumn("abc", "", "cde", "efg", "", "preferred-item-name2", "oid-path");
         final String expectedOutput =
                 "Filename\tCategory Code\tColumn Number\tData Label\tData Label Source\tControl Vocab Cd\n" +
                 "my-study-name_clinical_data.txt\t\t1\tSUBJ_ID\t\t\n" +
@@ -65,11 +65,11 @@ public class FileExporterFullTest {
 
         final StringWriter wordMapWriter = new StringWriter();
         fileExporter.setWordMapWriter(wordMapWriter);
-        fileExporter.storeColumn("abc+cde", "", "", "preferred-item-name", "oid-path");
+        fileExporter.storeColumn("abc+cde", "", "", "", "", "preferred-item-name", "oid-path");
         fileExporter.storeWord("myWordValue");
         fileExporter.storeWord("myWordValue2");
-        fileExporter.storeColumn("abc", "", "", "preferred-item-name2", "oid-path");
-        fileExporter.storeColumn("fghij", "", "", "preferred-item-name3", "oid-path");
+        fileExporter.storeColumn("abc", "", "", "", "", "preferred-item-name2", "oid-path");
+        fileExporter.storeColumn("fghij", "", "", "", "", "preferred-item-name3", "oid-path");
         fileExporter.storeWord("myWordValue3");
         final String expectedOutput =
                 "Filename\tColumn Number\tOriginal Data Value\tNew Data Values\n" +

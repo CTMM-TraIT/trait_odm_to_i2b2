@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 
-<project name="odm" default="all" basedir=".">
+<project name="odm" default="all" basedir="../../../odm">
 
-	<echo message="pulling in property files" />
-	<property file="build.properties" />
+	<!--<echo message="pulling in property files" />-->
+	<!--<property file="../../../odm/build.properties" />-->
 
 	<property name="src.dir" value="${basedir}/src" />
 	<property name="test.dir" value="${basedir}/test" />

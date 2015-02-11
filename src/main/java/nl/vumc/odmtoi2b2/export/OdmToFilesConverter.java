@@ -235,7 +235,7 @@ public class OdmToFilesConverter {
             final String definingStudyName = studies.get(evaluatedStudyName);
             if (!evaluatedStudyName.equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
                 final String oidPath = definingStudyName + SEP + STUDYSITE;
-                fileExporters.get(definingStudyName).storeColumn("", "", "", STUDYSITE, oidPath);
+                fileExporters.get(definingStudyName).storeColumn("", "", "", "", "", STUDYSITE, oidPath);
                 for (String studyName : studies.keySet()) {
                     if (studies.get(studyName).equals(definingStudyName)) {
                         fileExporters.get(definingStudyName).storeWord(studyName);
@@ -301,10 +301,10 @@ public class OdmToFilesConverter {
 
         // 3. Loop through the events.
         if (metaData.getProtocol().getStudyEventRef() != null && includedMetaData == null) {
-            for (ODMcomplexTypeDefinitionStudyEventRef studyEventRef : metaData.getProtocol().getStudyEventRef()) {
-                final ODMcomplexTypeDefinitionStudyEventDef studyEventDef =
-                        metaDataWithIncludes.getStudyEventDef(studyEventRef.getStudyEventOID());
-                saveEvent(definingStudy, studyEventDef);
+            for (ODMcomplexTypeDefinitionStudyEventRef eventRef : metaData.getProtocol().getStudyEventRef()) {
+                final ODMcomplexTypeDefinitionStudyEventDef eventDef =
+                        metaDataWithIncludes.getStudyEventDef(eventRef.getStudyEventOID());
+                saveEvent(definingStudy, eventDef);
             }
         }
     }
@@ -335,20 +335,20 @@ public class OdmToFilesConverter {
      * Handles an event by looping through all its forms (= Case Report Forms).
      *
      * @param definingStudy The study in which the metadata is defined.
-     * @param studyEventDef The event object, part of the odm object, that contains the data.
+     * @param eventDef The event object, part of the odm object, that contains the data.
      * @throws IOException An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
     private void saveEvent(final ODMcomplexTypeDefinitionStudy definingStudy,
-                           final ODMcomplexTypeDefinitionStudyEventDef studyEventDef)
+                           final ODMcomplexTypeDefinitionStudyEventDef eventDef)
             throws JAXBException, IOException {
 
-        if (studyEventDef.getFormRef() != null) {
-            for (ODMcomplexTypeDefinitionFormRef formRef : studyEventDef.getFormRef()) {
+        if (eventDef.getFormRef() != null) {
+            for (ODMcomplexTypeDefinitionFormRef formRef : eventDef.getFormRef()) {
 //              final ODMcomplexTypeDefinitionFormDef formDef = ODMUtil.getFormDef(study, formRef.getFormOID());
                 final ODMcomplexTypeDefinitionFormDef formDef = metaDataWithIncludes.getFormDef(formRef.getFormOID());
 
-                saveForm(definingStudy, studyEventDef, formDef);
+                saveForm(definingStudy, eventDef, formDef);
             }
         }
     }
@@ -357,13 +357,13 @@ public class OdmToFilesConverter {
      * Handles a form by looping through all its itemgroups.
      *
      * @param definingStudy The study in which the metadata is defined.
-     * @param studyEventDef The event object, part of the study object, that contains the data.
+     * @param eventDef The event object, part of the study object, that contains the data.
      * @param formDef  The form object, part of the event object, that contains the data.
      * @throws IOException An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
     private void saveForm(final ODMcomplexTypeDefinitionStudy definingStudy,
-                          final ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                          final ODMcomplexTypeDefinitionStudyEventDef eventDef,
                           final ODMcomplexTypeDefinitionFormDef formDef)
             throws JAXBException, IOException {
 
@@ -372,7 +372,7 @@ public class OdmToFilesConverter {
                 final ODMcomplexTypeDefinitionItemGroupDef itemGroupDef =
                         metaDataWithIncludes.getItemGroupDef(itemGroupRef.getItemGroupOID());
 
-                saveItemGroup(definingStudy, studyEventDef, formDef, itemGroupDef);
+                saveItemGroup(definingStudy, eventDef, formDef, itemGroupDef);
             }
         }
     }
@@ -381,14 +381,14 @@ public class OdmToFilesConverter {
      * Handles an itemGroup by looping through all its items.
      *
      * @param definingStudy The study in which the metadata is defined.
-     * @param studyEventDef The event object, part of the study object, that contains the data.
+     * @param eventDef The event object, part of the study object, that contains the data.
      * @param formDef  The form object, part of the event object, that contains the data.
      * @param itemGroupDef The itemGroup object, part of the form object, that contains the data.
      * @throws IOException An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
     private void saveItemGroup(final ODMcomplexTypeDefinitionStudy definingStudy,
-                               final ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                               final ODMcomplexTypeDefinitionStudyEventDef eventDef,
                                final ODMcomplexTypeDefinitionFormDef formDef,
                                final ODMcomplexTypeDefinitionItemGroupDef itemGroupDef)
             throws JAXBException, IOException {
@@ -398,7 +398,7 @@ public class OdmToFilesConverter {
                 final ODMcomplexTypeDefinitionItemDef itemDef =
                         metaDataWithIncludes.getItemDef(itemRef.getItemOID());
 
-                saveItem(definingStudy, studyEventDef, formDef, itemGroupDef, itemDef);
+                saveItem(definingStudy, eventDef, formDef, itemGroupDef, itemDef);
             }
         }
     }
@@ -408,7 +408,7 @@ public class OdmToFilesConverter {
      * columns file. After that it loops through the codes list for each item.
      *
      * @param definingStudy The study in which the metadata is defined.
-     * @param studyEventDef The event object, part of the study object, that contains the data.
+     * @param eventDef The event object, part of the study object, that contains the data.
      * @param formDef  The form object, part of the event object, that contains the data.
      * @param itemGroupDef The itemGroup object, part of the form object, that contains the data.
      * @param itemDef The item object, part of the itemGroup object, that contains the data.
@@ -416,29 +416,31 @@ public class OdmToFilesConverter {
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
     private void saveItem(final ODMcomplexTypeDefinitionStudy definingStudy,
-                          final ODMcomplexTypeDefinitionStudyEventDef studyEventDef,
+                          final ODMcomplexTypeDefinitionStudyEventDef eventDef,
                           final ODMcomplexTypeDefinitionFormDef formDef,
                           final ODMcomplexTypeDefinitionItemGroupDef itemGroupDef,
                           final ODMcomplexTypeDefinitionItemDef itemDef)
             throws JAXBException, IOException {
         final String studyName      = definingStudy.getGlobalVariables().getStudyName().getValue();
-        final String studyEventName = getTranslatedDescription(studyEventDef.getDescription(), LANGUAGE, studyEventDef.getName());
+        final String eventName = getTranslatedDescription(eventDef.getDescription(), LANGUAGE, eventDef.getName());
+        final String eventId = eventDef.getOID();
         final String formName       = getTranslatedDescription(formDef.getDescription(),       LANGUAGE, formDef.getName());
         final String itemGroupName  = getTranslatedDescription(itemGroupDef.getDescription(),  LANGUAGE, itemGroupDef.getName());
-        final String namePath       = studyEventName + PLUS + formName + PLUS + itemGroupName;
+        final String itemGroupId  = itemGroupDef.getOID();
+        final String namePath       = eventName + PLUS + formName + PLUS + itemGroupName;
         final String preferredItemName = getPreferredItemName(itemDef, namePath);
 
         final String oidPath = definingStudy.getOID() + SEP
-                + studyEventDef.getOID() + SEP
+                + eventDef.getOID() + SEP
                 + formDef.getOID() + SEP
                 + itemDef.getOID() + SEP;
 
-        logger.trace("Write columns; study event name: " + studyEventName
+        logger.trace("Write columns; study event name: " + eventName
                 + "; form name: " + formName
                 + "; item group name: " + itemGroupName
                 + "; preferred item name: " + preferredItemName
                 + "; OID path: " + oidPath);
-        fileExporters.get(studyName).storeColumn(studyEventName, formName, itemGroupName, preferredItemName, oidPath);
+        fileExporters.get(studyName).storeColumn(eventName, eventId, formName, itemGroupName, itemGroupId, preferredItemName, oidPath);
 
         if (itemDef.getCodeListRef() != null) {
             final ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(definingStudy,

@@ -14,15 +14,18 @@ public interface FileExporter {
      * user's input concept map without the last node, then the column number and then the last node of the path.
      *
      * @param eventName         The human readable name of the event.
-     * @param formName          The human readable name of the form (the CRF).
+     * @param eventId
+     *@param formName          The human readable name of the form (the CRF).
      * @param itemGroupName     The (most) human readable name of the item group.
+     * @param itemGroupId
      * @param preferredItemName The human readable name of the last node in the concept tree.
-     * @param oidPath           The full path of OIDs, which provides a unique identifier for the columns.
-     * @throws java.io.IOException An input-output exception.
+     * @param oidPath           The full path of OIDs, which provides a unique identifier for the columns.     @throws java.io.IOException An input-output exception.
      */
     void storeColumn(final String eventName,
+                     final String eventId,
                      final String formName,
                      final String itemGroupName,
+                     final String itemGroupId,
                      final String preferredItemName,
                      final String oidPath)
             throws IOException;

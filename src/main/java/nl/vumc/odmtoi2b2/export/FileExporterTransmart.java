@@ -245,6 +245,11 @@ public class FileExporterTransmart implements FileExporter {
     private Map<String, String> wordMap;
 
     /**
+     * Mapping of event or item group IDs to the human readable names.
+     */
+    private Map<String, String> eventOrIGIdToNameMap;
+
+    /**
      * A map of maps: Map<patientID, patientData>, with patientData a map of columnIds to data values.
      */
     private Map<String, Map<String, String>> clinicalDataMap;
@@ -282,6 +287,7 @@ public class FileExporterTransmart implements FileExporter {
         this.repeatingEventIds = new ArrayList<>();
         this.repeatingItemGroupIds = new ArrayList<>();
         this.wordMap = new HashMap<>();
+        this.eventOrIGIdToNameMap = new HashMap<>();
         this.clinicalDataMap = new HashMap<>();
         setColumnsName(columnsFileName);
         setWordMapName(wordMapFileName);
@@ -386,18 +392,30 @@ public class FileExporterTransmart implements FileExporter {
      * user's input concept map without the last node, then the column number and then the last node of the path.
      *
      * @param eventName         The human readable name of the event.
+     * @param eventId           The OID that identifies the type of event.
      * @param formName          The human readable name of the form (the CRF).
      * @param itemGroupName     The (most) human readable name of the item group.
+     * @param itemGroupId       The OID that identifies the type of repeating item group.
      * @param preferredItemName The human readable name of the last node in the concept tree.
-     * @param oidPath The full path of OIDs, which provides a unique identifier for the columns.
-     * @throws IOException An input-output exception.
+     * @param oidPath           The full path of OIDs, which provides a unique identifier for the columns.
+     * @throws IOException      An input-output exception.
      */
     public void storeColumn(final String eventName,
+                            final String eventId,
                             final String formName,
                             final String itemGroupName,
+                            final String itemGroupId,
                             final String preferredItemName,
                             final String oidPath)
             throws IOException {
+        // todo put eventIds and itemGroupIds as keys and eventName and itemGroupName as values in a (single) key-value structure
+        if (eventId != null) {
+            eventOrIGIdToNameMap.put(eventId, eventName);
+        }
+        if (itemGroupId != null) {
+            eventOrIGIdToNameMap.put(itemGroupId, itemGroupName);
+        }
+
         if (currentColumnNumber == 0) {
             handleColumnMetadata(FILENAME, "Category Code", COLUMN_NUMBER, "Data Label", "Data Label Source", "Control Vocab Cd");
             handleColumnAttribute("",                      "SUBJ_ID");
