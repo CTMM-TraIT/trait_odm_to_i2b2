@@ -7,9 +7,9 @@ The main schema file (ODM1-3-1.xsd) depends on several other schema files: ODM1-
 xmldsig-core-schema.xsd. The bindings file (bindings.xml) modifies the default package names that are used. The Java
 classes are put in two packages: org.cdisk.odm.jaxb (ODM1-3-1.xsd) and org.w3.xmldsig.jaxb (xmldsig-core-schema.xsd).
 
-The call to xjc looks something like this:
-xjc [schema file] -b [bindings file] -d [destination directory]
+The call to xjc looks something like this:<br/>
+**`xjc [schema file] -b [bindings file] -d [destination directory]`**
 
-For example, on the Windows platform using ODM 1.3.1, you could generate the ODM reader classes like this:
-mkdir java-generated
-"\Programs\jaxb-ri\bin\xjc.bat" xsd\cdisc-odm-1.3.1\ODM1-3-1.xsd -b xsd\cdisc-odm-1.3.1\bindings.xml -d java-generated
+For example, on the Windows platform using ODM 1.3.1, you could generate the ODM reader classes like this:<br/>
+**`mkdir java-generated`**
+**`"\Programs\jaxb-ri\bin\xjc.bat" xsd\cdisc-odm-1.3.1\ODM1-3-1.xsd -b xsd\cdisc-odm-1.3.1\bindings.xml -d java-generated`**
