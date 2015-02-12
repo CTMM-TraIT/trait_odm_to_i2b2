@@ -18,7 +18,6 @@ import static org.junit.Assert.*;
  * @author <a href="mailto:w.blonde@vumc.nl">Ward Blonde</a>
  */
 public class OdmToFilesConverterTest {
-
     /**
      * The minimal test ODM file.
      */
@@ -46,7 +45,6 @@ public class OdmToFilesConverterTest {
     private ODM minimalOdm;
     private File minimalXmlFile;
 
-
     @Before
     public void setUp() throws JAXBException {
         minimalClinicalDataFile = new File(OUTPUT_DIRECTORY + "MINIMAL_ODM_FILE_clinical_data.txt");
@@ -67,35 +65,36 @@ public class OdmToFilesConverterTest {
         minimalOdm = odmLoader.unmarshall(minimalXmlFile);
     }
 
-
     @Test
-    public void testProcessODM () throws JAXBException, IOException {
+    public void testProcessODM() throws JAXBException, IOException {
         odmHandler.processODM(minimalOdm, OUTPUT_DIRECTORY, false, PROPERTIES_FILE_PATH);
-        assertTrue(minimalClinicalDataFile.exists() && minimalClinicalDataFile.length() == 0);
+        odmHandler.closeExportWriters();
+        assertTrue(minimalClinicalDataFile.exists());
+        assertEquals(85, minimalClinicalDataFile.length());
         assertTrue(minimalColumnsFile.exists() && minimalColumnsFile.length() == 0);
         assertTrue(minimalWordMapFile.exists() && minimalWordMapFile.length() == 0);
     }
 
     @Test
-    public void testCloseExportWriters () throws IOException, JAXBException {
+    public void testCloseExportWriters() throws IOException, JAXBException {
         odmHandler.processODM(minimalOdm, OUTPUT_DIRECTORY, false, PROPERTIES_FILE_PATH);
         odmHandler.closeExportWriters();
+        // todo: add asserts?
     }
 
     @Test
-    public void testProcessODMLight () throws JAXBException, IOException {
+    public void testProcessODMLight() throws JAXBException, IOException {
         odmHandler.processODM(minimalOdm, OUTPUT_DIRECTORY, true, PROPERTIES_FILE_PATH);
-        assertTrue(minimalClinicalDataFile.exists() && minimalClinicalDataFile.length() == 0);
+        odmHandler.closeExportWriters();
+        assertTrue(minimalClinicalDataFile.exists());
+        assertEquals(74, minimalClinicalDataFile.length());
         assertTrue(minimalColumnsFile.exists() && minimalColumnsFile.length() == 0);
         assertTrue(minimalWordMapFile.exists() && minimalWordMapFile.length() == 0);
     }
 
     @Test
-    public void testCloseExportWritersLight () throws IOException, JAXBException {
+    public void testCloseExportWritersLight() throws IOException, JAXBException {
         odmHandler.processODM(minimalOdm, OUTPUT_DIRECTORY, true, PROPERTIES_FILE_PATH);
         odmHandler.closeExportWriters();
     }
-
-
-
 }
