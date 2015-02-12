@@ -244,10 +244,10 @@ public class FileExporterTransmart implements FileExporter {
      */
     private Map<String, String> wordMap;
 
-    /**
-     * Mapping of event or item group IDs to the human readable names.
-     */
-    private Map<String, String> eventOrIGIdToNameMap;
+//    /**
+//     * Mapping of event or item group IDs to the human readable names.
+//     */
+//    private Map<String, String> eventOrIGIdToNameMap;
 
     /**
      * A map of maps: Map<patientID, patientData>, with patientData a map of columnIds to data values.
@@ -287,7 +287,7 @@ public class FileExporterTransmart implements FileExporter {
         this.repeatingEventIds = new ArrayList<>();
         this.repeatingItemGroupIds = new ArrayList<>();
         this.wordMap = new HashMap<>();
-        this.eventOrIGIdToNameMap = new HashMap<>();
+//        this.eventOrIGIdToNameMap = new HashMap<>();
         this.clinicalDataMap = new HashMap<>();
         setColumnsName(columnsFileName);
         setWordMapName(wordMapFileName);
@@ -308,21 +308,21 @@ public class FileExporterTransmart implements FileExporter {
                 "Instance_num"));
 
         this.columnIds = new ArrayList<>(Arrays.asList(
-                "thirdColumnIdWithPatientIds",
-                "fourthColumnIdWithEventIds",
-                "fifthColumnIdWithEventNr",
-                "sixthColumnIdWithIgIds",
-                "seventhColumnIdWithIgNr"));
+                THIRD_COLUMN_ID_WITH_PATIENT_IDS,
+                FOURTH_COLUMN_ID_WITH_EVENT_IDS,
+                FIFTH_COLUMN_ID_WITH_EVENT_NR,
+                SIXTH_COLUMN_ID_WITH_IG_IDS,
+                SEVENTH_COLUMN_ID_WITH_IG_NR));
     }
 
-    /**
-     * Get a copy of the clinical data map. This method is meant for testing purposes.
-     *
-     * @return a copy of the clinical data map.
-     */
-    protected Map<String, Map<String, String>> getClinicalDataMap() {
-        return new HashMap<>(clinicalDataMap);
-    }
+//    /**
+//     * Get a copy of the clinical data map. This method is meant for testing purposes.
+//     *
+//     * @return a copy of the clinical data map.
+//     */
+//    protected Map<String, Map<String, String>> getClinicalDataMap() {
+//        return new HashMap<>(clinicalDataMap);
+//    }
 
     /**
      * Set the output filename for the columns metadata file.
@@ -339,23 +339,23 @@ public class FileExporterTransmart implements FileExporter {
         }
     }
 
-    /**
-     * For testing purposes.
-     *
-     * @param columnsWriter the columns writer.
-     */
-    protected void setColumnsWriter(final Writer columnsWriter) {
-        this.columnsWriter = columnsWriter;
-    }
+//    /**
+//     * For testing purposes.
+//     *
+//     * @param columnsWriter the columns writer.
+//     */
+//    protected void setColumnsWriter(final Writer columnsWriter) {
+//        this.columnsWriter = columnsWriter;
+//    }
 
-    /**
-     * For testing purposes.
-     *
-     * @param wordMapWriter the wordmap writer.
-     */
-    protected void setWordMapWriter(final Writer wordMapWriter) {
-        this.wordMapWriter = wordMapWriter;
-    }
+//    /**
+//     * For testing purposes.
+//     *
+//     * @param wordMapWriter the word map writer.
+//     */
+//    protected void setWordMapWriter(final Writer wordMapWriter) {
+//        this.wordMapWriter = wordMapWriter;
+//    }
 
     /**
      * Set the output filename for the word map metadata file.
@@ -409,12 +409,12 @@ public class FileExporterTransmart implements FileExporter {
                             final String oidPath)
             throws IOException {
         // todo put eventIds and itemGroupIds as keys and eventName and itemGroupName as values in a (single) key-value structure
-        if (eventId != null) {
-            eventOrIGIdToNameMap.put(eventId, eventName);
-        }
-        if (itemGroupId != null) {
-            eventOrIGIdToNameMap.put(itemGroupId, itemGroupName);
-        }
+//        if (eventId != null) {
+//            eventOrIGIdToNameMap.put(eventId, eventName);
+//        }
+//        if (itemGroupId != null) {
+//            eventOrIGIdToNameMap.put(itemGroupId, itemGroupName);
+//        }
 
         if (currentColumnNumber == 0) {
             handleColumnMetadata(FILENAME, "Category Code", COLUMN_NUMBER, "Data Label", "Data Label Source", "Control Vocab Cd");
@@ -732,9 +732,9 @@ public class FileExporterTransmart implements FileExporter {
 
         final int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
         final int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
-        final String eventEntityId = patientId
-                + EVENT_ABBREVIATION_IN_ID + repeatingEventIndex
-                + REPEAT_ABBREVIATION_IN_ID + eventRepeatKey;
+//        final String eventEntityId = patientId
+//                + EVENT_ABBREVIATION_IN_ID + repeatingEventIndex
+//                + REPEAT_ABBREVIATION_IN_ID + eventRepeatKey;
         final String itemGroupEntityId = patientId
                 + EVENT_ABBREVIATION_IN_ID  + repeatingEventIndex
                 + REPEAT_ABBREVIATION_IN_ID + eventRepeatKey

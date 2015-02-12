@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
  * First, the metadata is crawled; after that, the clinical data. The data that is retrieved is passed
  * to a file exporter (one for each study), which writes the data to a set of four files that can be
  * imported by tranSMART.
- * For the metadata, the order is: study - event - form (= CRF) - itemgroup - item - codeListItem
+ * For the metadata, the order is: study - event - form (= CRF) - item group - item - codeListItem
  *
  * The situation becomes more complicated when a study is spread over different sites (e.g. hospitals).
  * In that case a separate "study" is present in the ODM file for each site, even though it is in fact
@@ -84,7 +84,7 @@ public class OdmToFilesConverter {
     private static final String LANGUAGE = "en";
 
     /**
-     * A separator to construct the namepath.
+     * A separator to construct the name path.
      */
     private static final String PLUS = "+";
 
@@ -96,7 +96,7 @@ public class OdmToFilesConverter {
     /**
      * The name for the node in tranSMART under which different studies will be arranged as sites.
      */
-    private static final String STUDYSITE = "Study-site";
+    private static final String STUDY_SITE = "Study-site";
 
     /**
      * Is set to true when different studies that are written to the same files,
@@ -164,16 +164,17 @@ public class OdmToFilesConverter {
      * This method is called once for each ODM file. It separates the processing of the ODM file
      * in two phases: first the metadata and then the clinical data.
      *
-     * @param odm The odm object with a tree-structure that is constructed from the XML file by
-     *            the unmarshaller. The unmarshaller uses automatically generated Java sources,
-     *            generated from xsd files.
-     * @param exportFilePath The path to the directory in which the export files will be written.
-     * @param exportToI2b2Light Is true when the export should be made to i2b2-light instead of -full.
-     *@param propertiesFilePath the file path to the properties.  @throws IOException An input-output exception.
+     * @param odm                the odm object with a tree-structure that is constructed from the XML file by
+     *                           the unmarshaller. The unmarshaller uses automatically generated Java sources,
+     *                           generated from xsd files.
+     * @param exportFilePath     the path to the directory in which the export files will be written.
+     * @param exportToI2b2Light  is true when the export should be made to i2b2-light instead of -full.
+     * @param propertiesFilePath the file path to the properties.
+     * @throws IOException   An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
-    public void processODM(final ODM odm, final String exportFilePath, Boolean exportToI2b2Light, final String propertiesFilePath)
-        throws IOException, JAXBException {
+    public void processODM(final ODM odm, final String exportFilePath, final boolean exportToI2b2Light,
+                           final String propertiesFilePath) throws IOException, JAXBException {
         this.odm = odm;
         this.exportFilePath = exportFilePath + File.separator;
         this.exportToI2b2Light = exportToI2b2Light;
@@ -221,7 +222,7 @@ public class OdmToFilesConverter {
      * study A - study 1
      * study B - study 1
      * study 2 - study 2
-     * We want an extra line in the columns file of study 1, and three extra lines in its wordmap file. We
+     * We want an extra line in the columns file of study 1, and three extra lines in its word map file. We
      * do not want anything extra for study 2.
      *
      * @throws IOException An input-output exception.
@@ -234,8 +235,8 @@ public class OdmToFilesConverter {
         for (String evaluatedStudyName : studies.keySet()) {
             final String definingStudyName = studies.get(evaluatedStudyName);
             if (!evaluatedStudyName.equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
-                final String oidPath = definingStudyName + SEP + STUDYSITE;
-                fileExporters.get(definingStudyName).storeColumn("", "", "", "", "", STUDYSITE, oidPath);
+                final String oidPath = definingStudyName + SEP + STUDY_SITE;
+                fileExporters.get(definingStudyName).storeColumn("", "", "", "", "", STUDY_SITE, oidPath);
                 for (String studyName : studies.keySet()) {
                     if (studies.get(studyName).equals(definingStudyName)) {
                         fileExporters.get(definingStudyName).storeWord(studyName);
@@ -253,12 +254,14 @@ public class OdmToFilesConverter {
      *    a study-site, it contains its own metadata. It is then called a defining study.
      * 3. Loop through all the events.
      *
-     * @param study the current ODM study
-     *              definingStudy: the furthest study from which metadata is included with an include tag
+     * @param study              the current ODM study
+     *                           definingStudy: the furthest study from which metadata is included with an include tag
      * @param propertiesFilePath the file path to the properties.
-     * @throws IOException An input-output exception.
+     * @throws IOException   An input-output exception.
      * @throws JAXBException A Java Architecture for XML Binding exception.
      */
+    // todo: split this method up into smaller pieces? (Checkstyle: "Cyclomatic Complexity is 8 (max allowed is 7).")
+    // CHECKSTYLE_OFF: CyclomaticComplexityCheck
     private void saveStudy(final ODMcomplexTypeDefinitionStudy study, final String propertiesFilePath)
         throws IOException, JAXBException {
         final String studyName = study.getGlobalVariables().getStudyName().getValue();
@@ -308,6 +311,7 @@ public class OdmToFilesConverter {
             }
         }
     }
+    // CHECKSTYLE_ON: CyclomaticComplexityCheck
 
     /**
      * Get the metadata for a given study, even if the metadata is stored in another study and
@@ -354,7 +358,7 @@ public class OdmToFilesConverter {
     }
 
     /**
-     * Handles a form by looping through all its itemgroups.
+     * Handles a form by looping through all its item groups.
      *
      * @param definingStudy The study in which the metadata is defined.
      * @param eventDef The event object, part of the study object, that contains the data.
@@ -498,7 +502,7 @@ public class OdmToFilesConverter {
     }
 
     /**
-     * This method passes the data of value codes to the wordmap writer.
+     * This method passes the data of value codes to the word map writer.
      *
      * @param definingStudy The study in which the metadata is defined.
      * @param codeListItem Some items have a fixed list of codes as values, which can be replaced by numbers.
@@ -586,7 +590,7 @@ public class OdmToFilesConverter {
                                  final ODMcomplexTypeDefinitionSubjectData subjectData) {
         final ODMcomplexTypeDefinitionStudy definingStudy = metaDataMap.get(getMetaDataKey(study)).getDefiningStudy(odm);
         final String definingStudyName = definingStudy.getGlobalVariables().getStudyName().getValue();
-        final String oidPath = definingStudyName + SEP + STUDYSITE;
+        final String oidPath = definingStudyName + SEP + STUDY_SITE;
         final String studyName = study.getGlobalVariables().getStudyName().getValue();
         final String patientId = subjectData.getSubjectKey();
 
