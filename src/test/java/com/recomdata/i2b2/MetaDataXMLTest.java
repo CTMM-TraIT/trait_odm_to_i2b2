@@ -102,27 +102,28 @@ public class MetaDataXMLTest {
      */
     @SuppressWarnings("SpellCheckingInspection")
     private String getMetadataXmlRegularExpression(final String dataType, final List<String> enumValues) {
-        String enumValuesString = "";
-        if (enumValues != null)
+        String enumValuesString;
+        if (enumValues != null) {
+            enumValuesString = "<EnumValues>";
             for (final String enumValue : enumValues)
                 enumValuesString += "<Val>" + enumValue + "</Val>";
+            enumValuesString += "</EnumValues>";
+        } else
+            enumValuesString = "<EnumValues />";
 
         return Pattern.quote("<?xml version=\"1.0\" encoding=\"UTF-8\"?>") +
                LINE_SEPARATOR +
                Pattern.quote("<ValueMetadata><Version>3.02</Version><CreationDateTime>") +
                "[a-zA-Z0-9: ]*" +
                Pattern.quote("</CreationDateTime>" + "<TestID>" + ITEM_OID + "</TestID>" +
-                             "<TestName>" + ITEM_NAME + "</TestName><DataType>" +
-                             dataType +
-                             "</DataType><CodeType>GRP</CodeType>" +
-                             "<Loinc>1</Loinc><Flagstouse /><Oktousevalues>N</Oktousevalues><MaxStringLength />" +
-                             "<LowofLowValue /><HighofLowValue /><LowofHighValue /><HighofHighValue />" +
-                             "<LowofToxicValue /><HighofToxicValue /><EnumValues>" + enumValuesString +
-                             "</EnumValues><CommentsDeterminingExclusion><Com />" +
-                             "</CommentsDeterminingExclusion><UnitValues><NormalUnits>N/A</NormalUnits>" +
-                             "<EqualUnits>N/A</EqualUnits><ExcludingUnits /><ConvertingUnits><Units />" +
-                             "<MultiplyingFactor /></ConvertingUnits></UnitValues><Analysis><Enums /><Counts />" +
-                             "<New /></Analysis></ValueMetadata>") +
+                             "<TestName>" + ITEM_NAME + "</TestName><DataType>" + dataType + "</DataType>" +
+                             "<CodeType>GRP</CodeType><Loinc>1</Loinc><Flagstouse /><Oktousevalues>N</Oktousevalues>" +
+                             "<MaxStringLength /><LowofLowValue /><HighofLowValue /><LowofHighValue />" +
+                             "<HighofHighValue /><LowofToxicValue /><HighofToxicValue />" + enumValuesString +
+                             "<CommentsDeterminingExclusion><Com />" + "</CommentsDeterminingExclusion>" +
+                             "<UnitValues><NormalUnits>N/A</NormalUnits>" + "<EqualUnits>N/A</EqualUnits><ExcludingUnits />" +
+                             "<ConvertingUnits><Units /><MultiplyingFactor /></ConvertingUnits></UnitValues>" +
+                             "<Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>") +
                LINE_SEPARATOR;
     }
 }
