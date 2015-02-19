@@ -10,6 +10,7 @@ classes are put in two packages: org.cdisk.odm.jaxb (ODM1-3-1.xsd) and org.w3.xm
 The call to xjc looks something like this:<br/>
 **`xjc [schema file] -b [bindings file] -d [destination directory]`**
 
-For example, on the Windows platform (with xjc.bat in the jaxb-ri\bin directory at your install location) using ODM 1.3.1, you could generate the ODM reader classes like this:<br/>
+For example, on the Windows platform (with xjc.bat in the jaxb-ri\bin directory at your install location) using ODM 1.3.1,
+you could generate the ODM reader classes like this:<br/>
 **`mkdir java-generated`**<br/>
 **`xjc.bat xsd\cdisc-odm-1.3.1\ODM1-3-1.xsd -b xsd\cdisc-odm-1.3.1\bindings.xml -d java-generated`**
