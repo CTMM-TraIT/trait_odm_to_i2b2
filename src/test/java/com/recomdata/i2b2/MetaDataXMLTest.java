@@ -6,8 +6,6 @@ import java.util.regex.Pattern;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertTrue;
 
@@ -18,14 +16,9 @@ import static org.junit.Assert.assertTrue;
  */
 public class MetaDataXMLTest {
     /**
-     * The logger for this class.
+     * The default line separator. It seems that JDOM always uses "\r\n" as the line separator.
      */
-    private static final Logger logger = LoggerFactory.getLogger(MetaDataXMLTest.class);
-
-    /**
-     * The default line separator.
-     */
-    private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+    private static final String LINE_SEPARATOR = "\r\n";
 
     /**
      * The OID for the test item.
@@ -95,23 +88,46 @@ public class MetaDataXMLTest {
     /**
      * Check the metadata xml by matching it to the regular expression.
      *
-     * @param metadataXML the metadata xml.
+     * @param metadataXML the actual metadata xml.
      * @param dataType    the expected data type.
      * @param enumValues  the expected enumeration values or null/an empty list if not needed.
      */
     private void checkMetadataXML(final String metadataXML, final String dataType, final List<String> enumValues) {
         final String metadataXMLRegularExpression = getMetadataXmlRegularExpression(dataType, enumValues);
+        final String actualMetadataXML = metadataXML.replaceAll(LINE_SEPARATOR, "");
 
-        assertTrue("Metadata xml " + metadataXML + " should match the pattern " + metadataXMLRegularExpression + ".",
+        assertTrue("Metadata xml " + metadataXML + " should match the pattern " + metadataXMLRegularExpression + "." +
+                   "\nexpected with spaces: " + getSpacedText(readableMetadataXML) +
+                   "\nactual with spaces:   " + getSpacedText(actualMetadataXML) +
+                   "\nexpected hexadecimal: " + getHexadecimalText(readableMetadataXML) +
+                   "\nactual hexadecimal:   " + getHexadecimalText(actualMetadataXML),
                    Pattern.compile(metadataXMLRegularExpression).matcher(metadataXML).matches());
+    }
 
-        logger.info("expected: " + readableMetadataXML);
-        logger.info("actual:   " + metadataXML.replaceAll(LINE_SEPARATOR, ""));
-        logger.info("");
+    /**
+     * Convert a text to a string with two spaces around each character (to compare to the hexadecimal representation).
+     *
+     * @param text the original text.
+     * @return the spaced text.
+     */
+    private String getSpacedText(final String text) {
+        String spacedText = "";
+        for (final char character : text.toCharArray())
+            spacedText += " " + character + " ";
+        return spacedText;
+    }
 
-        System.out.println("expected: " + readableMetadataXML);
-        System.out.println("actual:   " + metadataXML.replaceAll(LINE_SEPARATOR, ""));
-        System.out.println("");
+    /**
+     * Convert a text to its hexadecimal representation.
+     *
+     * @param text the original text.
+     * @return the hexadecimal representation.
+     */
+    private String getHexadecimalText(final String text) {
+        String hexadecimalText = "";
+        for (final byte characterByte : text.getBytes())
+            hexadecimalText += String.format("%02x", characterByte) + " ";
+        return hexadecimalText;
     }
 
     /**
@@ -132,9 +148,10 @@ public class MetaDataXMLTest {
         } else
             enumValuesString = "<EnumValues />";
 
+        // Set the readable form of the expected metadata xml to allow easy comparison in the checkMetadataXML method.
         readableMetadataXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
                               + "<ValueMetadata><Version>3.02</Version><CreationDateTime>"
-                              + "Thu Feb 19 --:--:-- CET 2015"
+                              + "--- --- -- --:--:-- CET 2015"
                               + "</CreationDateTime>" + "<TestID>" + ITEM_OID + "</TestID>" +
                               "<TestName>" + ITEM_NAME + "</TestName><DataType>" + dataType + "</DataType>" +
                               "<CodeType>GRP</CodeType><Loinc>1</Loinc><Flagstouse /><Oktousevalues>N</Oktousevalues>" +
