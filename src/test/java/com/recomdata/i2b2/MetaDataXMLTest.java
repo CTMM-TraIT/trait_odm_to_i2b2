@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertTrue;
 
@@ -15,6 +17,11 @@ import static org.junit.Assert.assertTrue;
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
 public class MetaDataXMLTest {
+    /**
+     * The logger for this class.
+     */
+    private static final Logger logger = LoggerFactory.getLogger(MetaDataXMLTest.class);
+
     /**
      * The default line separator.
      */
@@ -34,6 +41,12 @@ public class MetaDataXMLTest {
      * The metadata xml object to test.
      */
     private MetaDataXML metaDataXML;
+
+    /**
+     * Readable form of the expected metadata xml (without the characters added by Pattern.quote, the line separators,
+     * and the regular expression that matched the creation date/time) to allow easy comparison.
+     */
+    private String readableMetadataXML;
 
     /**
      * Initialization that is done before each test.
@@ -91,6 +104,14 @@ public class MetaDataXMLTest {
 
         assertTrue("Metadata xml " + metadataXML + " should match the pattern " + metadataXMLRegularExpression + ".",
                    Pattern.compile(metadataXMLRegularExpression).matcher(metadataXML).matches());
+
+        logger.info("expected: " + readableMetadataXML);
+        logger.info("actual:   " + metadataXML.replaceAll(LINE_SEPARATOR, ""));
+        logger.info("");
+
+        System.out.println("expected: " + readableMetadataXML);
+        System.out.println("actual:   " + metadataXML.replaceAll(LINE_SEPARATOR, ""));
+        System.out.println("");
     }
 
     /**
@@ -110,6 +131,19 @@ public class MetaDataXMLTest {
             enumValuesString += "</EnumValues>";
         } else
             enumValuesString = "<EnumValues />";
+
+        readableMetadataXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+                              + "<ValueMetadata><Version>3.02</Version><CreationDateTime>"
+                              + "Thu Feb 19 --:--:-- CET 2015"
+                              + "</CreationDateTime>" + "<TestID>" + ITEM_OID + "</TestID>" +
+                              "<TestName>" + ITEM_NAME + "</TestName><DataType>" + dataType + "</DataType>" +
+                              "<CodeType>GRP</CodeType><Loinc>1</Loinc><Flagstouse /><Oktousevalues>N</Oktousevalues>" +
+                              "<MaxStringLength /><LowofLowValue /><HighofLowValue /><LowofHighValue />" +
+                              "<HighofHighValue /><LowofToxicValue /><HighofToxicValue />" + enumValuesString +
+                              "<CommentsDeterminingExclusion><Com />" + "</CommentsDeterminingExclusion>" +
+                              "<UnitValues><NormalUnits>N/A</NormalUnits>" + "<EqualUnits>N/A</EqualUnits><ExcludingUnits />" +
+                              "<ConvertingUnits><Units /><MultiplyingFactor /></ConvertingUnits></UnitValues>" +
+                              "<Analysis><Enums /><Counts /><New /></Analysis></ValueMetadata>";
 
         return Pattern.quote("<?xml version=\"1.0\" encoding=\"UTF-8\"?>") +
                LINE_SEPARATOR +
