@@ -408,7 +408,6 @@ public class FileExporterTransmart implements FileExporter {
                             final String preferredItemName,
                             final String oidPath)
             throws IOException {
-        // todo put eventIds and itemGroupIds as keys and eventName and itemGroupName as values in a (single) key-value structure
         if (eventId != null) {
             eventOrIGIdToNameMap.put(eventId, eventName);
         }
@@ -628,10 +627,15 @@ public class FileExporterTransmart implements FileExporter {
             entityData = clinicalDataMap.get(eventEntityId);
         } else {
             entityIds.add(eventEntityId);
+            //todo: add extra columns in clinical data file for eventIds and itemGroupIds
+            String eventName = eventId;
+            if (eventOrIGIdToNameMap.containsKey(eventId)) {
+                eventName = eventOrIGIdToNameMap.get(eventId);
+            }
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, eventEntityId);
             entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, EVENT);
             entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
-            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventId);
+            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventName);
             entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
             clinicalDataMap.put(eventEntityId, entityData);
         }
@@ -683,11 +687,19 @@ public class FileExporterTransmart implements FileExporter {
             entityData = clinicalDataMap.get(itemGroupEntityId);
         } else {
             entityIds.add(itemGroupEntityId);
+            String eventName = eventId;
+            String itemGroupName = itemGroupId;
+            if (eventOrIGIdToNameMap.containsKey(eventId)) {
+                eventName = eventOrIGIdToNameMap.get(eventId);
+            }
+            if (eventOrIGIdToNameMap.containsKey(itemGroupId)) {
+                itemGroupName = eventOrIGIdToNameMap.get(itemGroupId);
+            }
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
             entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, REPEAT);
             entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
-            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventId);
-            entityData.put(SIXTH_COLUMN_ID_WITH_IG_IDS, itemGroupId);
+            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventName);
+            entityData.put(SIXTH_COLUMN_ID_WITH_IG_IDS, itemGroupName);
             entityData.put(SEVENTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
             clinicalDataMap.put(itemGroupEntityId, entityData);
         }
@@ -745,12 +757,20 @@ public class FileExporterTransmart implements FileExporter {
             entityData = clinicalDataMap.get(itemGroupEntityId);
         } else {
             entityIds.add(itemGroupEntityId);
+            String eventName = eventId;
+            String itemGroupName = itemGroupId;
+            if (eventOrIGIdToNameMap.containsKey(eventId)) {
+                eventName = eventOrIGIdToNameMap.get(eventId);
+            }
+            if (eventOrIGIdToNameMap.containsKey(itemGroupId)) {
+                itemGroupName = eventOrIGIdToNameMap.get(itemGroupId);
+            }
             entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
             entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, REPEAT);
             entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
-            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventId);
+            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventName);
             entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
-            entityData.put(SIXTH_COLUMN_ID_WITH_IG_IDS, itemGroupId);
+            entityData.put(SIXTH_COLUMN_ID_WITH_IG_IDS, itemGroupName);
             entityData.put(SEVENTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
             clinicalDataMap.put(itemGroupEntityId, entityData);
         }
