@@ -297,12 +297,12 @@ public class FileExporterFull implements FileExporter {
                 "Instance_num"));
 
         this.columnIds = new ArrayList<>(Arrays.asList(
-                "firstColumnIdWithEntityIds",
-                "secondColumnIdWithType",
-                "thirdColumnIdWithAssocPatientIds",
-                "fourthColumnIdWithAssocEventIds",
-                "fifthColumnIdWithEventNr",
-                "sixthColumnIdWithIgNr"));
+                FIRST_COLUMN_ID_WITH_ENTITY_IDS,
+                SECOND_COLUMN_ID_WITH_TYPE,
+                THIRD_COLUMN_ID_WITH_ASSOC_PATIENT_IDS,
+                FOURTH_COLUMN_ID_WITH_ASSOC_EVENT_IDS,
+                FIFTH_COLUMN_ID_WITH_EVENT_NR,
+                SIXTH_COLUMN_ID_WITH_IG_NR));
     }
 
     /**
@@ -382,17 +382,16 @@ public class FileExporterFull implements FileExporter {
      * user's input concept map without the last node, then the column number and then the last node of the path.
      *
      * @param eventName         The human readable name of the event.
-     * @param eventId
-     *@param formName          The human readable name of the form (the CRF).
+     * @param eventId           todo
+     * @param formName          The human readable name of the form (the CRF).
      * @param itemGroupName     The (most) human readable name of the item group.
-     * @param itemGroupId
+     * @param itemGroupId       todo
      * @param preferredItemName The human readable name of the last node in the concept tree.
-     * @param oidPath The full path of OIDs, which provides a unique identifier for the columns.     @throws IOException An input-output exception.
+     * @param oidPath           The full path of OIDs, which provides a unique identifier for the columns.
+     * @throws IOException An input-output exception.
      */
-    public void storeColumn(final String eventName,
-                            String eventId, final String formName,
-                            final String itemGroupName,
-                            String itemGroupId, final String preferredItemName,
+    public void storeColumn(final String eventName, final String eventId, final String formName,
+                            final String itemGroupName, final String itemGroupId, final String preferredItemName,
                             final String oidPath)
             throws IOException {
         if (currentColumnNumber == 0) {
@@ -409,9 +408,9 @@ public class FileExporterFull implements FileExporter {
         String cleanFormName      = formName;
         String cleanItemGroupName = itemGroupName;
         if (avoidTransmartSymbolBugs) {
-            cleanEventName      =      eventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
-            cleanFormName       =       formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
-            cleanItemGroupName  =  itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            cleanEventName      = eventName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            cleanFormName       = formName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
+            cleanItemGroupName  = itemGroupName.replaceAll(SEPARATOR_IN_REGEX, SEPARATOR_REPLACEMENT);
         }
 
         String namePath = cleanEventName + SEPARATOR + cleanFormName + SEPARATOR + cleanItemGroupName;

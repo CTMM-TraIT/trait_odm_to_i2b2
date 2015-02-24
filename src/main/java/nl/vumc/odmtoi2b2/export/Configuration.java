@@ -25,14 +25,14 @@ import org.slf4j.LoggerFactory;
  */
 public class Configuration {
     /**
-     * The location of the log4j properties file.
-     */
-    private String log4jPropertiesPath;
-
-    /**
      * The logger for this class.
      */
     private static final Logger logger = LoggerFactory.getLogger(Configuration.class);
+
+    /**
+     * The location of the log4j properties file.
+     */
+    private String log4jPropertiesPath;
 
     /**
      * The maximal length for a text field in the clinical data file (e.g. 256).

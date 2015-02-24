@@ -248,11 +248,11 @@
                             <destFile>${project.build.directory}/jacoco.exec</destFile>
                             <!-- Sets the name of the property containing the settings for JaCoCo runtime agent. -->
                             <propertyName>surefireArgLine</propertyName>
-                            <excludes>
-                                <!--<exclude>**/com/recomdata/**</exclude>-->
-                                <exclude>**/org/cdisk/odm/jaxb/**</exclude>
-                                <exclude>**/org/w3/xmldsig/jaxb/**</exclude>
-                            </excludes>
+                            <!--<excludes>-->
+                                <!--&lt;!&ndash;<exclude>**/com/recomdata/**</exclude>&ndash;&gt;-->
+                                <!--<exclude>**/org/cdisk/odm/jaxb/**</exclude>-->
+                                <!--<exclude>**/org/w3/xmldsig/jaxb/**</exclude>-->
+                            <!--</excludes>-->
                         </configuration>
                     </execution>
                     <!--
@@ -269,11 +269,11 @@
                             <dataFile>${project.build.directory}/jacoco.exec</dataFile>
                             <!-- Sets the output directory for the code coverage report. -->
                             <outputDirectory>${project.reporting.outputDirectory}/code-coverage-jacoco</outputDirectory>
-                            <excludes>
-                                <!--<exclude>**/com/recomdata/**</exclude>-->
-                                <exclude>**/org/cdisk/odm/jaxb/**</exclude>
-                                <exclude>**/org/w3/xmldsig/jaxb/**</exclude>
-                            </excludes>
+                            <!--<excludes>-->
+                                <!--&lt;!&ndash;<exclude>**/com/recomdata/**</exclude>&ndash;&gt;-->
+                                <!--<exclude>**/org/cdisk/odm/jaxb/**</exclude>-->
+                                <!--<exclude>**/org/w3/xmldsig/jaxb/**</exclude>-->
+                            <!--</excludes>-->
                         </configuration>
                     </execution>
                 </executions>
@@ -288,11 +288,11 @@
                     <!-- Sets the VM argument line used when unit tests are run. -->
                     <!--suppress MavenModelInspection -->
                     <argLine>${surefireArgLine}</argLine>
-                    <excludes>
-                        <!--<exclude>**/com/recomdata/**</exclude>-->
-                        <exclude>**/org/cdisk/odm/jaxb/**</exclude>
-                        <exclude>**/org/w3/xmldsig/jaxb/**</exclude>
-                    </excludes>
+                    <!--<excludes>-->
+                        <!--&lt;!&ndash;<exclude>**/com/recomdata/**</exclude>&ndash;&gt;-->
+                        <!--<exclude>**/org/cdisk/odm/jaxb/**</exclude>-->
+                        <!--<exclude>**/org/w3/xmldsig/jaxb/**</exclude>-->
+                    <!--</excludes>-->
                 </configuration>
             </plugin>
 
