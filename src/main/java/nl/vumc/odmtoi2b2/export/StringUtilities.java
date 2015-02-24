@@ -26,6 +26,7 @@ public class StringUtilities {
      */
     public static String convertString(final String input) {
         String result = input;
+
         if (input != null) {
             final String twoDoubleQuotes = "\"\"";
             final String oneDoubleQuote = "\"";
@@ -38,6 +39,31 @@ public class StringUtilities {
                 result = result.replaceAll(twoDoubleQuotes, oneDoubleQuote);
             }
         }
+
+        return result;
+    }
+
+    /**
+     * Remove overabundant SEPARATOR symbols.
+     *
+     * @param text todo Ward
+     * @param separator todo Ward
+     * @param separatorInRegex todo Ward
+     * @return todo Ward
+     */
+    public static String removeOverabundantSeparators(final String text, final String separator, final String separatorInRegex) {
+        String result = text;
+
+        while (text.contains(separator + separator)) {
+            result = result.replaceAll(separatorInRegex + separatorInRegex, separator);
+        }
+        if (text.startsWith(separator)) {
+            result = result.substring(1);
+        }
+        if (text.endsWith(separator)) {
+            result = result.substring(0, result.length() - 1);
+        }
+
         return result;
     }
 }

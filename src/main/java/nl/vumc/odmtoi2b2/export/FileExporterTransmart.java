@@ -434,19 +434,7 @@ public class FileExporterTransmart implements FileExporter {
         }
 
         String namePath = cleanEventName + SEPARATOR + cleanFormName + SEPARATOR + cleanItemGroupName;
-
-        /**
-         * Avoid that blank nodes are created by removing overabundant SEPARATOR symbols.
-         */
-        while (namePath.contains(SEPARATOR + SEPARATOR)) {
-            namePath = namePath.replaceAll(SEPARATOR_IN_REGEX + SEPARATOR_IN_REGEX, SEPARATOR);
-        }
-        if (namePath.startsWith(SEPARATOR)) {
-            namePath = namePath.substring(1);
-        }
-        if (namePath.endsWith(SEPARATOR)) {
-            namePath = namePath.substring(0, namePath.length() - 1);
-        }
+        namePath = StringUtilities.removeOverabundantSeparators(namePath, SEPARATOR, SEPARATOR_IN_REGEX);
 
         handleColumnAttribute(namePath, preferredItemName);
 
