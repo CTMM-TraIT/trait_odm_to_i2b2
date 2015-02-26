@@ -46,21 +46,23 @@ public class StringUtilities {
     /**
      * Remove overabundant SEPARATOR symbols.
      *
-     * @param text todo Ward
-     * @param separator todo Ward
-     * @param separatorInRegex todo Ward
-     * @return todo Ward
+     * @param text The string that is separated by a certain separator in a series of substrings. The separator may occur
+     *             subsequently more than once, which is not desired.
+     * @param separator The separator.
+     * @param separatorInRegex The separator plus escape characters that symbolizes the separator in a regular
+     *                         expression together.
+     * @return The string in which the separator occurs subsequently maximally once.
      */
     public static String removeOverabundantSeparators(final String text, final String separator, final String separatorInRegex) {
         String result = text;
 
-        while (text.contains(separator + separator)) {
+        while (result.contains(separator + separator)) {
             result = result.replaceAll(separatorInRegex + separatorInRegex, separator);
         }
-        if (text.startsWith(separator)) {
+        if (result.startsWith(separator)) {
             result = result.substring(1);
         }
-        if (text.endsWith(separator)) {
+        if (result.endsWith(separator)) {
             result = result.substring(0, result.length() - 1);
         }
 

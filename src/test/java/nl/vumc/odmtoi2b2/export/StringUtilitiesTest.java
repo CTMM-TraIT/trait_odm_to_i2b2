@@ -18,4 +18,11 @@ public class StringUtilitiesTest {
         assertEquals("'", StringUtilities.convertString("`"));
         assertEquals("\"", StringUtilities.convertString("\"\"\"\""));
     }
+
+    @Test
+    public void testRemoveOverabundantSeparators() {
+        assertEquals("", StringUtilities.removeOverabundantSeparators("++","+","\\+"));
+        assertEquals("text+text", StringUtilities.removeOverabundantSeparators("++text+++text++++","+","\\+"));
+//      assertEquals("text\\text", StringUtilities.removeOverabundantSeparators("\\\\text\\\\text\\\\\\","\\\\","\\\\"));    //Doesn't work for \
+    }
 }
