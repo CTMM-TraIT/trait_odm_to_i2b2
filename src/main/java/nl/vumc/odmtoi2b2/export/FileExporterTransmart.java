@@ -55,21 +55,6 @@ public class FileExporterTransmart implements FileExporter {
     private static final String SUBSET_SELECTION_TYPE = "Subset selection type";
 
     /**
-     * The name of the entity type for patients.
-     */
-    private static final String PATIENT = "patient";
-
-    /**
-     * The name of the entity type for events.
-     */
-    private static final String EVENT = "event";
-
-    /**
-     * The name of the entity type for item group repeats.
-     */
-    private static final String REPEAT = "repeat";
-
-    /**
      * The abbreviation for 'event' in the ID of an entity.
      */
     private static final String EVENT_ABBREVIATION_IN_ID = "_E";
@@ -85,42 +70,47 @@ public class FileExporterTransmart implements FileExporter {
     private static final String REPEAT_ABBREVIATION_IN_ID = "_R";
 
     /**
-     * The column identifier of the very first column, which contains the entity identifiers.
+     * The column identifier of the very first column, which contains a unique ID for each row in the clinical data
+     * file.
      */
-    private static final String FIRST_COLUMN_ID_WITH_ENTITY_IDS = "firstColumnIdWithEntityIds";
+    private static final String COLUMN_ID_WITH_ROW_IDS = "columnIdWithRowIds";
 
     /**
-     * The column identifier of the second column, which contains the type (patient, event, or item group).
+     * The column identifier of the second column, which contains the IDs of the event types.
      */
-    private static final String SECOND_COLUMN_ID_WITH_DIMENSION_TYPE = "secondColumnIdWithDimensionType";
+    private static final String COLUMN_ID_WITH_PATIENT_IDS = "columnIdWithPatientIds";
 
     /**
-     * The column identifier of the third column, which contains the associated-patient IDs.
+     * The column identifier of the second column, which contains the IDs of the event types.
      */
-    private static final String THIRD_COLUMN_ID_WITH_PATIENT_IDS = "thirdColumnIdWithPatientIds";
+    private static final String COLUMN_ID_WITH_EVENT_IDS = "columnIdWithEventIds";
 
     /**
-     * The column identifier of the fourth column, which contains the associated-event IDs.
+     * The column identifier of the third column, which contains the human readable event type names.
      */
-    private static final String FOURTH_COLUMN_ID_WITH_EVENT_IDS = "fourthColumnIdWithEventIds";
+    private static final String COLUMN_ID_WITH_EVENT_NAMES = "columnIdWithEventNames";
 
     /**
-     * The column identifier of the fifth column, which contains the event repeat key (nr in the
+     * The column identifier of the fourth column, which contains the event repeat key (nr in the
      * series of repeated events).
      */
-    private static final String FIFTH_COLUMN_ID_WITH_EVENT_NR = "fifthColumnIdWithEventNr";
+    private static final String COLUMN_ID_WITH_EVENT_NR = "columnIdWithEventNr";
+
+    /**
+     * The column identifier of the fifth column, which contains the item group type IDs.
+     */
+    private static final String COLUMN_ID_WITH_IG_IDS = "columnIdWithIgIds";
+
+    /**
+     * The column identifier of the sixth column, which contains the human readable item group names.
+     */
+    private static final String COLUMN_ID_WITH_IG_NAMES = "columnIdWithIgNames";
 
     /**
      * The column identifier of the sixth column, which contains the item group repeat key (nr in the
      * series of repeated item groups).
      */
-    private static final String SIXTH_COLUMN_ID_WITH_IG_IDS = "sixthColumnIdWithIgIds";
-
-    /**
-     * The column identifier of the sixth column, which contains the item group repeat key (nr in the
-     * series of repeated item groups).
-     */
-    private static final String SEVENTH_COLUMN_ID_WITH_IG_NR = "seventhColumnIdWithIgNr";
+    private static final String COLUMN_ID_WITH_IG_NR = "columnIdWithIgNr";
 
     /**
      * The separator that tranSMART expects to separate the concept names in the column name path.
@@ -138,11 +128,6 @@ public class FileExporterTransmart implements FileExporter {
      * The string by which the separator has to be replaced in case it occurs in the middle of a concept.
      */
     private static final String SEPARATOR_REPLACEMENT = " and ";
-
-    /**
-     * A space for usage between the words in the log statements.
-     */
-    private static final String SPACE = " ";
 
     /**
      * The character encoding used for all the files.
@@ -303,16 +288,20 @@ public class FileExporterTransmart implements FileExporter {
         this.columnHeaders = new ArrayList<>(Arrays.asList(
                 "Patient_num",
                 "Encounter_num",
+                "Encounter_name",
                 "Encounter_repeat_key",
                 "Item_group_id",
+                "Item_group_name",
                 "Instance_num"));
 
         this.columnIds = new ArrayList<>(Arrays.asList(
-                THIRD_COLUMN_ID_WITH_PATIENT_IDS,
-                FOURTH_COLUMN_ID_WITH_EVENT_IDS,
-                FIFTH_COLUMN_ID_WITH_EVENT_NR,
-                SIXTH_COLUMN_ID_WITH_IG_IDS,
-                SEVENTH_COLUMN_ID_WITH_IG_NR));
+                COLUMN_ID_WITH_PATIENT_IDS,
+                COLUMN_ID_WITH_EVENT_IDS,
+                COLUMN_ID_WITH_EVENT_NAMES,
+                COLUMN_ID_WITH_EVENT_NR,
+                COLUMN_ID_WITH_IG_IDS,
+                COLUMN_ID_WITH_IG_NAMES,
+                COLUMN_ID_WITH_IG_NR));
     }
 
 //    /**
@@ -571,9 +560,8 @@ public class FileExporterTransmart implements FileExporter {
             entityData = clinicalDataMap.get(patientId);
         } else {
             entityIds.add(patientId);
-            entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, patientId);
-            entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, PATIENT);
-            entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
+            entityData.put(COLUMN_ID_WITH_ROW_IDS, patientId);
+            entityData.put(COLUMN_ID_WITH_PATIENT_IDS, patientId);
             clinicalDataMap.put(patientId, entityData);
         }
 
@@ -620,11 +608,11 @@ public class FileExporterTransmart implements FileExporter {
             if (eventOrIGIdToNameMap.containsKey(eventId)) {
                 eventName = eventOrIGIdToNameMap.get(eventId);
             }
-            entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, eventEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, EVENT);
-            entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
-            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventName);
-            entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
+            entityData.put(COLUMN_ID_WITH_ROW_IDS, eventEntityId);
+            entityData.put(COLUMN_ID_WITH_PATIENT_IDS, patientId);
+            entityData.put(COLUMN_ID_WITH_EVENT_IDS, eventId);
+            entityData.put(COLUMN_ID_WITH_EVENT_NAMES, eventName);
+            entityData.put(COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
             clinicalDataMap.put(eventEntityId, entityData);
         }
 
@@ -683,12 +671,13 @@ public class FileExporterTransmart implements FileExporter {
             if (eventOrIGIdToNameMap.containsKey(itemGroupId)) {
                 itemGroupName = eventOrIGIdToNameMap.get(itemGroupId);
             }
-            entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, REPEAT);
-            entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
-            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventName);
-            entityData.put(SIXTH_COLUMN_ID_WITH_IG_IDS, itemGroupName);
-            entityData.put(SEVENTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
+            entityData.put(COLUMN_ID_WITH_ROW_IDS, itemGroupEntityId);
+            entityData.put(COLUMN_ID_WITH_PATIENT_IDS, patientId);
+            entityData.put(COLUMN_ID_WITH_EVENT_IDS, eventId);
+            entityData.put(COLUMN_ID_WITH_EVENT_NAMES, eventName);
+            entityData.put(COLUMN_ID_WITH_IG_IDS, itemGroupId);
+            entityData.put(COLUMN_ID_WITH_IG_NAMES, itemGroupName);
+            entityData.put(COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
             clinicalDataMap.put(itemGroupEntityId, entityData);
         }
 
@@ -753,13 +742,14 @@ public class FileExporterTransmart implements FileExporter {
             if (eventOrIGIdToNameMap.containsKey(itemGroupId)) {
                 itemGroupName = eventOrIGIdToNameMap.get(itemGroupId);
             }
-            entityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, itemGroupEntityId);
-            entityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, REPEAT);
-            entityData.put(THIRD_COLUMN_ID_WITH_PATIENT_IDS, patientId);
-            entityData.put(FOURTH_COLUMN_ID_WITH_EVENT_IDS, eventName);
-            entityData.put(FIFTH_COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
-            entityData.put(SIXTH_COLUMN_ID_WITH_IG_IDS, itemGroupName);
-            entityData.put(SEVENTH_COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
+            entityData.put(COLUMN_ID_WITH_ROW_IDS, itemGroupEntityId);
+            entityData.put(COLUMN_ID_WITH_PATIENT_IDS, patientId);
+            entityData.put(COLUMN_ID_WITH_EVENT_IDS, eventId);
+            entityData.put(COLUMN_ID_WITH_EVENT_NAMES, eventName);
+            entityData.put(COLUMN_ID_WITH_EVENT_NR, eventRepeatKey);
+            entityData.put(COLUMN_ID_WITH_IG_IDS, itemGroupId);
+            entityData.put(COLUMN_ID_WITH_IG_NAMES, itemGroupName);
+            entityData.put(COLUMN_ID_WITH_IG_NR, itemGroupRepeatKey);
             clinicalDataMap.put(itemGroupEntityId, entityData);
         }
 
@@ -790,64 +780,64 @@ public class FileExporterTransmart implements FileExporter {
         return entityData;
     }
 
-    /**
-     * This method finds new entities: patients and/or events that are only mentioned
-     *   in the context of events and/or repeats.
-     */
-    private void scanForNewEntities() {
-        List<String> newlyFoundEntityIds = new ArrayList<>();
-        for (final String entity1Id : entityIds) {
-            final Map<String, String> entity1Data = clinicalDataMap.get(entity1Id);
-            final String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE);
-            //noinspection IfCanBeSwitch
-            if (EVENT.equals(entity1Type)) {
-                newlyFoundEntityIds = findNewEntities(entity1Data,
-                        newlyFoundEntityIds,
-                        THIRD_COLUMN_ID_WITH_PATIENT_IDS,
-                        PATIENT);
-            } else if (REPEAT.equals(entity1Type)) {
-                newlyFoundEntityIds = findNewEntities(entity1Data,
-                        newlyFoundEntityIds,
-                        THIRD_COLUMN_ID_WITH_PATIENT_IDS,
-                        PATIENT);
-                if (entity1Data.get(FOURTH_COLUMN_ID_WITH_EVENT_IDS) != null) {
-                    newlyFoundEntityIds = findNewEntities(entity1Data,
-                            newlyFoundEntityIds,
-                            FOURTH_COLUMN_ID_WITH_EVENT_IDS,
-                            EVENT);
-                }
-            }
-        }
-        entityIds.addAll(newlyFoundEntityIds);
-    }
+//    /**
+//     * This method finds new entities: patients and/or events that are only mentioned
+//     *   in the context of events and/or repeats.
+//     */
+//    private void scanForNewEntities() {
+//        List<String> newlyFoundEntityIds = new ArrayList<>();
+//        for (final String entity1Id : entityIds) {
+//            final Map<String, String> entity1Data = clinicalDataMap.get(entity1Id);
+//            final String entity1Type = entity1Data.get(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE);
+//            //noinspection IfCanBeSwitch
+//            if (EVENT.equals(entity1Type)) {
+//                newlyFoundEntityIds = findNewEntities(entity1Data,
+//                        newlyFoundEntityIds,
+//                        THIRD_COLUMN_ID_WITH_PATIENT_IDS,
+//                        PATIENT);
+//            } else if (REPEAT.equals(entity1Type)) {
+//                newlyFoundEntityIds = findNewEntities(entity1Data,
+//                        newlyFoundEntityIds,
+//                        THIRD_COLUMN_ID_WITH_PATIENT_IDS,
+//                        PATIENT);
+//                if (entity1Data.get(FOURTH_COLUMN_ID_WITH_EVENT_IDS) != null) {
+//                    newlyFoundEntityIds = findNewEntities(entity1Data,
+//                            newlyFoundEntityIds,
+//                            FOURTH_COLUMN_ID_WITH_EVENT_IDS,
+//                            EVENT);
+//                }
+//            }
+//        }
+//        entityIds.addAll(newlyFoundEntityIds);
+//    }
 
-    /**
-     * This method finds new entities, like patients or events, from entity data like event data
-     * or repeat data.
-     *
-     * @param entityData The row data of an entity (event or repeat).
-     * @param newlyFoundEntityIds A list of entities that were already found.
-     * @param associationColumnId The ID of the entity that can potentially be found anew.
-     * @param associationType The type of the entity that was newly found (patient or event).
-     * @return newlyFoundEntityIds A possibly longer list of entities that were already found.
-     */
-    private List<String> findNewEntities(final Map<String, String> entityData,
-                                         final List<String> newlyFoundEntityIds,
-                                         final String associationColumnId,
-                                         final String associationType) {
-        final String associatedEntityId = entityData.get(associationColumnId);
-        if (!entityIds.contains(associatedEntityId) && !newlyFoundEntityIds.contains(associatedEntityId)) {
-            final Map<String, String> newlyFoundEntityData = new HashMap<>();
-            newlyFoundEntityIds.add(associatedEntityId);
-            newlyFoundEntityData.put(FIRST_COLUMN_ID_WITH_ENTITY_IDS, associatedEntityId);
-            newlyFoundEntityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, associationType);
-            clinicalDataMap.put(associatedEntityId, newlyFoundEntityData);
-            logger.debug("Found " + associationType + SPACE + associatedEntityId + " from "
-                    + entityData.get(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE) + SPACE
-                    + entityData.get(FIRST_COLUMN_ID_WITH_ENTITY_IDS));
-        }
-        return newlyFoundEntityIds;
-    }
+//    /**
+//     * This method finds new entities, like patients or events, from entity data like event data
+//     * or repeat data.
+//     *
+//     * @param entityData The row data of an entity (event or repeat).
+//     * @param newlyFoundEntityIds A list of entities that were already found.
+//     * @param associationColumnId The ID of the entity that can potentially be found anew.
+//     * @param associationType The type of the entity that was newly found (patient or event).
+//     * @return newlyFoundEntityIds A possibly longer list of entities that were already found.
+//     */
+//    private List<String> findNewEntities(final Map<String, String> entityData,
+//                                         final List<String> newlyFoundEntityIds,
+//                                         final String associationColumnId,
+//                                         final String associationType) {
+//        final String associatedEntityId = entityData.get(associationColumnId);
+//        if (!entityIds.contains(associatedEntityId) && !newlyFoundEntityIds.contains(associatedEntityId)) {
+//            final Map<String, String> newlyFoundEntityData = new HashMap<>();
+//            newlyFoundEntityIds.add(associatedEntityId);
+//            newlyFoundEntityData.put(COLUMN_ID_WITH_ROW_IDS, associatedEntityId);
+//            newlyFoundEntityData.put(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE, associationType);
+//            clinicalDataMap.put(associatedEntityId, newlyFoundEntityData);
+//            logger.debug("Found " + associationType + SPACE + associatedEntityId + " from "
+//                    + entityData.get(SECOND_COLUMN_ID_WITH_DIMENSION_TYPE) + SPACE
+//                    + entityData.get(COLUMN_ID_WITH_ROW_IDS));
+//        }
+//        return newlyFoundEntityIds;
+//    }
 
     /**
      * Write the clinical data, which was kept in the memory, to the tab-delimited clinical data file.
@@ -911,7 +901,7 @@ public class FileExporterTransmart implements FileExporter {
      */
     public void close() {
         try {
-            scanForNewEntities();
+//            scanForNewEntities();
             writeEntityData();
             columnsWriter.close();
             wordMapWriter.close();
