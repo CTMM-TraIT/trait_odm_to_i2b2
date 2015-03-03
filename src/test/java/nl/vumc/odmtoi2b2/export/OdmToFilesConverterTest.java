@@ -86,10 +86,10 @@ public class OdmToFilesConverterTest {
     public void testProcessODMLight() throws JAXBException, IOException {
         odmHandler.processODM(minimalOdm, OUTPUT_DIRECTORY, true, PROPERTIES_FILE_PATH);
         odmHandler.closeExportWriters();
-        assertTrue(minimalClinicalDataFile.exists());
-        assertEquals(74, minimalClinicalDataFile.length());
         assertTrue(minimalColumnsFile.exists() && minimalColumnsFile.length() == 0);
         assertTrue(minimalWordMapFile.exists() && minimalWordMapFile.length() == 0);
+        assertTrue(minimalClinicalDataFile.exists());
+        assertEquals(105, minimalClinicalDataFile.length());
     }
 
     @Test
