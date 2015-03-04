@@ -406,11 +406,13 @@ public class FileExporterTransmart implements FileExporter {
 
         if (currentColumnNumber == 0) {
             handleColumnMetadata(FILENAME, "Category Code", COLUMN_NUMBER, "Data Label", "Data Label Source", "Control Vocab Cd");
-            handleColumnAttribute("",                      "SUBJ_ID");
-            handleColumnAttribute(SUBSET_SELECTION_TYPE, "Patient_Num");
-            handleColumnAttribute(SUBSET_SELECTION_TYPE, "associated event id");
-            handleColumnAttribute(SUBSET_SELECTION_TYPE, "event repeat key");
-            handleColumnAttribute(SUBSET_SELECTION_TYPE, "Instance_Num");
+            handleColumnAttribute("", "SUBJ_ID");
+            handleColumnAttribute("", "OMIT");
+            handleColumnAttribute("", "OMIT");
+            handleColumnAttribute("", "OMIT");
+            handleColumnAttribute("", "OMIT");
+            handleColumnAttribute("", "OMIT");
+            handleColumnAttribute("", "OMIT");
         }
 
         String cleanEventName     = eventName;
