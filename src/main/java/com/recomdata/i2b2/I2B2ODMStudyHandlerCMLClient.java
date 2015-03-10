@@ -2,7 +2,13 @@ package com.recomdata.i2b2;
 
 /**
  * Copyright(c)  2011-2012 Recombinant Data Corp., All rights Reserved
+ *
  * This is a handler's command-line client that can loading other source ODM XML files
+ *
+ * This class can be executed from the command-line (using Maven):
+ *     mvn compile exec:java -Dexec.mainClass="com.recomdata.i2b2.I2B2ODMStudyHandlerCMLClient"
+ *         -Dexec.args="odm/examples/CDISC_ODM_example_maxim.xml export yes"
+ *
  * @author: Alex Wu
  * @date: October 28, 2011
  */
