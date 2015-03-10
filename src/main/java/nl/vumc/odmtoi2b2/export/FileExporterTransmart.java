@@ -50,11 +50,6 @@ public class FileExporterTransmart implements FileExporter {
     private static final String FILENAME = "Filename";
 
     /**
-     * A top node in the ontology tree that assembles the metadata.
-     */
-    private static final String SUBSET_SELECTION_TYPE = "Subset selection type";
-
-    /**
      * The abbreviation for 'event' in the ID of an entity.
      */
     private static final String EVENT_ABBREVIATION_IN_ID = "_E";
@@ -111,6 +106,12 @@ public class FileExporterTransmart implements FileExporter {
      * series of repeated item groups).
      */
     private static final String COLUMN_ID_WITH_IG_NR = "columnIdWithIgNr";
+
+    /**
+     * The name of the node in the partonomic hierarchy that leads to the primary keys that identify
+     * either an event type, or an event repeat or an item group type or an item group repeat.
+     */
+    private static final String DIMENSION_IDS = "dimension IDs";
 
     /**
      * The separator that tranSMART expects to separate the concept names in the column name path.
@@ -407,12 +408,12 @@ public class FileExporterTransmart implements FileExporter {
         if (currentColumnNumber == 0) {
             handleColumnMetadata(FILENAME, "Category Code", COLUMN_NUMBER, "Data Label", "Data Label Source", "Control Vocab Cd");
             handleColumnAttribute("", "SUBJ_ID");
-            handleColumnAttribute("", "OMIT");
-            handleColumnAttribute("", "OMIT");
-            handleColumnAttribute("", "OMIT");
-            handleColumnAttribute("", "OMIT");
-            handleColumnAttribute("", "OMIT");
-            handleColumnAttribute("", "OMIT");
+            handleColumnAttribute(DIMENSION_IDS, "encounter_id");
+            handleColumnAttribute(DIMENSION_IDS, "encounter_name");
+            handleColumnAttribute(DIMENSION_IDS, "encounter_repeat_key");
+            handleColumnAttribute(DIMENSION_IDS, "item_group_id");
+            handleColumnAttribute(DIMENSION_IDS, "item_group_name");
+            handleColumnAttribute(DIMENSION_IDS, "item_group_repeat_key");
         }
 
         String cleanEventName     = eventName;
@@ -605,7 +606,6 @@ public class FileExporterTransmart implements FileExporter {
             entityData = clinicalDataMap.get(eventEntityId);
         } else {
             entityIds.add(eventEntityId);
-            //todo: add extra columns in clinical data file for eventIds and itemGroupIds
             String eventName = eventId;
             if (eventOrIGIdToNameMap.containsKey(eventId)) {
                 eventName = eventOrIGIdToNameMap.get(eventId);
