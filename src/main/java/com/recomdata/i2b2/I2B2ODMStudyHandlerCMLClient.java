@@ -119,7 +119,7 @@ public class I2B2ODMStudyHandlerCMLClient {
             } else {
                 logger.info("Please provide 1. the ODM file (plus path) to process, "
                         + "2. the path of the export directory (without slash), and "
-                        + "3. (optionally) 'yes' in case an export to i2b2-light is desired.");
+                        + "3. (optionally) 'yes' in case an export to tranSMART is desired.");
             }
         } catch (Exception ex) {
 			ex.printStackTrace();

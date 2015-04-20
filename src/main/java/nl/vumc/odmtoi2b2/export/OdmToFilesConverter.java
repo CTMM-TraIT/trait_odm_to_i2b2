@@ -229,6 +229,10 @@ public class OdmToFilesConverter {
      */
     private void writeStudySites() throws IOException {
         final Map<String, Boolean> handledStudies = new HashMap<>();
+//        todo: Findbugs: makes inefficient use of keySet iterator instead of entrySet iterator
+//        for (Map.Entry<String, Boolean> entry : handledStudies.entrySet()) {
+//
+//        }
         for (String evaluatedStudyName : studies.keySet()) {
             handledStudies.put(studies.get(evaluatedStudyName), false);
         }
