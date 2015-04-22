@@ -233,9 +233,13 @@ public class OdmToFilesConverter {
 //        for (Map.Entry<String, Boolean> entry : handledStudies.entrySet()) {
 //
 //        }
-        for (String evaluatedStudyName : studies.keySet()) {
-            handledStudies.put(studies.get(evaluatedStudyName), false);
+//        for (String evaluatedStudyName : studies.keySet()) {
+//            handledStudies.put(studies.get(evaluatedStudyName), false);
+//        }
+        for (Map.Entry<String, String> studyEntry : studies.entrySet()) {
+            handledStudies.put(studyEntry.getValue(), false);
         }
+
         for (String evaluatedStudyName : studies.keySet()) {
             final String definingStudyName = studies.get(evaluatedStudyName);
             if (!evaluatedStudyName.equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
