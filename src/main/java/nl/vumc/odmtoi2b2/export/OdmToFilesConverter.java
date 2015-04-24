@@ -229,25 +229,19 @@ public class OdmToFilesConverter {
      */
     private void writeStudySites() throws IOException {
         final Map<String, Boolean> handledStudies = new HashMap<>();
-//        todo: Findbugs: makes inefficient use of keySet iterator instead of entrySet iterator
-//        for (Map.Entry<String, Boolean> entry : handledStudies.entrySet()) {
-//
-//        }
-//        for (String evaluatedStudyName : studies.keySet()) {
-//            handledStudies.put(studies.get(evaluatedStudyName), false);
-//        }
+
         for (Map.Entry<String, String> studyEntry : studies.entrySet()) {
             handledStudies.put(studyEntry.getValue(), false);
         }
 
-        for (String evaluatedStudyName : studies.keySet()) {
-            final String definingStudyName = studies.get(evaluatedStudyName);
-            if (!evaluatedStudyName.equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
+        for (Map.Entry<String, String> evaluatedStudyEntry : studies.entrySet()) {
+            final String definingStudyName = studies.get(evaluatedStudyEntry.getValue());
+            if (!evaluatedStudyEntry.getValue().equals(definingStudyName) && !handledStudies.get(definingStudyName)) {
                 final String oidPath = definingStudyName + SEP + STUDY_SITE;
                 fileExporters.get(definingStudyName).storeColumn("", "", "", "", "", STUDY_SITE, oidPath);
-                for (String studyName : studies.keySet()) {
-                    if (studies.get(studyName).equals(definingStudyName)) {
-                        fileExporters.get(definingStudyName).storeWord(studyName);
+                for (Map.Entry<String, String> studyEntry : studies.entrySet()) {
+                    if (studies.get(studyEntry.getValue()).equals(definingStudyName)) {
+                        fileExporters.get(definingStudyName).storeWord(studyEntry.getValue());
                     }
                 }
                 handledStudies.put(definingStudyName, true);
