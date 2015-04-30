@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
-public class FileExporterFull implements FileExporter {
+public class FileExporterFull {
     /**
      * The logger for this class.
      */

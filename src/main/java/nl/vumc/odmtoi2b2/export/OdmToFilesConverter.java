@@ -134,9 +134,9 @@ public class OdmToFilesConverter {
     private List<String> columnFullNameList;
 
     /**
-     * Map<studyName, fileExporter> to keep track of all the FileExporter objects that were created.
+     * Map<studyName, fileExporter> to keep track of all the file exporters that were created.
      */
-    private Map<String, FileExporter> fileExporters;
+    private Map<String, FileExporterTransmart> fileExporters;
 
     /**
      * Map<studyOID+metadata_ID, metaDataWithIncludes> to keep track of all the metadata objects that were created.
@@ -295,13 +295,14 @@ public class OdmToFilesConverter {
         if (!fileExporters.containsKey(definingStudyName)) {
             logger.debug("Creating file exporter for study " + definingStudyName);
             final Configuration configuration = new Configuration(propertiesFilePath);
-            final FileExporter fileExporter;
-            if (exportToI2b2Light) {
-                fileExporter = new FileExporterTransmart(exportFilePath, definingStudyName, configuration);
-            } else {
-                fileExporter = new FileExporterFull(exportFilePath, definingStudyName, configuration);
-            }
-            fileExporters.put(definingStudyName, fileExporter);
+//            final FileExporter fileExporter;
+//            if (exportToI2b2Light) {
+//                fileExporter = new FileExporterTransmart(exportFilePath, definingStudyName, configuration);
+//            } else {
+//                fileExporter = new FileExporterFull(exportFilePath, definingStudyName, configuration);
+//            }
+//            fileExporters.put(definingStudyName, fileExporter);
+            fileExporters.put(definingStudyName, new FileExporterTransmart(exportFilePath, definingStudyName, configuration));
         }
 
         // 3. Loop through the events.

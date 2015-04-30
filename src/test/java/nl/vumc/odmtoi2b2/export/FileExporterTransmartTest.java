@@ -17,7 +17,7 @@ import static org.junit.Assert.assertFalse;
  *
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
-public class FileExporterFullTest {
+public class FileExporterTransmartTest {
 	/**
 	 * The output directory.
 	 */
@@ -36,7 +36,7 @@ public class FileExporterFullTest {
     @Test
 	public void testWriteExportColumns() throws IOException {
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporterFull fileExporter = new FileExporterFull(OUTPUT_DIRECTORY, "my-study-name", configuration);
+        final FileExporterTransmart fileExporter = new FileExporterTransmart(OUTPUT_DIRECTORY, "my-study-name", configuration);
 
         final StringWriter columnsWriter = new StringWriter();
         fileExporter.setColumnsWriter(columnsWriter);
@@ -45,13 +45,14 @@ public class FileExporterFullTest {
         final String expectedOutput =
                 "Filename\tCategory Code\tColumn Number\tData Label\tData Label Source\tControl Vocab Cd\n" +
                 "my-study-name_clinical_data.txt\t\t1\tSUBJ_ID\t\t\n" +
-                "my-study-name_clinical_data.txt\tSubset selection type\t2\ttype (patient, event or repeat)\t\t\n" +
-                "my-study-name_clinical_data.txt\tSubset selection type\t3\tassociated patient id\t\t\n" +
-                "my-study-name_clinical_data.txt\tSubset selection type\t4\tassociated event id\t\t\n" +
-                "my-study-name_clinical_data.txt\tSubset selection type\t5\tevent number\t\t\n" +
-                "my-study-name_clinical_data.txt\tSubset selection type\t6\trepeat number\t\t\n" +
-                "my-study-name_clinical_data.txt\tabc and cde\t7\tpreferred-item-name\t\t\n" +
-                "my-study-name_clinical_data.txt\tabc+cde+efg\t8\tpreferred-item-name2\t\t\n";
+                "my-study-name_clinical_data.txt\tdimension IDs\t2\tencounter_id\t\t\n" +
+                "my-study-name_clinical_data.txt\tdimension IDs\t3\tencounter_name\t\t\n" +
+                "my-study-name_clinical_data.txt\tdimension IDs\t4\tencounter_repeat_key\t\t\n" +
+                "my-study-name_clinical_data.txt\tdimension IDs\t5\titem_group_id\t\t\n" +
+                "my-study-name_clinical_data.txt\tdimension IDs\t6\titem_group_name\t\t\n" +
+                "my-study-name_clinical_data.txt\tdimension IDs\t7\titem_group_repeat_key\t\t\n" +
+                "my-study-name_clinical_data.txt\tabc and cde\t8\tpreferred-item-name\t\t\n" +
+                "my-study-name_clinical_data.txt\tabc+cde+efg\t9\tpreferred-item-name2\t\t\n";
         assertEquals(expectedOutput, columnsWriter.toString());
 	}
 
@@ -61,7 +62,7 @@ public class FileExporterFullTest {
     @Test
 	public void testWriteExportWordMap() throws IOException {
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporterFull fileExporter = new FileExporterFull(OUTPUT_DIRECTORY, "my-study-name", configuration);
+        final FileExporterTransmart fileExporter = new FileExporterTransmart(OUTPUT_DIRECTORY, "my-study-name", configuration);
 
         final StringWriter wordMapWriter = new StringWriter();
         fileExporter.setWordMapWriter(wordMapWriter);
@@ -73,9 +74,9 @@ public class FileExporterFullTest {
         fileExporter.storeWord("myWordValue3");
         final String expectedOutput =
                 "Filename\tColumn Number\tOriginal Data Value\tNew Data Values\n" +
-                "my-study-name_clinical_data.txt\t7\t1\tmyWordValue\n" +
-                "my-study-name_clinical_data.txt\t7\t2\tmyWordValue2\n" +
-                "my-study-name_clinical_data.txt\t9\t1\tmyWordValue3\n";
+                "my-study-name_clinical_data.txt\t8\t1\tmyWordValue\n" +
+                "my-study-name_clinical_data.txt\t8\t2\tmyWordValue2\n" +
+                "my-study-name_clinical_data.txt\t10\t1\tmyWordValue3\n";
         assertEquals(expectedOutput, wordMapWriter.toString());
 	}
 

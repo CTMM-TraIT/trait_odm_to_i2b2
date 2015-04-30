@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:w.blonde@vumc.nl">Ward Blondé</a>
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
-public class FileExporterTransmart implements FileExporter {
+public class FileExporterTransmart {
     /**
      * The logger for this class.
      */
@@ -329,23 +329,23 @@ public class FileExporterTransmart implements FileExporter {
         }
     }
 
-//    /**
-//     * For testing purposes.
-//     *
-//     * @param columnsWriter the columns writer.
-//     */
-//    protected void setColumnsWriter(final Writer columnsWriter) {
-//        this.columnsWriter = columnsWriter;
-//    }
+    /**
+     * For testing purposes.
+     *
+     * @param columnsWriter the columns writer.
+     */
+    protected void setColumnsWriter(final Writer columnsWriter) {
+        this.columnsWriter = columnsWriter;
+    }
 
-//    /**
-//     * For testing purposes.
-//     *
-//     * @param wordMapWriter the word map writer.
-//     */
-//    protected void setWordMapWriter(final Writer wordMapWriter) {
-//        this.wordMapWriter = wordMapWriter;
-//    }
+    /**
+     * For testing purposes.
+     *
+     * @param wordMapWriter the wordmap writer.
+     */
+    protected void setWordMapWriter(final Writer wordMapWriter) {
+        this.wordMapWriter = wordMapWriter;
+    }
 
     /**
      * Set the output filename for the word map metadata file.
