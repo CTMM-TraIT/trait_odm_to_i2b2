@@ -70,7 +70,7 @@ public class OdmToFilesConverterTest {
         odmHandler.processODM(minimalOdm, OUTPUT_DIRECTORY, false, PROPERTIES_FILE_PATH);
         odmHandler.closeExportWriters();
         assertTrue(minimalClinicalDataFile.exists());
-        assertEquals(85, minimalClinicalDataFile.length());
+        assertEquals(105, minimalClinicalDataFile.length());
         assertTrue(minimalColumnsFile.exists() && minimalColumnsFile.length() == 0);
         assertTrue(minimalWordMapFile.exists() && minimalWordMapFile.length() == 0);
     }
