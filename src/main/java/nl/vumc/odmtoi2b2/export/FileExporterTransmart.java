@@ -305,14 +305,14 @@ public class FileExporterTransmart {
                 COLUMN_ID_WITH_IG_NR));
     }
 
-//    /**
-//     * Get a copy of the clinical data map. This method is meant for testing purposes.
-//     *
-//     * @return a copy of the clinical data map.
-//     */
-//    protected Map<String, Map<String, String>> getClinicalDataMap() {
-//        return new HashMap<>(clinicalDataMap);
-//    }
+    /**
+     * Get a copy of the clinical data map. This method is meant for testing purposes.
+     *
+     * @return a copy of the clinical data map.
+     */
+    protected Map<String, Map<String, String>> getClinicalDataMap() {
+        return new HashMap<>(clinicalDataMap);
+    }
 
     /**
      * Set the output filename for the columns metadata file.
