@@ -51,12 +51,10 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * 
 	 * @param odmXmlPath the ODM file to process.
 	 * @param exportFilePath the path of the export file.
-	 * @param exportToI2b2Light whether to export to i2b2 light or full.
-     *@param propertiesFilePath the file path to the properties.  @throws Exception
+     * @param propertiesFilePath the file path to the properties.  @throws Exception
 	 */
     public void loadODMFile2I2B2(String odmXmlPath,
                                  String exportFilePath,
-                                 boolean exportToI2b2Light,
                                  final String propertiesFilePath) throws Exception {
 		File xmlFile = new File(odmXmlPath);
 
@@ -79,7 +77,7 @@ public class I2B2ODMStudyHandlerCMLClient {
             odmHandler.processODM();
         } else {
             OdmToFilesConverter odmHandler = new OdmToFilesConverter();
-            odmHandler.processODM(odm, exportFilePath, exportToI2b2Light, propertiesFilePath);
+            odmHandler.processODM(odm, exportFilePath, propertiesFilePath);
             odmHandler.closeExportWriters();
         }
     }
@@ -91,7 +89,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 */
 	public static void main(String[] args) {
         try {
-            if (args.length >= 2) {
+            if (args.length >= 1) {
                 String propertiesFilePath = "ODM-to-i2b2.properties";
                 final Configuration configuration = new Configuration(propertiesFilePath);
                 DOMConfigurator.configure(configuration.getLog4jPath());
@@ -104,11 +102,10 @@ public class I2B2ODMStudyHandlerCMLClient {
 
                 String odmFilePath = args[0];
                 String exportFilePath = args[1];
-                boolean exportToI2b2Transmart = args.length >= 3 && args[2].startsWith("y");
 
                 logger.info("Parsing ODM file ..." + odmFilePath);
                 I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
-                client.loadODMFile2I2B2(odmFilePath, exportFilePath, exportToI2b2Transmart, propertiesFilePath);
+                client.loadODMFile2I2B2(odmFilePath, exportFilePath, propertiesFilePath);
 
                 if (EXPORT_TO_DATABASE) {
                     logger.info("Releasing database connection.");
@@ -118,8 +115,7 @@ public class I2B2ODMStudyHandlerCMLClient {
                 logger.info("Processing complete.");
             } else {
                 logger.info("Please provide 1. the ODM file (plus path) to process, "
-                        + "2. the path of the export directory (without slash), and "
-                        + "3. (optionally) 'yes' in case an export to tranSMART is desired.");
+                        + "2. the path of the export directory (without slash), and ");
             }
         } catch (Exception ex) {
 			ex.printStackTrace();

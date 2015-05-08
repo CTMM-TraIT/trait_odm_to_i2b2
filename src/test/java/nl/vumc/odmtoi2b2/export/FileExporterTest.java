@@ -12,11 +12,11 @@ import java.util.Map;
 import static org.junit.Assert.assertEquals;
 
 /**
- * Unit test for the FileExporterFull class.
+ * Unit test for the FileExporter class.
  *
  * @author <a href="mailto:f.debruijn@vumc.nl">Freek de Bruijn</a>
  */
-public class FileExporterTransmartTest {
+public class FileExporterTest {
 	/**
 	 * The output directory.
 	 */
@@ -35,7 +35,7 @@ public class FileExporterTransmartTest {
     @Test
 	public void testWriteExportColumns() throws IOException {
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporterTransmart fileExporter = new FileExporterTransmart(OUTPUT_DIRECTORY, "my-study-name", configuration);
+        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "my-study-name", configuration);
 
         final StringWriter columnsWriter = new StringWriter();
         fileExporter.setColumnsWriter(columnsWriter);
@@ -61,7 +61,7 @@ public class FileExporterTransmartTest {
     @Test
 	public void testWriteExportWordMap() throws IOException {
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporterTransmart fileExporter = new FileExporterTransmart(OUTPUT_DIRECTORY, "my-study-name", configuration);
+        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "my-study-name", configuration);
 
         final StringWriter wordMapWriter = new StringWriter();
         fileExporter.setWordMapWriter(wordMapWriter);
@@ -99,7 +99,7 @@ public class FileExporterTransmartTest {
         rowDataMap2.put("column-id1", "data-value3");
 
 		final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-		final FileExporterTransmart fileExporter = new FileExporterTransmart(OUTPUT_DIRECTORY, "study-name", configuration);
+		final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
 
 		fileExporter.storeClinicalDataInfo("column-id1", "data-value1", "patient-id1", "event-id", null,
                 "item-group-id", null);
@@ -128,7 +128,7 @@ public class FileExporterTransmartTest {
         rowDataMap.put("column-id", "data-value");
 
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporterTransmart fileExporter = new FileExporterTransmart(OUTPUT_DIRECTORY, "study-name", configuration);
+        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
 
         fileExporter.storeClinicalDataInfo("column-id", "data-value", "patient-id", "event-id",
                 "event-repeat-key", "item-group-id", null);
@@ -155,7 +155,7 @@ public class FileExporterTransmartTest {
         entityDataMap.put("column-id", "data-value");
 
 		final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-		final FileExporterTransmart fileExporter = new FileExporterTransmart(OUTPUT_DIRECTORY, "study-name", configuration);
+		final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
 
 		fileExporter.storeClinicalDataInfo("column-id", "data-value", "patient-id", "event-id", null,
                 "item-group-id", "item-group-repeat-key");
@@ -183,7 +183,7 @@ public class FileExporterTransmartTest {
         entityDataMap.put("column-id", "data-value");
 
         final Configuration configuration = new Configuration(EXPORT_DIRECTORY + "filled-configuration.properties");
-        final FileExporterTransmart fileExporter = new FileExporterTransmart(OUTPUT_DIRECTORY, "study-name", configuration);
+        final FileExporter fileExporter = new FileExporter(OUTPUT_DIRECTORY, "study-name", configuration);
 
         fileExporter.storeClinicalDataInfo("column-id", "data-value", "patient-id", "event-id",
                 "event-repeat-key", "item-group-id", "item-group-repeat-key");
