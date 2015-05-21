@@ -7,15 +7,15 @@ ODM-to-i2b2
 Fork of the REDCap-to-i2b2 project: 
 https://community.i2b2.org/wiki/display/ODM2i2b2/Home
 
-We investigate the conversion of ODM data to i2b2 with respect to OpenClinica and tranSMART.
+This tools allows you to convert an ODM file to tabular data files that are ready to import in an i2b2-like system like tranSMART.
 
-Status at first release (2014 May 28): 3 tabular files are produced for each study: a columns file,
-a wordmap file and a clinical data file. This conversion runs now without errors for a wide
-variety of tested ODM exports from OpenClinica. However, the tool is not finished since there are
-still exported tabular files that cannot be loaded in the i2b2 database of tranSMART.
+Status at third release (2015 May 21): 3 tabular files are produced for each study: a clinical data file (with the data),
+a columns file (with metadata about each column in the clinical data file) and a wordmap file (with the full word values
+that come in place of the numerical codes in the clinical data). This conversion runs without errors for a wide
+variety of tested ODM exports from OpenClinica. It also deals appropriately with repeating elements,
+like events and item groups.
 
-Remaining issues are:
-- repeating elements, like events and item groups
-- OpenClinica extensions
-- the exact convention for writing tab-separated files
-- the Maven pom-file and logging
+Main developers:
+- Ward Blondé
+- Freek de Bruijn
+
