@@ -723,9 +723,6 @@ public class FileExporter {
 
         final int repeatingEventIndex = repeatingEventIds.indexOf(eventId) + 1;
         final int repeatingItemGroupIndex = repeatingItemGroupIds.indexOf(itemGroupId) + 1;
-//        final String eventEntityId = patientId
-//                + EVENT_ABBREVIATION_IN_ID + repeatingEventIndex
-//                + REPEAT_ABBREVIATION_IN_ID + eventRepeatKey;
         final String itemGroupEntityId = patientId
                 + EVENT_ABBREVIATION_IN_ID  + repeatingEventIndex
                 + REPEAT_ABBREVIATION_IN_ID + eventRepeatKey
