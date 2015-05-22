@@ -13,7 +13,9 @@ generated Java sources as the 'RedCap to i2b2' conversion, which exports to a da
 
 ![Image project structure](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/flag_RedCap_to_OCTM.png)
 
-A presentation of the project can be found [here](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/ODM%20to%20i2b2%20F2F%20The%20Hyve.pdf).
+A [presentation](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/ODM%20to%20i2b2%20F2F%20The%20Hyve.pdf)
+of the project and [developers information](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/DevelopersInformation.md)
+are part of the project.
 
 Status at release 3.0 (2015 May 21): 3 tabular files are produced for each study: a clinical data file (with the data),
 a columns file (with metadata about each column in the clinical data file) and a wordmap file (with the full word values
