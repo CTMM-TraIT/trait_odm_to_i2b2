@@ -11,7 +11,7 @@ This tools allows you to convert an ODM file to tabular data files that are read
 tranSMART. The 'OpenClinica to tranSMART' conversion, which exports tabular text files, build on the same automatically
 generated Java sources as the 'RedCap to i2b2' conversion, which exports to a database:
 
-![Image project structure](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/flag_RedCap_to_OCTM.pdf)
+![Image project structure](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/flag_RedCap_to_OCTM.png)
 
 A presentation of the project can be found [here](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/ODM%20to%20i2b2%20F2F%20The%20Hyve.pdf).
 
