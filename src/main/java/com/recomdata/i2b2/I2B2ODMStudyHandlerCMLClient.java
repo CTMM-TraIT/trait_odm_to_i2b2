@@ -89,6 +89,7 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 */
 	public static void main(String[] args) {
         try {
+            logger.info("ODM-to-i2b2 version v3.0 (2015-05-28) started running.");
             if (args.length >= 1) {
                 String propertiesFilePath = "ODM-to-i2b2.properties";
                 final Configuration configuration = new Configuration(propertiesFilePath);
