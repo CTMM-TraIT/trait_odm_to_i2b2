@@ -8,7 +8,7 @@
 	<property name="src.dir" value="${basedir}/src" />
 	<property name="test.dir" value="${basedir}/test" />
 	<property name="lib.dir" value="${basedir}/lib" />
-	<property name="scripts.dir" value="${basedir}/scripts" />
+	<property name="scripts.dir" value="/redcap-to-i2b2/scripts" />
 	<property name="build.dir" value="${basedir}/build" />
 	<property name="deploy.dir" value="redcapui/lib" />
 	<property name="gensrc.dir" value="/gensrc" />
@@ -69,7 +69,7 @@
 		</copy>
 
 		<copy todir="${build.dir}">
-			<fileset dir="${scripts.dir}">
+			<fileset dir="/redcap-to-i2b2/scripts">
 				<include name="*.bat" />
 				<include name="*.sh" />
 			</fileset>

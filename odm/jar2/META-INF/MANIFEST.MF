@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Class-Path: junit-4.8.2.jar junit-dep-4.8.2.jar log4j-snmp-appender.ja
- r sqljdbc4.jar commons-logging-1.1.1.jar log4j.jar commons-lang-2.5.j
- ar jackson-core-asl-1.9.3.jar jdom-1.1.2.jar jtds-1.2.5.jar
-Main-Class: com.recomdata.i2b2.I2B2ODMStudyHandlerCMLClient
-

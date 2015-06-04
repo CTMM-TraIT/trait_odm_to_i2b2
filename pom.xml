@@ -19,7 +19,7 @@
     <url>https://github.com/CTMM-TraIT/trait_odm_to_i2b2</url>
     <groupId>nl.vumc.biomedbridges</groupId>
     <artifactId>odm-to-i2b2</artifactId>
-    <version>0.1.0</version>
+    <version>3.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -307,6 +307,20 @@
                 <groupId>org.eluder.coveralls</groupId>
                 <artifactId>coveralls-maven-plugin</artifactId>
                 <version>${coveralls-maven-plugin.version}</version>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>com/recomdata/i2b2/I2B2ODMStudyHandlerCMLClient</mainClass>
+                        </manifest>
+                    </archive>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
             </plugin>
 
         </plugins>
