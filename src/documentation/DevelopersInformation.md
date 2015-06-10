@@ -127,8 +127,8 @@ Maven
 -----
 
 We use [Maven](http://maven.apache.org/) as our build tool. This makes it easier to use certain tools (like Checkstyle
-and FindBugs) and to manage the third-party libraries (dependencies) we use. The pom.xml file for the trait_odm_to_i2b2
-conversion tool is stored in the root directory.
+and FindBugs) and to manage the third-party libraries (dependencies) we use. The pom.xml file that Maven needs
+is stored in the root directory: trait_odm_to_i2b2. All the maven commands need to be executed in this root directory.
 
 Some commonly used Maven commands are
 (see [Introduction to the Build Lifecycle](http://maven.apache.org/guides/introduction/introduction-to-the-lifecycle.html)
@@ -166,6 +166,28 @@ for an explanation of the build lifecycle and the build phases):
 
 \# Check for CPD issues (report in target\cpd.xml):<br/>
 **`mvn compile pmd:cpd-check`**
+
+\# Create the jar file in the trait_odm_to_i2b2\target directory
+**`mvn clean compile assembly:single`**
+
+Auto-generating the java files from the ODM-specification
+---------------------------------------------------------
+Java classes are generated for handling ODM files using the JAXB (Java Architecture for XML Binding) related xjc binding
+compiler. The source code of these ODM reader classes are created by the xjc tool with xsd files that describe the ODM
+standard as input. See for example https://jaxb.java.net/2.2.11/docs/ch04.html#tools-xjc or
+https://en.wikipedia.org/wiki/Java_Architecture_for_XML_Binding for more information on xjc and JAXB.
+
+The main schema file (ODM1-3-1.xsd) depends on several other schema files: ODM1-3-1-foundation.xsd, xml.xsd, and
+xmldsig-core-schema.xsd. The bindings file (bindings.xml) modifies the default package names that are used. The Java
+classes are put in two packages: org.cdisk.odm.jaxb (ODM1-3-1.xsd) and org.w3.xmldsig.jaxb (xmldsig-core-schema.xsd).
+
+The call to xjc looks something like this:<br/>
+**`xjc [schema file] -b [bindings file] -d [destination directory]`**
+
+For example, on the Windows platform (with xjc.bat in the jaxb-ri\bin directory at your install location) using ODM 1.3.1,
+you could generate the ODM reader classes like this:<br/>
+**`mkdir java-generated`**<br/>
+**`xjc.bat xsd\cdisc-odm-1.3.1\ODM1-3-1.xsd -b xsd\cdisc-odm-1.3.1\bindings.xml -d java-generated`**
 
 
 Checkstyle

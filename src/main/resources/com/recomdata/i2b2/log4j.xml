@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!--
+  -  Copyright 2014 VU University Medical Center.
+  -  Licensed under the Apache License version 2.0 (see http://www.apache.org/licenses/LICENSE-2.0.html).
+-->
+
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<!--
+  -  Logging configuration for the ODM to i2b2 project.
+  -
+  -  Authors: Ward Blonde (w.blonde@vumc.nl) and Freek de Bruijn (f.debruijn@vumc.nl).
+-->
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+    <appender name="file-appender" class="org.apache.log4j.DailyRollingFileAppender">
+        <param name="append" value="true"/>
+        <param name="file" value="log/odm2i2b2.log"/>
+        <param name="DatePattern" value="'.'yyyy-MM-dd"/>
+        <param name="threshold" value="trace"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%c{1}(%M:%L)] %m%n"/>
+        </layout>
+    </appender>
+
+    <appender name="console-appender" class="org.apache.log4j.ConsoleAppender">
+        <param name="Target" value="System.out"/>
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p [%c{1}(%M:%L)] %m%n"/>
+        </layout>
+    </appender>
+
+    <root>
+        <priority value="info"/>
+        <appender-ref ref="file-appender"/>
+        <appender-ref ref="console-appender"/>
+    </root>
+
+</log4j:configuration>
