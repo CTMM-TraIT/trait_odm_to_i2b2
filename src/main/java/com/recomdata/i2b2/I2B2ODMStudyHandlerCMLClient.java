@@ -89,11 +89,18 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 */
 	public static void main(String[] args) {
         try {
-            logger.info("ODM-to-i2b2 version v3.0 (2015-05-28) started running.");
-            if (args.length >= 1) {
-                final String propertiesFilePath = "ODM-to-i2b2.properties";
-                final Configuration configuration = new Configuration(propertiesFilePath);
+            final String propertiesFilePath = "ODM-to-i2b2.properties";
+            final Configuration configuration = new Configuration(propertiesFilePath);
+
+            if (configuration.getLog4jPath()!= null &&
+                    I2B2ODMStudyHandlerCMLClient.class.getResource(configuration.getLog4jPath())!= null) {
                 DOMConfigurator.configure(I2B2ODMStudyHandlerCMLClient.class.getResource(configuration.getLog4jPath()));
+            } else {
+                System.out.println("Please provide the ODM-to-i2b2.properties file with an indication for a log4j logging.");
+            }
+
+            logger.info("ODM-to-i2b2 version v3.0 (2015-06-11) started running.");
+            if (args.length >= 1) {
 
                 if (EXPORT_TO_DATABASE) {
                     logger.info("Initializing database connection...");
