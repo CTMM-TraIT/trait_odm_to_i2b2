@@ -5,7 +5,7 @@ three tabular files. Please follow the instructions below:
 
 First download [odm-to-i2b2-3.0.zip](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/releases/odm-to-i2b2-3.0.zip?raw=true).
 
-```
+```sh
 Save it in your workspace and unzip the file.
 Save your ODM file in odm-to-i2b2-3.0\input-ODMs (e.g. odm130.XML)
 Start the command line terminal (e.g. cmd.exe)

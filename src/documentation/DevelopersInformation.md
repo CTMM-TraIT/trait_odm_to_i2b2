@@ -167,7 +167,7 @@ for an explanation of the build lifecycle and the build phases):
 \# Check for CPD issues (report in target\cpd.xml):<br/>
 **`mvn compile pmd:cpd-check`**
 
-\# Create the jar file in the trait_odm_to_i2b2\target directory
+\# Create the jar file in the trait_odm_to_i2b2\target directory:<br/>
 **`mvn clean compile assembly:single`**
 
 Auto-generating the java files from the ODM-specification
