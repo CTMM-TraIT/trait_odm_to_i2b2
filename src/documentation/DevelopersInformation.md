@@ -17,7 +17,6 @@ via the screenshots. Developers who want to use/test the very latest state of th
 
 Requirements:
 -------------
-- internet access
 - git
 ```sh
 $ sudo apt-get install git

@@ -10,7 +10,7 @@ of the project,
 [developers information](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/DevelopersInformation.md)
 are part of the project.
 
-The ODM-to-i2b2 project is a fork of the REDCap-to-i2b2 project:
+The ODM-to-i2b2 project is a fork with added functionality of the REDCap-to-i2b2 project:
 https://community.i2b2.org/wiki/display/ODM2i2b2/Home
 
 This tools allows you to convert an ODM file to tabular data files that are ready to import in an i2b2-like system like
@@ -26,6 +26,6 @@ variety of tested ODM exports from OpenClinica. It also deals appropriately with
 like events and item groups.
 
 Main developers:
-- Ward Blondé
-- Freek de Bruijn
+- Ward Blondé (Harvard Medical School, Boston)
+- Freek de Bruijn (NKI, Amsterdam)
 
