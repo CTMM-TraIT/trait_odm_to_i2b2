@@ -13,10 +13,10 @@ This tools allows you to convert an ODM file to tabular data files that are read
 
 ![Image project structure](https://github.com/CTMM-TraIT/trait_odm_to_i2b2/blob/master/src/documentation/flag_RedCap_to_OCTM.png)
 
-Status at release 3.0 (June 12th 2015): 3 tabular files are produced for each study:
+Status at release 3.0 (2015 June 12th): 3 tabular files are produced for each study:
 - a clinical data file (with the data),
 - a columns file (with metadata about each column in the clinical data file) and
-- a wordmap file (with the full word values that come in place of the numerical codes that can be used in the clinical data file).
+- a wordmap file (with the full word values that come in place of the numerical codes that can be used in the clinical data file)
 
 This conversion runs without errors for a wide variety of tested ODM exports from OpenClinica. It also deals appropriately with repeating elements, like events and item groups.
 
