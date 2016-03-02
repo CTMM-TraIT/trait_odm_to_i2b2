@@ -21,5 +21,5 @@ Status at release 3.0 (June 12th 2015): 3 tabular files are produced for each st
 This conversion runs without errors for a wide variety of tested ODM exports from OpenClinica. It also deals appropriately with repeating elements, like events and item groups.
 
 Main developers:
-- Ward Blondé (Harvard Medical School, Boston)
-- Freek de Bruijn (NKI, Amsterdam)
+- Ward Blondé
+- Freek de Bruijn
