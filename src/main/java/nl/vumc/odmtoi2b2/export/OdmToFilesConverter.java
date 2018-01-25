@@ -690,14 +690,17 @@ public class OdmToFilesConverter {
             final ODMcomplexTypeDefinitionCodeListItem codeListItem = ODMUtil.getCodeListItem(codeList, itemValue);
 
             if (codeListItem == null) {
-                logger.error("Code list item for coded value: " + itemValue + " not found in code list: " + codeList.getOID());
+                if (!itemValue.isEmpty()) {
+                    logger.error("Code list item for coded value: " + itemValue
+                            + " not found in code list: " + codeList.getOID() + ", for subject: " + patientId);
+                }
                 return;
             } else {
                 wordValue = ODMUtil.getTranslatedValue(codeListItem, LANGUAGE);
             }
         } else if (ODMUtil.isNumericDataType(itemDef.getDataType())) {
             wordValue = "";
-            bigDecimal = itemValue == null || "".equals(itemValue.trim()) ? null : new BigDecimal(itemValue);
+            bigDecimal = parseItemValue(itemValue, patientId, itemDef.getName());
         } else {
             wordValue = itemValue;
             bigDecimal = null;
@@ -706,5 +709,27 @@ public class OdmToFilesConverter {
         final String finalValue = (bigDecimal != null) ? bigDecimal.toString() : wordValue;
         fileExporters.get(definingStudyName).storeClinicalDataInfo(oidPath, finalValue, patientId,
                 eventId, eventRepeatKey, itemGroupId, itemGroupRepeatKey);
+    }
+
+    /**
+     * Parses the value of an item to a {@link BigDecimal}.
+     * @param itemValue the item value to parse
+     * @param subjectID the ID of the subject
+     * @param itemName the name of the item
+     * @return Returns <code>null</code> if the itemValue is empty or <code>null</code> or if a
+     * {@link NumberFormatException} occurs.
+     */
+    private static BigDecimal parseItemValue(final String itemValue, final String subjectID, final String itemName) {
+        BigDecimal ret;
+        final String errorMessage = "Number format problem in item: " + itemName + ", value '"
+                + itemValue + "' for subject '" + subjectID + "'";
+        try {
+            ret = itemValue == null || "".equals(itemValue.trim()) ? null : new BigDecimal(itemValue);
+        }
+        catch (final NumberFormatException nfe) {
+            logger.error(errorMessage);
+            return null;
+        }
+        return ret;
     }
 }
