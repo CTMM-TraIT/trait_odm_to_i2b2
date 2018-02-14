@@ -724,7 +724,7 @@ public class OdmToFilesConverter {
         final String errorMessage = "Number format problem in item: " + itemName + ", value '"
                 + itemValue + "' for subject '" + subjectID + "'";
         try {
-            ret = itemValue == null || "".equals(itemValue.trim()) ? null : new BigDecimal(itemValue);
+            ret = itemValue == null || "".equals(itemValue.trim()) ? null : new BigDecimal(itemValue.trim());
         }
         catch (final NumberFormatException nfe) {
             logger.error(errorMessage);

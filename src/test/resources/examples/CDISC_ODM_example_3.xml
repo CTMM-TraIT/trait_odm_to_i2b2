@@ -2615,7 +2615,7 @@
 						<ItemData ItemOID = "IT.PNO" Value = "143-02"/>
 						<ItemData ItemOID = "IT.SCTRY" Value = "USA"/>
 						<ItemData ItemOID = "IT.F_STATUS" Value = "S"/>
-						<ItemData ItemOID = "IT.HT" Value = "71"/>
+						<ItemData ItemOID = "IT.HT" Value = "71.45    "/>
 						<ItemData ItemOID = "IT.WT" Value = "244"/>
 						<ItemData ItemOID = "IT.SEX" Value = "M"/>
 						<ItemData ItemOID = "IT.DOB" Value = "19630820"/>
@@ -3813,7 +3813,7 @@
 						<ItemData ItemOID = "IT.PNO" Value = "143-02"/>
 						<ItemData ItemOID = "IT.SCTRY" Value = "USA"/>
 						<ItemData ItemOID = "IT.F_STATUS" Value = "S"/>
-						<ItemData ItemOID = "IT.HT" Value = "71"/>
+						<ItemData ItemOID = "IT.HT" Value = "     71.675"/>
 						<ItemData ItemOID = "IT.WT" Value = "175"/>
 						<ItemData ItemOID = "IT.SEX" Value = "F"/>
 						<ItemData ItemOID = "IT.DOB" Value = "19550101"/>
@@ -4150,7 +4150,7 @@
 						<ItemData ItemOID = "IT.PNO" Value = "143-02"/>
 						<ItemData ItemOID = "IT.SCTRY" Value = "USA"/>
 						<ItemData ItemOID = "IT.F_STATUS" Value = "S"/>
-						<ItemData ItemOID = "IT.HT" Value = "72"/>
+						<ItemData ItemOID = "IT.HT" Value = "    72.75   "/>
 						<ItemData ItemOID = "IT.WT" Value = "168"/>
 						<ItemData ItemOID = "IT.SEX" Value = "M"/>
 						<ItemData ItemOID = "IT.DOB" Value = "19700809"/>
