@@ -18,6 +18,7 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.cdisk.odm.jaxb.ODM;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionClinicalData;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeList;
@@ -702,6 +703,15 @@ public class OdmToFilesConverter {
             wordValue = "";
             bigDecimal = parseItemValue(itemValue, patientId, itemDef.getName());
         } else {
+            if (itemValue.contains("\t") ||
+                    itemValue.contains("\n") ||
+                    itemValue.contains("\r")) {
+                logger.warn("Replacing special characters in item: " + itemDef.getName() + ", " + itemDef.getOID()
+                        + " for subject: " + subjectData.getSubjectKey());
+                itemValue.replace("\t", "");
+                itemValue.replace("\n", "");
+                itemValue.replace("\r", "");
+            }
             wordValue = itemValue;
             bigDecimal = null;
         }
