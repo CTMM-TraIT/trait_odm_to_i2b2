@@ -224,7 +224,7 @@
                         property, hence this setting will not influence the builds triggered in IDEs.
                     -->
                     <!--<propertyExpansion>config_loc=${project.parent.parent.basedir}/</propertyExpansion>-->
-                    <failsOnError>true</failsOnError>
+                    <failsOnError>false</failsOnError>
                 </configuration>
             </plugin>
 

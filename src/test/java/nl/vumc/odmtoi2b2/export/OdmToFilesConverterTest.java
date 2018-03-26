@@ -59,7 +59,8 @@ public class OdmToFilesConverterTest {
         if (minimalWordMapFile.exists()) {
             assertTrue(minimalWordMapFile.delete());
         }
-        odmHandler = new OdmToFilesConverter();
+        ColumnFilter columnFilter = new ColumnFilter("");
+        odmHandler = new OdmToFilesConverter(columnFilter);
         odmLoader = new ODMLoader();
         minimalXmlFile = new File(MINIMAL_ODM_XML_PATH);
         minimalOdm = odmLoader.unmarshall(minimalXmlFile);

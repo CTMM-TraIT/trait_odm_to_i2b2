@@ -16,6 +16,7 @@ package com.recomdata.i2b2;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import nl.vumc.odmtoi2b2.export.ColumnFilter;
 import nl.vumc.odmtoi2b2.export.Configuration;
 import nl.vumc.odmtoi2b2.export.OdmToFilesConverter;
 
@@ -51,17 +52,23 @@ public class I2B2ODMStudyHandlerCMLClient {
 	 * 
 	 * @param odmXmlPath the ODM file to process.
 	 * @param exportFilePath the path of the export file.
-     * @param propertiesFilePath the file path to the properties.  @throws Exception
+     * @param propertiesFilePath the file path to the properties.
+     * @param filterFilePath path to a file containing a list of columns (as ODM-axis) which must be excluded from the
+     *                       export.
+     * @throws Exception
 	 */
     public void loadODMFile2I2B2(String odmXmlPath,
                                  String exportFilePath,
-                                 final String propertiesFilePath) throws Exception {
+                                 final String propertiesFilePath,
+                                 final String filterFilePath) throws Exception {
 		File xmlFile = new File(odmXmlPath);
 
 		if (!xmlFile.exists()) {
             logger.error("ODM file not found: " + odmXmlPath);
 			throw new FileNotFoundException(xmlFile.getPath());
 		}
+
+        ColumnFilter columnFilter = new ColumnFilter(filterFilePath);
 
 		// Load and parse ODM xml here by jaxb
 		ODMLoader odmLoader = new ODMLoader();
@@ -76,7 +83,7 @@ public class I2B2ODMStudyHandlerCMLClient {
             I2B2ODMStudyHandler odmHandler = new I2B2ODMStudyHandler(odm);
             odmHandler.processODM();
         } else {
-            OdmToFilesConverter odmHandler = new OdmToFilesConverter();
+            OdmToFilesConverter odmHandler = new OdmToFilesConverter(columnFilter);
             odmHandler.processODM(odm, exportFilePath, propertiesFilePath);
             odmHandler.closeExportWriters();
         }
@@ -110,10 +117,14 @@ public class I2B2ODMStudyHandlerCMLClient {
 
                 String odmFilePath = args[0];
                 String exportFilePath = args[1];
+                String filterFilePath = "";
+                if (args.length == 3) {
+                    filterFilePath = args[2];
+                }
 
                 logger.info("Parsing ODM file ..." + odmFilePath);
                 I2B2ODMStudyHandlerCMLClient client = new I2B2ODMStudyHandlerCMLClient();
-                client.loadODMFile2I2B2(odmFilePath, exportFilePath, propertiesFilePath);
+                client.loadODMFile2I2B2(odmFilePath, exportFilePath, propertiesFilePath, filterFilePath);
 
                 if (EXPORT_TO_DATABASE) {
                     logger.info("Releasing database connection.");

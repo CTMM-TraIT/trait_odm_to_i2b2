@@ -18,7 +18,6 @@ import java.util.Map;
 
 import javax.xml.bind.JAXBException;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.cdisk.odm.jaxb.ODM;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionClinicalData;
 import org.cdisk.odm.jaxb.ODMcomplexTypeDefinitionCodeList;
@@ -74,6 +73,11 @@ import org.slf4j.LoggerFactory;
  */
 public class OdmToFilesConverter {
 
+   /**
+    * A separator to construct the name path.
+    */
+    public static final String PLUS = "+";
+
     /**
      * The logger for this class.
      */
@@ -85,11 +89,6 @@ public class OdmToFilesConverter {
     private static final String LANGUAGE = "en";
 
     /**
-     * A separator to construct the name path.
-     */
-    private static final String PLUS = "+";
-
-    /**
      * A separator to separate OIDs in the OIDPath.
      */
     private static final String SEP = "\\";
@@ -98,6 +97,21 @@ public class OdmToFilesConverter {
      * The name for the node in tranSMART under which different studies will be arranged as sites.
      */
     private static final String STUDY_SITE = "Study-site";
+
+    /**
+     * The tab.
+     */
+    private static final String TAB = "\t";
+
+    /**
+     * The form feed.
+     */
+    private static final String FORM_FEED = "\r";
+
+    /**
+     * The new line.
+     */
+    private static final String NEW_LINE = "\n";
 
     /**
      * Is set to true when different studies that are written to the same files,
@@ -141,16 +155,23 @@ public class OdmToFilesConverter {
      */
     private Map<String, String> studies;
 
+    /**
+     * Filters out columns which have to be excluded for the export.
+     */
+    private ColumnFilter columnFilter;
+
 
     /**
      * This class is instantiated once for each ODM file.
+     * @param columnFilter the filter for columns
      */
-    public OdmToFilesConverter() {
+    public OdmToFilesConverter(final ColumnFilter columnFilter) {
         this.fileExporters = new HashMap<>();
         this.metaDataMap = new HashMap<>();
         this.modelStudiesAsColumn = false;
         this.columnFullNameList = new ArrayList<>();
         this.studies = new HashMap<>();
+        this.columnFilter = columnFilter;
     }
 
     /**
@@ -420,6 +441,7 @@ public class OdmToFilesConverter {
         final String itemGroupId  = itemGroupDef.getOID();
         final String namePath       = eventName + PLUS + formName + PLUS + itemGroupName;
         final String preferredItemName = getPreferredItemName(itemDef, namePath);
+        final String filterPath = eventName + PLUS + formName + PLUS + itemGroupName + PLUS + preferredItemName;
 
         final String oidPath = definingStudy.getOID() + SEP
                 + eventDef.getOID() + SEP
@@ -431,7 +453,12 @@ public class OdmToFilesConverter {
                 + "; item group name: " + itemGroupName
                 + "; preferred item name: " + preferredItemName
                 + "; OID path: " + oidPath);
-        fileExporters.get(studyName).storeColumn(eventName, eventId, formName, itemGroupName, itemGroupId, preferredItemName, oidPath);
+        if (columnFilter.isIncluded(filterPath)) {
+            fileExporters.get(studyName).storeColumn(eventName, eventId, formName, itemGroupName, itemGroupId, preferredItemName, oidPath);
+        }
+        else {
+            logger.info("Excluded field: " + filterPath);
+        }
 
         if (itemDef.getCodeListRef() != null) {
             final ODMcomplexTypeDefinitionCodeList codeList = ODMUtil.getCodeList(definingStudy,
@@ -703,14 +730,14 @@ public class OdmToFilesConverter {
             wordValue = "";
             bigDecimal = parseItemValue(itemValue, patientId, itemDef.getName());
         } else {
-            if (itemValue.contains("\t") ||
-                    itemValue.contains("\n") ||
-                    itemValue.contains("\r")) {
+            if (itemValue.contains(TAB)
+                  || itemValue.contains(NEW_LINE)
+                  || itemValue.contains(FORM_FEED)) {
                 logger.warn("Replacing special characters in item: " + itemDef.getName() + ", " + itemDef.getOID()
                         + " for subject: " + subjectData.getSubjectKey());
-                itemValue.replace("\t", "");
-                itemValue.replace("\n", "");
-                itemValue.replace("\r", "");
+                itemValue.replace(TAB, "");
+                itemValue.replace(NEW_LINE, "");
+                itemValue.replace(FORM_FEED, "");
             }
             wordValue = itemValue;
             bigDecimal = null;
