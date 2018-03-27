@@ -717,7 +717,7 @@ public class OdmToFilesConverter {
                              + eventData.getStudyEventOID() + SEP
                              + formData.getFormOID() + SEP
                              + itemData.getItemOID() + SEP;
-        final String itemValue = itemData.getValue();
+        String itemValue = itemData.getValue();
 //      final ODMcomplexTypeDefinitionItemDef item = ODMUtil.getItem(study, itemData.getItemOID());
         final ODMcomplexTypeDefinitionItemDef itemDef = getMetaData(study).getItemDef(itemData.getItemOID());
         final String wordValue;
@@ -755,12 +755,12 @@ public class OdmToFilesConverter {
                   || itemValue.contains(XML_FORM_FEED)) {
                 logger.warn("Replacing special characters in item: " + itemDef.getName() + ", " + itemDef.getOID()
                         + " for subject: " + subjectData.getSubjectKey());
-                itemValue.replace(TAB, "");
-                itemValue.replace(NEW_LINE, " ");
-                itemValue.replace(FORM_FEED, "");
-                itemValue.replace(XML_TAB, "");
-                itemValue.replace(XML_NEW_LINE, " ");
-                itemValue.replace(XML_FORM_FEED, "");
+                itemValue = itemValue.replace(TAB, "");
+                itemValue = itemValue.replace(NEW_LINE, " ");
+                itemValue = itemValue.replace(FORM_FEED, "");
+                itemValue = itemValue.replace(XML_TAB, "");
+                itemValue = itemValue.replace(XML_NEW_LINE, " ");
+                itemValue = itemValue.replace(XML_FORM_FEED, "");
             }
             wordValue = itemValue;
             bigDecimal = null;
