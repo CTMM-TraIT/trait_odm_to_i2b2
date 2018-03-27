@@ -114,6 +114,23 @@ public class OdmToFilesConverter {
     private static final String NEW_LINE = "\n";
 
     /**
+     * The XML tab.
+     */
+    private static final String XML_TAB = "&#x9;";
+
+    /**
+     * The XML form feed.
+     */
+    private static final String XML_FORM_FEED = "&#xA;";
+
+    /**
+     * The XML new line.
+     */
+    private static final String XML_NEW_LINE = "&#xD;";
+
+
+
+    /**
      * Is set to true when different studies that are written to the same files,
      * need to be modelled as a separate Study-site column.
      */
@@ -732,12 +749,18 @@ public class OdmToFilesConverter {
         } else {
             if (itemValue.contains(TAB)
                   || itemValue.contains(NEW_LINE)
-                  || itemValue.contains(FORM_FEED)) {
+                  || itemValue.contains(FORM_FEED)
+                  || itemValue.contains(XML_TAB)
+                  || itemValue.contains(XML_NEW_LINE)
+                  || itemValue.contains(XML_FORM_FEED)) {
                 logger.warn("Replacing special characters in item: " + itemDef.getName() + ", " + itemDef.getOID()
                         + " for subject: " + subjectData.getSubjectKey());
                 itemValue.replace(TAB, "");
-                itemValue.replace(NEW_LINE, "");
+                itemValue.replace(NEW_LINE, " ");
                 itemValue.replace(FORM_FEED, "");
+                itemValue.replace(XML_TAB, "");
+                itemValue.replace(XML_NEW_LINE, " ");
+                itemValue.replace(XML_FORM_FEED, "");
             }
             wordValue = itemValue;
             bigDecimal = null;
