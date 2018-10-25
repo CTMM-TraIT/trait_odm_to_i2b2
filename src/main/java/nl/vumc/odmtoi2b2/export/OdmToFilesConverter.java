@@ -400,8 +400,12 @@ public class OdmToFilesConverter {
             for (ODMcomplexTypeDefinitionItemGroupRef itemGroupRef : formDef.getItemGroupRef()) {
                 final ODMcomplexTypeDefinitionItemGroupDef itemGroupDef =
                         metaDataWithIncludes.getItemGroupDef(itemGroupRef.getItemGroupOID());
-
-                saveItemGroup(definingStudy, eventDef, formDef, itemGroupDef);
+                if (itemGroupDef == null) {
+                    logger.error("ItemGroupRef with itemGroupDef OID " + itemGroupRef.getItemGroupOID() + " not found!");
+                }
+                else {
+                    saveItemGroup(definingStudy, eventDef, formDef, itemGroupDef);
+                }
             }
         }
     }
@@ -421,7 +425,6 @@ public class OdmToFilesConverter {
                                final ODMcomplexTypeDefinitionFormDef formDef,
                                final ODMcomplexTypeDefinitionItemGroupDef itemGroupDef)
             throws JAXBException, IOException {
-
         if (itemGroupDef.getItemRef() != null) {
             for (ODMcomplexTypeDefinitionItemRef itemRef : itemGroupDef.getItemRef()) {
                 final ODMcomplexTypeDefinitionItemDef itemDef =
