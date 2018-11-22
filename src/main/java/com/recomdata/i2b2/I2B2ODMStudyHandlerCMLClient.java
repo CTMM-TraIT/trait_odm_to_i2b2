@@ -106,8 +106,8 @@ public class I2B2ODMStudyHandlerCMLClient {
                 System.out.println("Please provide the ODM-to-i2b2.properties file with an indication for a log4j logging.");
             }
 
-            logger.info("ODM-to-i2b2 version v3.0 (2015-06-11) started running.");
-            if (args.length >= 1) {
+            logger.info("ODM-to-i2b2 version v3.0 (2015-06-11) started running.\n");
+            if (args.length >= 2) {
 
                 if (EXPORT_TO_DATABASE) {
                     logger.info("Initializing database connection...");
@@ -133,8 +133,23 @@ public class I2B2ODMStudyHandlerCMLClient {
 
                 logger.info("Processing complete.");
             } else {
-                logger.info("Please provide 1. the ODM file (plus path) to process, "
-                        + "2. the path of the export directory (without slash), and ");
+                logger.info("ODM-to-i2b2 tool; converts an OpenClinica / ALEA ODM to files suitable for import in tranSMART.\n" +
+						"\n" +
+						"Usage: java -jar odm-to-i2b2-3.0-jar-with-dependencies.jar [ODM Input file] [Output directory] <Filter file>\n" +
+						"\n" +
+						"Command line parameters are:\n" +
+						"1. the ODM file (plus path) to process\n" +
+                        "2. the path of the export directory\n" +
+						"3. (Optional) the filter file path\n" +
+						"\n" +
+						"The filter file is a TAB-demlimited file containing 4 columns specifying the \n" +
+						"StudyEvent_Name, Form_Name, ItemGroup_Name and Item_Name of\n" +
+						"fields to exclude in the output files. This file MUST include column names. For example: \n" +
+						"\n" +
+						"StudyEvent_Name	Form_Name	ItemGroup_Name	Item_Name\n" +
+						"Registration	Registration form	MetaData	clinicianId\n" +
+						"Baseline	Randomisation   MetaData	clinicianId\n" +
+						"Baseline	Baseline	MetaData	patientId\n");
             }
         } catch (Exception ex) {
 			ex.printStackTrace();

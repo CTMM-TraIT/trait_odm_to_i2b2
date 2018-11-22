@@ -4,3 +4,4 @@ odm-to-i2b2.iml
 odm/
 src/test/resources/output/*.txt
 target/
+distribution/
